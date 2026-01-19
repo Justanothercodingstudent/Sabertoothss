@@ -65,5 +65,7 @@ public class Autos {
 
         // Register Named Commands and print them
        // NamedCommands.registerCommand("setRest" , autoController.setRest());
+
+       NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
     }
 }

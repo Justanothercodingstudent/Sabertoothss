@@ -48,6 +48,7 @@ public class RobotContainer {
 
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
+  
   private Limelight limelight;
   private Vision vision;
 
@@ -104,12 +105,12 @@ public class RobotContainer {
 }
 
 private void configureAutoSelector() {
-  chooser.setDefaultOption("Middle to H, Score L4", new PathPlannerAuto("Score L4 Auto"));
-  chooser.addOption("Leave", new PathPlannerAuto("Leave"));
+  //chooser.setDefaultOption("Middle to H, Score L4", new PathPlannerAuto("Score L4 Auto"));
+  //chooser.addOption("Leave", new PathPlannerAuto("Leave"));
 
 
 
-  SmartDashboard.putData("Auto Mode", chooser);
+  //SmartDashboard.putData("Auto Mode", chooser);
 }
 
 
