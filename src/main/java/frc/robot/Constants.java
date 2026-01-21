@@ -79,6 +79,11 @@ public final class Constants {
         public static final double limelightHeadingOffset = 180;
     }
 
+    public static final class Intake {
+        public static final int IntakeID = 123;
+        public static final double IntakeSpeed = 0.5;
+    }
+
 
     public static final class Swerve {
       public static final int pigeonID = 49;

@@ -22,9 +22,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.IntakeCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.intake;
 
 
 /**
@@ -48,12 +50,15 @@ public class RobotContainer {
 
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
+  private final intake Intake;
   
   private Limelight limelight;
   private Vision vision;
 
   /* Commands */
   private LimelightCmd limelightCmd;
+
+  private IntakeCmd intakeCmd;
 
 
   private Autos autos;
@@ -70,6 +75,10 @@ public class RobotContainer {
     limelight = new Limelight();
     limelightCmd = new LimelightCmd(limelight);
     limelight.setDefaultCommand(limelightCmd);
+
+    Intake = new intake();
+    intakeCmd = new IntakeCmd(Intake, operator);
+    Intake.setDefaultCommand(intakeCmd);
 
     // climber = new climber();
     // climberCmd = new climberCmd(climber, operator);
