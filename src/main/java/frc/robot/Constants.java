@@ -80,13 +80,24 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int IntakeID = 123;
-        public static final double IntakeSpeed = 0.5;
+        public static final int IntakeID = 15;
+        public static final double IntakeSpeed = -5;
+    }
+
+    public static final class Spin{
+        public static final int SpinID = 17;
+        public static final int ShootID = 16;
+        public static final int TurnerID = 60;
+
+        public static final double ShootSpeed = -8;
+        public static final double SpinSpeed = -3;
+        public static final double TurnSpeed = -1;
     }
 
 
+
     public static final class Swerve {
-      public static final int pigeonID = 49;
+      public static final int pigeonID = 20;
 
       public static final int SwerveStartHeading = 0;
 

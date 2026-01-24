@@ -23,10 +23,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
+import frc.robot.commands.SpinnerAndShooterCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
+import frc.robot.subsystems.SpinnerAndShooter;
 
 
 /**
@@ -51,6 +53,7 @@ public class RobotContainer {
   /* Subsystems */
   private final Swerve s_Swerve = new Swerve();
   private final intake Intake;
+  private final SpinnerAndShooter Spin;
   
   private Limelight limelight;
   private Vision vision;
@@ -59,6 +62,7 @@ public class RobotContainer {
   private LimelightCmd limelightCmd;
 
   private IntakeCmd intakeCmd;
+  private SpinnerAndShooterCmd ShootCmd;
 
 
   private Autos autos;
@@ -75,6 +79,10 @@ public class RobotContainer {
     limelight = new Limelight();
     limelightCmd = new LimelightCmd(limelight);
     limelight.setDefaultCommand(limelightCmd);
+
+    Spin = new SpinnerAndShooter();
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator);
+    Spin.setDefaultCommand(ShootCmd);
 
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, operator);
