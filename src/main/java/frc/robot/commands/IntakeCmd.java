@@ -11,6 +11,8 @@ public class IntakeCmd extends Command {
     private final intake Intake;
     private final XboxController xbox;
 
+    private double IntakePos;
+
     private double speed;
 
     public IntakeCmd(intake Intake, XboxController xbox){
@@ -18,6 +20,8 @@ public class IntakeCmd extends Command {
         addRequirements(this.Intake);
 
         this.xbox = xbox;
+
+        IntakePos = Intake.getExtensionPos();
 
     }
 
@@ -30,14 +34,23 @@ public class IntakeCmd extends Command {
         if (DriverStation.isTeleop()) {
 
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-
+            boolean aPressed = xbox.getAButtonPressed();
+            boolean bPressed = xbox.getBButtonPressed();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
-            if (ltPressed){
-                speed = Constants.Intake.IntakeSpeed;
-                Intake.IntakeSpeed(speed);
-            } else if (!ltPressed){
-                Intake.IntakeSpeed(0);
+           // if (ltPressed){
+           //     speed = Constants.Intake.IntakeSpeed;
+           //     Intake.IntakeSpeed(speed);
+           // }else {
+           //     Intake.IntakeSpeed(0);
+           // }
+
+            if(aPressed){
+                IntakePos = Constants.Intake.maxExtend;
+                Intake.setIntakePosition(IntakePos);
+            } else if (bPressed){
+                 IntakePos = Constants.Intake.minExtend;
+                Intake.setIntakePosition(IntakePos);
             }
 
         }

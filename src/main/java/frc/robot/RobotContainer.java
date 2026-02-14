@@ -24,11 +24,13 @@ import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
+import frc.robot.commands.climberCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
+import frc.robot.subsystems.climber;
 
 
 /**
@@ -54,6 +56,7 @@ public class RobotContainer {
   private final Swerve s_Swerve = new Swerve();
   private final intake Intake;
   private final SpinnerAndShooter Spin;
+  private final climber climb;
   
   private Limelight limelight;
   private Vision vision;
@@ -63,7 +66,7 @@ public class RobotContainer {
 
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
-
+  private climberCmd climbCmd;
 
   private Autos autos;
   private AutoController autoController;
@@ -88,9 +91,9 @@ public class RobotContainer {
     intakeCmd = new IntakeCmd(Intake, operator);
     Intake.setDefaultCommand(intakeCmd);
 
-    // climber = new climber();
-    // climberCmd = new climberCmd(climber, operator);
-    // climber.setDefaultCommand(climberCmd);
+     climb = new climber();
+     climbCmd = new climberCmd(climb, driver);
+     climb.setDefaultCommand(climbCmd);
 
     initializePositions = new SequentialCommandGroup(
     );

@@ -9,31 +9,33 @@ import frc.robot.Constants;
 
 public class SpinnerAndShooter extends SubsystemBase{
 
-    private TalonFX SpinMotor;
-    private TalonFX ShootMotor;
+    private TalonFX LeftSpinMotor;
+    private TalonFX LeftShootMotor;
 
-    private TalonFX TurnMotor;
+    private TalonFX RightSpinMotor;
+    private TalonFX RightShootMotor;
 
     public SpinnerAndShooter() {
-        SpinMotor = new TalonFX(Constants.Spin.SpinID);
-        SpinMotor.setNeutralMode(NeutralModeValue.Brake);
+        LeftSpinMotor = new TalonFX(Constants.Spin.LeftSpinID);
+        LeftSpinMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        TurnMotor = new TalonFX(Constants.Spin.TurnerID);
-        TurnMotor.setNeutralMode(NeutralModeValue.Brake);
+        RightSpinMotor = new TalonFX(Constants.Spin.RightSpinID);
+        RightSpinMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        ShootMotor = new TalonFX(Constants.Spin.ShootID);
-        ShootMotor.setNeutralMode(NeutralModeValue.Brake);
+        LeftShootMotor = new TalonFX(Constants.Spin.LeftShootID);
+        LeftShootMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        RightShootMotor = new TalonFX(Constants.Spin.RightShootID);
+        RightShootMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
     public void SpinSpeed(double speed){
-        SpinMotor.setVoltage(speed);
+        LeftSpinMotor.setVoltage(speed);
+        RightSpinMotor.setVoltage(speed);
     }
 
     public void ShootSpeed(double speed){
-        ShootMotor.setVoltage(speed);
-    }
-    
-    public void TurnSpeed(double speed){
-      TurnMotor.setVoltage(speed);
+        LeftShootMotor.setVoltage(speed);
+        RightShootMotor.setVoltage(speed);
     }
 }

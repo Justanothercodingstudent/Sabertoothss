@@ -14,7 +14,6 @@ public class SpinnerAndShooterCmd extends Command{
 
     private double ShootSpeed;
     private double SpinSpeed;
-    private double TurnerSpeed;
 
     public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox){
         this.shoot = shoot;
@@ -39,15 +38,12 @@ public class SpinnerAndShooterCmd extends Command{
             if (rtPressed){
                 ShootSpeed = Constants.Spin.ShootSpeed;
                 SpinSpeed = Constants.Spin.SpinSpeed;
-                TurnerSpeed = Constants.Spin.TurnSpeed;
                 shoot.ShootSpeed(ShootSpeed);
                 shoot.SpinSpeed(SpinSpeed);
-                shoot.TurnSpeed(TurnerSpeed);
 
             } else if (!rtPressed){
                 shoot.ShootSpeed(0);
                 shoot.SpinSpeed(0);
-                shoot.TurnSpeed(0);
             }
 
         }

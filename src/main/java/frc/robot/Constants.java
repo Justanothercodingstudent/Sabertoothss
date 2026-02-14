@@ -80,14 +80,37 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int IntakeID = 15;
-        public static final double IntakeSpeed = -5;
+        public static final int IntakeID = 123;
+        public static final double IntakeSpeed = -0.5;
+        public static final double ExtendSpeed = 0.5;
+
+        public static final int IntakeOutID = 60;
+
+        public static final double maxExtend = 5.0;
+        public static final double minExtend = 0.5;
+
+        public static final double extendP = 1;
+        public static final double extendI = 0;
+        public static final double extendD = 0;
+    }
+
+    public static final class climber{
+        public static final int climberID = 15;
+        public static final double ClimbSpeed = -0.5;
+
+        public static final double minClimb = 137;
+        public static final double maxclimb = 6;
+
+        public static final double climbP = 1;
+        public static final double climbI = 0;
+        public static final double climbD = 0;
     }
 
     public static final class Spin{
-        public static final int SpinID = 17;
-        public static final int ShootID = 16;
-        public static final int TurnerID = 60;
+        public static final int LeftSpinID = 17;
+        public static final int LeftShootID = 16;
+        public static final int RightSpinID = 61;
+        public static final int RightShootID = 123;
 
         public static final double ShootSpeed = -8;
         public static final double SpinSpeed = -3;
@@ -97,7 +120,7 @@ public final class Constants {
 
 
     public static final class Swerve {
-      public static final int pigeonID = 20;
+      public static final int pigeonID = 49;
 
       public static final int SwerveStartHeading = 0;
 
@@ -174,17 +197,17 @@ public final class Constants {
       public static final NeutralModeValue driveNeutralMode = NeutralModeValue.Brake;
 
       //cancoder offsets
-      public static final double offset0 = -55.107;
-      public static final double offset1 = 85.781;
-      public static final double offset2 = 103.798828;
-      public static final double offset3 = -68.115234;
+      public static final double offset0 = 73.74;
+      public static final double offset1 = -151.17;
+      public static final double offset2 = -168.662;
+      public static final double offset3 = 17.57;
 
       /* Module Specific Constants */
       /* Front Left Module - Module 0 */
       public static final class Mod0 { //done
-          public static final int driveMotorID = 2;
-          public static final int angleMotorID = 1;
-          public static final int canCoderID = 3;
+          public static final int driveMotorID = 1;
+          public static final int angleMotorID = 3;
+          public static final int canCoderID = 2;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset0);
           public static final SwerveModuleConstants constants = 
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
@@ -192,9 +215,9 @@ public final class Constants {
 
       /* Front Right Module - Module 1 */
       public static final class Mod1 { //done
-          public static final int driveMotorID = 5;
-          public static final int angleMotorID = 4;
-          public static final int canCoderID = 6;
+          public static final int driveMotorID = 10;
+          public static final int angleMotorID = 12;
+          public static final int canCoderID = 11;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset1);
           public static final SwerveModuleConstants constants = 
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
@@ -202,9 +225,9 @@ public final class Constants {
       
       /* Back Left Module - Module 2 */
       public static final class Mod2 { //done
-          public static final int driveMotorID = 11;
-          public static final int angleMotorID = 10;
-          public static final int canCoderID = 12;
+          public static final int driveMotorID = 6;
+          public static final int angleMotorID = 4;
+          public static final int canCoderID = 5;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset2);
           public static final SwerveModuleConstants constants = 
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
@@ -212,9 +235,9 @@ public final class Constants {
 
       /* Back Right Module - Module 3 */
       public static final class Mod3 { //done
-          public static final int driveMotorID = 8;
-          public static final int angleMotorID = 7;
-          public static final int canCoderID = 9;
+          public static final int driveMotorID = 7;
+          public static final int angleMotorID = 9;
+          public static final int canCoderID = 8;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset3);
           public static final SwerveModuleConstants constants = 
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
