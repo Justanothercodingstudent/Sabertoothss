@@ -1,9 +1,10 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -13,8 +14,7 @@ public class intake extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX intakeOutMotor;
-
-    private final PIDController extendPID;
+    private final PositionDutyCycle extensionRequest = new PositionDutyCycle(0);
 
     private double intakePos;
 
@@ -25,12 +25,19 @@ public class intake extends SubsystemBase {
 
         intakeOutMotor = new TalonFX(Constants.Intake.IntakeOutID);
         intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
-
-        extendPID = new PIDController(
-                Constants.Intake.extendP,
-                Constants.Intake.extendI,
-                Constants.Intake.extendD
-        );
+        TalonFXConfiguration extensionConfig = new TalonFXConfiguration();
+        extensionConfig.Slot0.kP = Constants.Intake.extendP;
+        extensionConfig.Slot0.kI = Constants.Intake.extendI;
+        extensionConfig.Slot0.kD = Constants.Intake.extendD;
+        extensionConfig.MotorOutput.PeakForwardDutyCycle = Constants.Intake.ExtendSpeed;
+        extensionConfig.MotorOutput.PeakReverseDutyCycle = -Constants.Intake.ExtendSpeed;
+        extensionConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        extensionConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Intake.maxExtend;
+        extensionConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        extensionConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Intake.minExtend;
+        intakeOutMotor.getConfigurator().apply(extensionConfig);
+        intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
+        intakeOutMotor.setPosition(0.0);
 
         intakePos = Constants.Intake.minExtend;
     }
@@ -40,13 +47,7 @@ public class intake extends SubsystemBase {
     }
 
     public double getExtensionPos() {
-        double normalizedPosition = intakeOutMotor.getPosition().getValueAsDouble();
-
-        if (normalizedPosition < 0) {
-            normalizedPosition += 1.0;
-        }
-
-        return normalizedPosition;
+        return intakeOutMotor.getPosition().getValueAsDouble();
     }
 
     public void setIntakePosition(double position) {
@@ -56,7 +57,7 @@ public class intake extends SubsystemBase {
 
     public void nextArmPID() {
         clampIntakeSetPos();
-        setExtensionPID(intakePos);
+        intakeOutMotor.setControl(extensionRequest.withPosition(intakePos));
     }
 
     private void clampIntakeSetPos() {
@@ -66,22 +67,14 @@ public class intake extends SubsystemBase {
         );
     }
 
-    private void setExtensionPID(double position) {
-
-        double output = extendPID.calculate(getExtensionPos(), position);
-
-        double speedLimit = Constants.Intake.ExtendSpeed;
-        output = Math.max(-speedLimit, Math.min(speedLimit, output));
-
-        intakeOutMotor.set(-output);
-    }
-
     public void rotateArmMotor(double speed) {
         intakeOutMotor.set(speed * Constants.Intake.ExtendSpeed);
     }
 
     @Override
     public void periodic() {
+        nextArmPID();
         SmartDashboard.putNumber("Extension value", getExtensionPos());
+        SmartDashboard.putNumber("Extension target", intakePos);
     }
 }

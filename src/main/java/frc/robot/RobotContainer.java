@@ -84,11 +84,11 @@ public class RobotContainer {
     limelight.setDefaultCommand(limelightCmd);
 
     Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, operator);
+    ShootCmd = new SpinnerAndShooterCmd(Spin, driver);
     Spin.setDefaultCommand(ShootCmd);
 
     Intake = new intake();
-    intakeCmd = new IntakeCmd(Intake, operator);
+    intakeCmd = new IntakeCmd(Intake, driver);
     Intake.setDefaultCommand(intakeCmd);
 
      climb = new climber();
@@ -106,7 +106,7 @@ public class RobotContainer {
             () -> -driver.getRawAxis(rotationAxis), 
             () -> false,
             driver, limelight,
-            () -> driver.getBButtonPressed(),
+            () -> driver.getXButtonPressed(),
             () -> driver.getAButtonPressed()
         )
     );

@@ -14,6 +14,8 @@ public class climberCmd extends Command{
     private final climber climber;
     private final XboxController xbox;
 
+    private double ClimbPos;
+
     private double speed;
 
     public climberCmd(climber climber, XboxController xbox){
@@ -21,6 +23,8 @@ public class climberCmd extends Command{
         addRequirements(this.climber);
 
         this.xbox = xbox;
+
+        ClimbPos = climber.getclimberPos();
 
     }
 
@@ -32,17 +36,31 @@ public class climberCmd extends Command{
     public void execute() {
         if (DriverStation.isTeleop()) {
 
+            boolean lbPressed = xbox.getLeftBumperButtonPressed();
+            boolean rbPressed = xbox.getRightBumperButtonPressed();
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
 
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
+            SmartDashboard.putBoolean("Right Trigger Button Pressed", lbPressed); // Debugging
 
-            if (ltPressed){
-                climber.setClimberPosition(Constants.climber.maxclimb);
-            } else if (rtPressed){
-                climber.setClimberPosition(Constants.climber.minClimb);
+            if (lbPressed){
+                ClimbPos = Constants.climber.maxClimb;
+                climber.setClimberPosition(ClimbPos);
+            } else if (rbPressed){
+                ClimbPos = Constants.climber.minClimb;
+                climber.setClimberPosition(ClimbPos);
             }
-        }
+
+            
+           //if (ltPressed){
+           //     climber.ClimbSpeed(Constants.climber.ClimbSpeed);
+          // } else if (rtPressed) {
+           //     climber.ClimbSpeed(-Constants.climber.ClimbSpeed);
+           //} else {
+           //     climber.ClimbSpeed(0);
+           //}
+        } 
+           
 
         
     }

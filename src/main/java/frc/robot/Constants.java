@@ -80,14 +80,14 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int IntakeID = 123;
-        public static final double IntakeSpeed = -0.5;
-        public static final double ExtendSpeed = 0.5;
+        public static final int IntakeID = 44;
+        public static final double IntakeSpeed = -0.50;
+        public static final double ExtendSpeed = 0.1;
 
-        public static final int IntakeOutID = 60;
+        public static final int IntakeOutID = 13;
 
-        public static final double maxExtend = 5.0;
-        public static final double minExtend = 0.5;
+        public static final double maxExtend = 11;
+        public static final double minExtend = 0.0;
 
         public static final double extendP = 1;
         public static final double extendI = 0;
@@ -95,11 +95,11 @@ public final class Constants {
     }
 
     public static final class climber{
-        public static final int climberID = 15;
-        public static final double ClimbSpeed = -0.5;
+        public static final int climberID = 19;
+        public static final double ClimbSpeed = 0.25;
 
-        public static final double minClimb = 137;
-        public static final double maxclimb = 6;
+        public static final double minClimb = 0;
+        public static final double maxClimb = 78; //was 96
 
         public static final double climbP = 1;
         public static final double climbI = 0;
@@ -108,13 +108,17 @@ public final class Constants {
 
     public static final class Spin{
         public static final int LeftSpinID = 17;
-        public static final int LeftShootID = 16;
-        public static final int RightSpinID = 61;
-        public static final int RightShootID = 123;
+        public static final int LeftShootID = 15;
 
-        public static final double ShootSpeed = -8;
-        public static final double SpinSpeed = -3;
-        public static final double TurnSpeed = -1;
+        public static final int RightSpinID = 18;
+        public static final int RightShootID = 16;
+
+        public static final int RollerID = 14;
+        public static final double Rollerspeed = 0.5; //was.5
+
+        public static final double ShootSpeed = 6;
+        public static final double SpinSpeed = -0.5;
+        public static final double TurnSpeed = -0.5;
     }
 
 

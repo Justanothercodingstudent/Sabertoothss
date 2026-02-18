@@ -14,7 +14,7 @@ public class SpinnerAndShooterCmd extends Command{
 
     private double ShootSpeed;
     private double SpinSpeed;
-
+    private double Rollerspeed;
     public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox){
         this.shoot = shoot;
         addRequirements(this.shoot);
@@ -32,20 +32,29 @@ public class SpinnerAndShooterCmd extends Command{
         if (DriverStation.isTeleop()) {
 
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean ltPressed = xbox.getLeftTriggerAxis()  > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
 
             if (rtPressed){
                 ShootSpeed = Constants.Spin.ShootSpeed;
                 SpinSpeed = Constants.Spin.SpinSpeed;
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                shoot.roller(Rollerspeed);
                 shoot.ShootSpeed(ShootSpeed);
                 shoot.SpinSpeed(SpinSpeed);
-
-            } else if (!rtPressed){
+            } else if (ltPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                shoot.roller(Rollerspeed);
+            } else if (joyLeftPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                shoot.roller(-Rollerspeed);
+            } else {
                 shoot.ShootSpeed(0);
                 shoot.SpinSpeed(0);
+                shoot.roller(0);
             }
-
         }
 
         
