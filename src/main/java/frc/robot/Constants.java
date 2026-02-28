@@ -114,7 +114,7 @@ public final class Constants {
         public static final int RightShootID = 16;
 
         public static final int RollerID = 14;
-        public static final double Rollerspeed = 0.5; //was.5
+        public static final double Rollerspeed = 0.5; 
 
         public static final double ShootSpeed = 6;
         public static final double SpinSpeed = -0.5;
