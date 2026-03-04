@@ -99,24 +99,45 @@ public final class Constants {
         public static final double ClimbSpeed = 0.25;
 
         public static final double minClimb = 0;
-        public static final double maxClimb = 78; //was 96
+        public static final double maxClimb = 78; // was 96
 
-        public static final double climbP = 1;
+        public static  final double climbP = 1;
         public static final double climbI = 0;
         public static final double climbD = 0;
+    }
+
+    public static final class Angler{
+        public static final int AnglerID = 123;
+        public static final double AngleSpeed = 0.5;
+
+        public static final double TestAngle = 10;
+
+        public static final double MaxAngle = 20.0;
+        public static final double MinAngle = -20.0;
+
+        public static final double AngleP = 1;
+        public static final double AngleI = 0;
+        public static final double AngleD = 0;
     }
 
     public static final class Spin{
         public static final int LeftSpinID = 17;
         public static final int LeftShootID = 15;
 
-        public static final int RightSpinID = 18;
+        public static final int LeftFrontID = 12;
+        public static final int LeftBackID = 123;
+
         public static final int RightShootID = 16;
 
-        public static final int RollerID = 14;
+        public static final int RightFrontID = 12;
+        public static final int RightBackID  = 123;
+
+        public static final int LeftRollerID = 14;
+        public static final int RightRollerID = 123;
         public static final double Rollerspeed = 0.5; 
 
-        public static final double ShootSpeed = 6;
+        public static final double ShootSpeed = 0.15;
+        public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.5;
         public static final double TurnSpeed = -0.5;
     }

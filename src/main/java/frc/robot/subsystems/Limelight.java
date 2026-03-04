@@ -27,7 +27,7 @@ public class Limelight extends SubsystemBase {
     private double xLeftBound = 0;
     private double xRightBound = 640;*/
 
-    private int deadBand = 10;
+    private int Deadband = 10;
 
     public Limelight(String name) {
         this.name = name;

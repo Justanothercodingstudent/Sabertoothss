@@ -38,13 +38,13 @@ public class climberCmd extends Command{
 
             boolean lbPressed = xbox.getLeftBumperButtonPressed();
             boolean rbPressed = xbox.getRightBumperButtonPressed();
-            boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean LtPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", lbPressed); // Debugging
 
             if (lbPressed){
-                ClimbPos = Constants.climber.maxClimb;
+                ClimbPos = Constants.climber.macClimb;
                 climber.setClimberPosition(ClimbPos);
             } else if (rbPressed){
                 ClimbPos = Constants.climber.minClimb;

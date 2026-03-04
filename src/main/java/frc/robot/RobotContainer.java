@@ -25,13 +25,14 @@ import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
 import frc.robot.commands.climberCmd;
+import frc.robot.commands.AnglerCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.climber;
-
+import frc. robot.subsystems.Angler;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -57,7 +58,8 @@ public class RobotContainer {
   private final intake Intake;
   private final SpinnerAndShooter Spin;
   private final climber climb;
-  
+  private final Angler angler;
+
   private Limelight limelight;
   private Vision vision;
 
@@ -67,6 +69,7 @@ public class RobotContainer {
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
   private climberCmd climbCmd;
+  private AnglerCmd anglerCmd;
 
   private Autos autos;
   private AutoController autoController;
@@ -90,6 +93,10 @@ public class RobotContainer {
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, driver);
     Intake.setDefaultCommand(intakeCmd);
+
+    angler = new Angler();
+    anglerCmd = new AnglerCmd(angler,operator);
+    angler.setDefaultCommand(anglerCmd);
 
      climb = new climber();
      climbCmd = new climberCmd(climb, driver);
@@ -146,7 +153,7 @@ private void configureAutoSelector() {
     if (autoCommand  == null) {
         autoCommand = new InstantCommand(); // Default safe command
     }
-    Command heading_flip = new InstantCommand(()-> s_Swerve.flipHeading()); //s_Swerve.flipHeading(); // new InstantCommand(()-> s_Swerve.flipHeading());
+    Command Heading_flip = new InstantCommand(()-> s_Swerve.flipHeading()); //s_Swerve.flipHeading(); // new InstantCommand(()-> s_Swerve.flipHeading());
 
     // Run initialization, then the selected auto command
    return new SequentialCommandGroup(initializePositions, autoCommand);
