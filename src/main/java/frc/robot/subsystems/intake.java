@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -15,10 +16,14 @@ public class intake extends SubsystemBase {
     private final TalonFX intakeMotor;
     private final TalonFX intakeOutMotor;
     private final PositionDutyCycle extensionRequest = new PositionDutyCycle(0);
+    private final MotorOutputConfigs extensionOutputConfig = new MotorOutputConfigs();
 
     private double intakePos;
+    private double extendSpeed;
 
     public intake() {
+
+        extendSpeed = Math.abs(Constants.Intake.ExtendSpeed);
 
         intakeMotor = new TalonFX(Constants.Intake.IntakeID);
         intakeMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -29,8 +34,8 @@ public class intake extends SubsystemBase {
         extensionConfig.Slot0.kP = Constants.Intake.extendP;
         extensionConfig.Slot0.kI = Constants.Intake.extendI;
         extensionConfig.Slot0.kD = Constants.Intake.extendD;
-        extensionConfig.MotorOutput.PeakForwardDutyCycle = Constants.Intake.ExtendSpeed;
-        extensionConfig.MotorOutput.PeakReverseDutyCycle = -Constants.Intake.ExtendSpeed;
+        extensionConfig.MotorOutput.PeakForwardDutyCycle = extendSpeed;
+        extensionConfig.MotorOutput.PeakReverseDutyCycle = -extendSpeed;
         extensionConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         extensionConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Intake.maxExtend;
         extensionConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
@@ -41,6 +46,7 @@ public class intake extends SubsystemBase {
 
         intakePos = Constants.Intake.minExtend;
     }
+    
 
     public void setIntakeSpeed(double speed) {
         intakeMotor.set(speed);
@@ -67,6 +73,14 @@ public class intake extends SubsystemBase {
     public void nextArmPID() {
         clampIntakeSetPos();
         intakeOutMotor.setControl(extensionRequest.withPosition(intakePos));
+    }
+
+    public void setExtendSpeed(double speed) {
+        extendSpeed = Math.abs(speed);
+        intakeOutMotor.getConfigurator().refresh(extensionOutputConfig);
+        extensionOutputConfig.PeakForwardDutyCycle = extendSpeed;
+        extensionOutputConfig.PeakReverseDutyCycle = -extendSpeed;
+        intakeOutMotor.getConfigurator().apply(extensionOutputConfig);
     }
 
     private void clampIntakeSetPos() {

@@ -87,6 +87,7 @@ public final class Constants {
         public static final int IntakeOutID = 42;
 
         public static final double maxExtend = 11;
+        public static final double JigExtend = 6.5;
         public static final double minExtend = 0.0;
 
         public static final double extendP = 1;

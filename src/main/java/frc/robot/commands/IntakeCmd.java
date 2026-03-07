@@ -4,6 +4,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.intake;
 import frc.robot.Constants;
 
@@ -12,8 +16,8 @@ public class IntakeCmd extends Command {
     private final XboxController xbox;
 
     private double IntakePos;
-
     private double speed;
+    private Command activeIntakeCycle;
 
     public IntakeCmd(intake Intake, XboxController xbox){
         this.Intake = Intake;
@@ -25,8 +29,25 @@ public class IntakeCmd extends Command {
 
     }
 
+    public class IntakeCycle extends SequentialCommandGroup {
+                 public IntakeCycle(intake intake) {
+                    addCommands(
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
+                        new WaitCommand(0.25),
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.minExtend)),
+                        new WaitCommand(0.25),
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
+                        new WaitCommand(0.25),
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.minExtend)),
+                        new WaitCommand(0.25)
+                    );
+                }
+            }
+
      @Override
     public void initialize() {
+        Intake.setExtendSpeed(Constants.Intake.ExtendSpeed);
+        activeIntakeCycle = null;
     }
 
      @Override 
@@ -36,7 +57,7 @@ public class IntakeCmd extends Command {
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean yPressed = xbox.getYButtonPressed();
             boolean bPressed = xbox.getBButtonPressed();
-            boolean lbpressed = xbox.getLeftBumperButton();
+            boolean lbPressed = xbox.getLeftBumperButton();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
             if (ltPressed){
@@ -54,17 +75,20 @@ public class IntakeCmd extends Command {
                 Intake.setIntakePosition(IntakePos);
             }
 
-            if (lbpressed){
-                IntakePos = Constants.Intake.maxExtend;
-                Intake.setIntakePosition(IntakePos);
-                Intake.IntakeWait();
-                IntakePos = Constants.Intake.minExtend;
-                Intake.setIntakePosition(IntakePos);     
+            if (lbPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {
+                activeIntakeCycle = new IntakeCycle(Intake)
+                    .finallyDo(interrupted -> Intake.setExtendSpeed(Constants.Intake.ExtendSpeed));
+                CommandScheduler.getInstance().schedule(activeIntakeCycle);
             }
 
         }
 
         
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        Intake.setExtendSpeed(Constants.Intake.ExtendSpeed);
     }
     
 }
