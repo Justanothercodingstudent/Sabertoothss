@@ -36,6 +36,7 @@ public class IntakeCmd extends Command {
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean yPressed = xbox.getYButtonPressed();
             boolean bPressed = xbox.getBButtonPressed();
+            boolean lbpressed = xbox.getLeftBumperButton();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
             if (ltPressed){
@@ -51,6 +52,14 @@ public class IntakeCmd extends Command {
             } else if (yPressed){
                  IntakePos = Constants.Intake.minExtend;
                 Intake.setIntakePosition(IntakePos);
+            }
+
+            if (lbpressed){
+                IntakePos = Constants.Intake.maxExtend;
+                Intake.setIntakePosition(IntakePos);
+                Intake.IntakeWait();
+                IntakePos = Constants.Intake.minExtend;
+                Intake.setIntakePosition(IntakePos);     
             }
 
         }

@@ -71,9 +71,9 @@ public final class Constants {
     public static class LimelightConstants {
         public static final String limelightName = "limelight";
 
-        public static final double XOffset = 0.635;
+        public static final double XOffset = 0;
         public static final double YOffset = 0;
-        public static final double ZOffset = -0.8382;
+        public static final double ZOffset = 0;
 
         //Offset if limelight from set robot heading
         public static final double limelightHeadingOffset = 180;
@@ -84,7 +84,7 @@ public final class Constants {
         public static final double IntakeSpeed = -0.50;
         public static final double ExtendSpeed = 0.1;
 
-        public static final int IntakeOutID = 13;
+        public static final int IntakeOutID = 42;
 
         public static final double maxExtend = 11;
         public static final double minExtend = 0.0;
@@ -108,16 +108,40 @@ public final class Constants {
 
     public static final class Angler{
         public static final int AnglerID = 123;
-        public static final double AngleSpeed = 0.5;
+        public static final double AngleSpeed = 0.3;
 
-        public static final double TestAngle = 10;
+        public static final double TestAngle = 10.0;
 
         public static final double MaxAngle = 20.0;
-        public static final double MinAngle = -20.0;
+        public static final double MinAngle = 0;
 
-        public static final double AngleP = 1;
+        public static final double AngleP = 0.5;
         public static final double AngleI = 0;
         public static final double AngleD = 0;
+
+        public static final int trackedAprilTagId = 20;
+
+        // Distance (m) to hood motor rotations lookup table.
+        // Tune these values for your shooter.
+        public static final double[][] distanceToRotationTable = {
+            {0.4, 0.5},
+            {0.5, 1.0},
+            {0.6, 1.5},
+            {0.7, 2.0},
+            {0.8, 2.5},
+            {0.9, 3.0},
+            {1.0, 3.5},
+            {1.1, 4.0},
+            {1.2, 4.5},
+            {1.3, 5.0},
+            {1.4, 5.5},
+            {1.5, 6.0},
+            {1.6, 6.5},
+            {1.7, 7.0},
+            {1.8, 7.5},
+            {1.9, 8.0},
+            {2.0, 8.5}
+        };
     }
 
     public static final class Spin{

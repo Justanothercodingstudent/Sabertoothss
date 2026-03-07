@@ -1,25 +1,15 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import edu.wpi.first.hal.simulation.ConstBufferCallback;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.net.PortForwarder;
-import java.util.List;
 import frc.robot.LimelightHelpers;
 
 public class Limelight extends SubsystemBase {
-
     public String name;
 
     /*private double yUpperBound = 0;
@@ -27,13 +17,11 @@ public class Limelight extends SubsystemBase {
     private double xLeftBound = 0;
     private double xRightBound = 640;*/
 
-    private int Deadband = 10;
-
     public Limelight(String name) {
         this.name = name;
     }
     public Limelight() {
-        this.name = "limelight";
+        this(Constants.LimelightConstants.limelightName);
     }
 
     public double[] percentPosition(double[] tagInfo) { // value from 0 (top/left) to 1 (bottom/right)
@@ -100,44 +88,52 @@ public class Limelight extends SubsystemBase {
 
     public void stopAprilTagDetector() {}
 
+    private LimelightHelpers.RawFiducial getRawFiducial(int tagId) {
+        for (LimelightHelpers.RawFiducial fiducial : LimelightHelpers.getRawFiducials(name)) {
+            if (fiducial.id == tagId) {
+                return fiducial;
+            }
+        }
+
+        return null;
+    }
+
     public double getClosestTag(double[] validTagIds) {
-        double[] targets = NetworkTableInstance.getDefault().getTable(name)
-                                               .getEntry("rawfiducials")
-                                               .getDoubleArray(new double[] {-1, 0, 0, 0, 0, 0, 0});
-        
         double closestTag = -1;
-        double closestDistance = Double.MAX_VALUE;
-    
-        for (int i = 0; i < targets.length; i += 7) {
-            double tagId = targets[i];
-            double distanceToCamera = targets[i + 5]; // Distance to the robot
-    
+        double closestDistanceMeters = Double.MAX_VALUE;
+
+        for (LimelightHelpers.RawFiducial fiducial : LimelightHelpers.getRawFiducials(name)) {
             for (double validId : validTagIds) {
-                if (tagId == validId && distanceToCamera < closestDistance) {
-                    closestTag = tagId;
-                    closestDistance = distanceToCamera;
+                if (fiducial.id == (int) validId && fiducial.distToCamera < closestDistanceMeters) {
+                    closestTag = fiducial.id;
+                    closestDistanceMeters = fiducial.distToCamera;
                 }
             }
         }
+
         return closestTag;
     }
-    
+
+    public double getDistanceToTag(int targetTagId) {
+        LimelightHelpers.RawFiducial fiducial = getRawFiducial(targetTagId);
+        if (fiducial == null) {
+            return -1.0;
+        }
+
+        return fiducial.distToCamera;
+    }
 
     public double[] getTarget(int id) {
-        //var lresults = LimelightHelpers.getLatestResults(name);
-        //System.out.println(lresults.targets_Fiducials.length);
-
-        var targets = NetworkTableInstance.getDefault().getTable(name).getEntry("rawfiducials").getDoubleArray(new double[] {-1, 0, 0, 0, 0, 0, 0});
-        for (int i = 0; i < targets.length; i += 7) {
-            if (targets[i] == id) {
-                return new double[] {
-                    targets[i],
-                    targets[i + 1],
-                    targets[i + 2]
-                };
-            }
+        LimelightHelpers.RawFiducial fiducial = getRawFiducial(id);
+        if (fiducial == null) {
+            return null;
         }
-        return null;
+
+        return new double[] {
+            fiducial.id,
+            fiducial.txnc,
+            fiducial.tync
+        };
     }
 
 
@@ -165,11 +161,9 @@ public class Limelight extends SubsystemBase {
 
     @Override
     public void periodic() {
-       if (RobotBase.isReal()) { 
         updateValues();
         SmartDashboard.putNumber("Nearest April Tag Red", getClosestTag(Constants.TeamDependentFactors.reefIDsRed));
         SmartDashboard.putNumber("Nearest April Tag Blue", getClosestTag(Constants.TeamDependentFactors.reefIDsBlue));
-       }
 
         SmartDashboard.putNumber("BotPose x", getAdjustedRobotPose().getTranslation().getX());
         SmartDashboard.putNumber("BotPose y", getAdjustedRobotPose().getTranslation().getY());

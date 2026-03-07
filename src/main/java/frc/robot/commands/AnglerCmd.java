@@ -39,6 +39,7 @@ public class AnglerCmd extends Command{
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean apressed = xbox.getAButton();
             boolean bpressed = xbox.getBButton();
+            boolean ypressed = xbox.getYButton();
 
 
            /*  if (ltPressed){
@@ -50,6 +51,10 @@ public class AnglerCmd extends Command{
             } else {
                 Angler.AngleSpeed(0);
             }*/
+            /*  if (ypressed){
+                AnglePos = Constants.Angler.MaxAngle;
+                Angler.setAnglePosition(AnglePos);
+            }
 
             if (apressed) {
                 AnglePos = Constants.Angler.TestAngle;
@@ -59,7 +64,7 @@ public class AnglerCmd extends Command{
             if (bpressed){
                 AnglePos = Constants.Angler.MinAngle;
                 Angler.setAnglePosition(AnglePos);
-            }
+            }*/
 
          }
 

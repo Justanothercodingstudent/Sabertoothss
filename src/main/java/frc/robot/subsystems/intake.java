@@ -46,6 +46,15 @@ public class intake extends SubsystemBase {
         intakeMotor.set(speed);
     }
 
+        public void IntakeWait(){
+            try {
+                intakeOutMotor.wait(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
     public double getExtensionPos() {
         return intakeOutMotor.getPosition().getValueAsDouble();
     }

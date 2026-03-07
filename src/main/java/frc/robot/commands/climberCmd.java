@@ -44,7 +44,7 @@ public class climberCmd extends Command{
             SmartDashboard.putBoolean("Right Trigger Button Pressed", lbPressed); // Debugging
 
             if (lbPressed){
-                ClimbPos = Constants.climber.macClimb;
+                ClimbPos = Constants.climber.maxClimb;
                 climber.setClimberPosition(ClimbPos);
             } else if (rbPressed){
                 ClimbPos = Constants.climber.minClimb;

@@ -13,10 +13,12 @@ import frc.robot.Constants;
 public class Angler extends SubsystemBase{
     private final TalonFX Angler;
     private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
+    private final Limelight limelight;
 
     private double AnglerPos;
 
-    public Angler() {
+    public Angler(Limelight limelight) {
+        this.limelight = limelight;
         Angler = new TalonFX(Constants.Angler.AnglerID);
         Angler.setNeutralMode(NeutralModeValue.Brake);
         TalonFXConfiguration AngleConfig = new TalonFXConfiguration();
@@ -34,6 +36,10 @@ public class Angler extends SubsystemBase{
         Angler.setPosition(0.0);
 
         AnglerPos = Constants.Angler.MinAngle;
+    }
+
+    public Angler() {
+        this(null);
     }
 
     public void AngleSpeed(double speed){
@@ -67,8 +73,53 @@ public class Angler extends SubsystemBase{
         Angler.set(speed * Constants.Angler.AngleSpeed);
     }
 
+    private double distanceToMotorRotations(double distanceMeters) {
+        double[][] table = Constants.Angler.distanceToRotationTable;
+        if (table.length == 0) {
+            return AnglerPos;
+        }
+
+        if (distanceMeters <= table[0][0]) {
+            return table[0][1];
+        }
+        if (distanceMeters >= table[table.length - 1][0]) {
+            return table[table.length - 1][1];
+        }
+
+        for (int i = 1; i < table.length; i++) {
+            double lowerDistance = table[i - 1][0];
+            double upperDistance = table[i][0];
+            if (distanceMeters <= upperDistance) {
+                double lowerRotations = table[i - 1][1];
+                double upperRotations = table[i][1];
+                double range = upperDistance - lowerDistance;
+                if (range <= 0.0) {
+                    return upperRotations;
+                }
+
+                double fraction = (distanceMeters - lowerDistance) / range;
+                return lowerRotations + (fraction * (upperRotations - lowerRotations));
+            }
+        }
+
+        return table[table.length - 1][1];
+    }
+
+    public void updateFromTrackedAprilTag() {
+        if (limelight == null) {
+            return;
+        }
+
+        double distanceMeters = limelight.getDistanceToTag(Constants.Angler.trackedAprilTagId);
+        SmartDashboard.putNumber("AprilTag 20 Distance", distanceMeters);
+        if (distanceMeters >= 0.0) {
+            setAnglePosition(distanceToMotorRotations(distanceMeters));
+        }
+    }
+
     @Override
     public void periodic(){
+        updateFromTrackedAprilTag();
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
