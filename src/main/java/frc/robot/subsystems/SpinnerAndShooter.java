@@ -76,7 +76,7 @@ public class SpinnerAndShooter extends SubsystemBase{
     @Override
     public void periodic() {
 
-        ShootSpeed(Constants.Spin.CoastSpeed);
+        
 
         SmartDashboard.putNumber("LeftFront Shoot Speed", FrontLeftRPM());
 

@@ -108,12 +108,13 @@ public class Angler extends SubsystemBase{
 
     public void updateFromTrackedAprilTag() {
         if (limelight == null) {
+            setAnglePosition(distanceToMotorRotations(0.0));
             return;
         }
 
         double distanceMeters = limelight.getDistanceToTag(Constants.Angler.trackedAprilTagId);
         SmartDashboard.putNumber("AprilTag 20 Distance", distanceMeters);
-        if (distanceMeters >= 0.0) {
+        if (distanceMeters >= -01) {
             setAnglePosition(distanceToMotorRotations(distanceMeters));
         }
     }
