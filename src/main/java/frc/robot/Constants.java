@@ -43,7 +43,7 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
-        public static final boolean redTeam = DriverStation.getAlliance().get() == Alliance.Red;
+        public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         public static boolean forceRedTeamForTesting = true; // Set true for testing
         public static final double[] reefIDsBlue = {
             18, // closeMiddleReefIDBlue
