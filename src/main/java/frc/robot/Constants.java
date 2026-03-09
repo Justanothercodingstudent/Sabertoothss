@@ -83,7 +83,7 @@ public final class Constants {
         public static final int IntakeID = 55;
         public static final double IntakeSpeed = -0.50;
         public static final double ExtendSpeed = 0.1;
-        public static final double JigSpeed = 0.2;
+        public static final double JigSpeed = 0.35;
 
         public static final int IntakeOutID = 13;
 
