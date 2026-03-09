@@ -80,13 +80,14 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int IntakeID = 44;
+        public static final int IntakeID = 55;
         public static final double IntakeSpeed = -0.50;
         public static final double ExtendSpeed = 0.1;
+        public static final double JigSpeed = 0.2;
 
-        public static final int IntakeOutID = 42;
+        public static final int IntakeOutID = 13;
 
-        public static final double maxExtend = 11;
+        public static final double maxExtend = 12.5;
         public static final double JigExtend = 6.5;
         public static final double minExtend = 0.0;
 
@@ -108,12 +109,12 @@ public final class Constants {
     }
 
     public static final class Angler{
-        public static final int AnglerID = 123;
+        public static final int AnglerID = 18;
         public static final double AngleSpeed = 0.3;
 
         public static final double TestAngle = 10.0;
 
-        public static final double MaxAngle = 20.0;
+        public static final double MaxAngle = 5.0;
         public static final double MinAngle = 0;
 
         public static final double AngleP = 0.5;
@@ -134,34 +135,32 @@ public final class Constants {
             {1.0, 3.5},
             {1.1, 4.0},
             {1.2, 4.5},
-            {1.3, 5.0},
+            /*{1.3, 5.0},
             {1.4, 5.5},
             {1.5, 6.0},
             {1.6, 6.5},
             {1.7, 7.0},
             {1.8, 7.5},
             {1.9, 8.0},
-            {2.0, 8.5}
+            {2.0, 8.5}*/
         };
     }
 
     public static final class Spin{
-        public static final int LeftSpinID = 17;
-        public static final int LeftShootID = 15;
+        public static final int UptakeID = 17;
 
-        public static final int LeftFrontID = 12;
-        public static final int LeftBackID = 123;
+        public static final int LeftFrontID = 16;
+        public static final int LeftBackID = 44;
 
-        public static final int RightShootID = 16;
+        public static final int RightFrontID = 14;
+        public static final int RightBackID  = 42;
 
-        public static final int RightFrontID = 12;
-        public static final int RightBackID  = 123;
+        public static final int BackRollID = 60;
+        public static final int FrontRollID = 56;
 
-        public static final int LeftRollerID = 14;
-        public static final int RightRollerID = 123;
-        public static final double Rollerspeed = 0.5; 
+        public static final double Rollerspeed = 0.2; 
 
-        public static final double ShootSpeed = 0.15;
+        public static final double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.5;
         public static final double TurnSpeed = -0.5;
@@ -170,7 +169,7 @@ public final class Constants {
 
 
     public static final class Swerve {
-      public static final int pigeonID = 49;
+      public static final int pigeonID = 20;
 
       public static final int SwerveStartHeading = 0;
 
@@ -247,10 +246,10 @@ public final class Constants {
       public static final NeutralModeValue driveNeutralMode = NeutralModeValue.Brake;
 
       //cancoder offsets
-      public static final double offset0 = 73.74;
-      public static final double offset1 = -151.17;
-      public static final double offset2 = -168.662;
-      public static final double offset3 = 17.57;
+      public static final double offset0 = 74.0;
+      public static final double offset1 = -149.3;
+      public static final double offset2 = -159.3;
+      public static final double offset3 = 17.9;
 
       /* Module Specific Constants */
       /* Front Left Module - Module 0 */

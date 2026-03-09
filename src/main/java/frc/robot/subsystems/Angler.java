@@ -19,6 +19,7 @@ public class Angler extends SubsystemBase{
 
     public Angler(Limelight limelight) {
         this.limelight = limelight;
+        
         Angler = new TalonFX(Constants.Angler.AnglerID);
         Angler.setNeutralMode(NeutralModeValue.Brake);
         TalonFXConfiguration AngleConfig = new TalonFXConfiguration();

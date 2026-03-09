@@ -42,18 +42,14 @@ public class SpinnerAndShooterCmd extends Command{
                 SpinSpeed = Constants.Spin.SpinSpeed;
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 shoot.ShootSpeed(ShootSpeed);
-                if(shoot.TotalRPM() >= 60){
+                if(shoot.FrontLeftRPM() <= -30){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
                 }
-            } else if (ltPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                shoot.roller(Rollerspeed);
             } else if (joyLeftPressed){
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 shoot.roller(-Rollerspeed);
-            } else {
-                shoot.ShootSpeed(0);
+            } else if (!rtPressed & !ltPressed){
                 shoot.SpinSpeed(0);
                 shoot.roller(0);
             }

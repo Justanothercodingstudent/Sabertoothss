@@ -14,7 +14,7 @@ import frc.robot.Constants;
 
 public class SpinnerAndShooter extends SubsystemBase{
 
-    private TalonFX SpinMotor;
+    private TalonFX UptakeMotor;
 
     private TalonFX LeftFront;
     private TalonFX LeftBack;
@@ -22,73 +22,55 @@ public class SpinnerAndShooter extends SubsystemBase{
     private TalonFX RightFront;
     private TalonFX RightBack;
 
-    private TalonFX LeftRoller;
-    private TalonFX RightRoller;
+    private TalonFX BackRoll;
+    private TalonFX FrontRoll;
    
     
 
 
     public SpinnerAndShooter() {
-        SpinMotor = new TalonFX(Constants.Spin.LeftSpinID);
-        SpinMotor.setNeutralMode(NeutralModeValue.Brake);
+        UptakeMotor = new TalonFX(Constants.Spin.UptakeID);
+        UptakeMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        LeftFront = new TalonFX(Constants.Spin.LeftShootID);
-        LeftFront.setNeutralMode(NeutralModeValue.Brake);
+        LeftFront = new TalonFX(Constants.Spin.LeftFrontID);
+        LeftFront.setNeutralMode(NeutralModeValue.Coast);
 
         LeftBack = new TalonFX(Constants.Spin.LeftBackID);
-        LeftBack.setNeutralMode(NeutralModeValue.Brake);
+        LeftBack.setNeutralMode(NeutralModeValue.Coast);
 
-        RightFront = new TalonFX(Constants.Spin.RightShootID);
-        RightFront.setNeutralMode(NeutralModeValue.Brake);
+        RightFront = new TalonFX(Constants.Spin.RightFrontID);
+        RightFront.setNeutralMode(NeutralModeValue.Coast);
 
         RightBack = new TalonFX(Constants.Spin.RightBackID);
-        RightBack.setNeutralMode(NeutralModeValue.Brake);
+        RightBack.setNeutralMode(NeutralModeValue.Coast);
 
-        LeftRoller = new TalonFX(Constants.Spin.LeftRollerID );
-        LeftRoller.setNeutralMode( NeutralModeValue.Brake); 
+        BackRoll = new TalonFX(Constants.Spin.BackRollID );
+        BackRoll.setNeutralMode( NeutralModeValue.Brake); 
 
-        RightRoller = new TalonFX(Constants.Spin.RightRollerID );
-        RightRoller.setNeutralMode( NeutralModeValue.Brake); 
+        FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
+        FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
     }
-
 
      public double FrontLeftRPM(){
         return LeftFront.getVelocity().getValueAsDouble();
      }
 
-     public double BackLeftRPM(){
-        return LeftBack.getVelocity().getValueAsDouble();
-     }
-
-     public double FrontRightRPM(){
-        return RightFront.getVelocity().getValueAsDouble();
-     }
-
-     public double BackRightRPM(){
-        return RightBack.getVelocity().getValueAsDouble();
-     }
-
-     public double TotalRPM(){
-        return FrontLeftRPM() + FrontRightRPM() + BackLeftRPM() + BackRightRPM();
-     }
-
     public void SpinSpeed(double speed){
-        SpinMotor.set(-speed);
-        SpinMotor.set(speed);
+        UptakeMotor.set(speed);
     }
 
     public void ShootSpeed(double speed){
-        LeftFront.set(speed);
-        RightFront.set(-speed);
+        LeftFront.set(-speed);
+        RightFront.set(speed);
 
-        LeftBack.set(speed);
-        RightBack.set(-speed);
+        LeftBack.set(-speed);
+        RightBack.set(speed);
     }
     
 
     public void roller(double speed){
-        LeftRoller.set(speed);
-        RightRoller.set(-speed);
+        BackRoll.set(speed);
+        FrontRoll.set(speed);
     }
 
     @Override
@@ -97,11 +79,6 @@ public class SpinnerAndShooter extends SubsystemBase{
         ShootSpeed(Constants.Spin.CoastSpeed);
 
         SmartDashboard.putNumber("LeftFront Shoot Speed", FrontLeftRPM());
-        SmartDashboard.putNumber("LeftBack Shoot Speed", BackLeftRPM());
-        SmartDashboard.putNumber("RightFront Shoot Speed", FrontRightRPM());
-        SmartDashboard.putNumber("RightBack Shoot Speed", BackRightRPM());
-
-        SmartDashboard.putNumber("Total Shoot Speed", TotalRPM());
 
        /*SmartDashboard.putNumber("Left Front Shoot Volts", LeftFront.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Right Front Shoot Volts", RightFront.getMotorVoltage().getValueAsDouble());

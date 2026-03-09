@@ -95,11 +95,11 @@ public class RobotContainer {
     Intake.setDefaultCommand(intakeCmd);
 
     angler = new Angler();
-    anglerCmd = new AnglerCmd(angler,operator);
+    anglerCmd = new AnglerCmd(angler, operator);
     angler.setDefaultCommand(anglerCmd);
 
      climb = new climber();
-     climbCmd = new climberCmd(climb, driver);
+     climbCmd = new climberCmd(climb, operator);
      climb.setDefaultCommand(climbCmd);
 
     initializePositions = new SequentialCommandGroup(

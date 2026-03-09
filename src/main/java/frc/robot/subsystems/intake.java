@@ -15,6 +15,8 @@ public class intake extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX intakeOutMotor;
+     private TalonFX BackRoll;
+    private TalonFX FrontRoll;
     private final PositionDutyCycle extensionRequest = new PositionDutyCycle(0);
     private final MotorOutputConfigs extensionOutputConfig = new MotorOutputConfigs();
 
@@ -27,6 +29,12 @@ public class intake extends SubsystemBase {
 
         intakeMotor = new TalonFX(Constants.Intake.IntakeID);
         intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        BackRoll = new TalonFX(Constants.Spin.BackRollID );
+        BackRoll.setNeutralMode( NeutralModeValue.Brake); 
+
+        FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
+        FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
 
         intakeOutMotor = new TalonFX(Constants.Intake.IntakeOutID);
         intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -50,6 +58,11 @@ public class intake extends SubsystemBase {
 
     public void setIntakeSpeed(double speed) {
         intakeMotor.set(speed);
+    }
+
+    public void roller(double speed){
+        BackRoll.set(speed);
+        FrontRoll.set(speed);
     }
 
         public void IntakeWait(){

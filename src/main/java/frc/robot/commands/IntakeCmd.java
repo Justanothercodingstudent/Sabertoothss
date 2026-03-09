@@ -17,6 +17,7 @@ public class IntakeCmd extends Command {
 
     private double IntakePos;
     private double speed;
+    private double Rollerspeed;
     private Command activeIntakeCycle;
 
     public IntakeCmd(intake Intake, XboxController xbox){
@@ -32,14 +33,15 @@ public class IntakeCmd extends Command {
     public class IntakeCycle extends SequentialCommandGroup {
                  public IntakeCycle(intake intake) {
                     addCommands(
+                        new InstantCommand(() -> intake.setExtendSpeed(Constants.Intake.JigSpeed)),
                         new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
                         new WaitCommand(0.25),
-                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.minExtend)),
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.maxExtend)),
+                        new WaitCommand(0.25)//,
+                       /* new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
                         new WaitCommand(0.25),
-                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
-                        new WaitCommand(0.25),
-                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.minExtend)),
-                        new WaitCommand(0.25)
+                        new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.maxExtend)),
+                        new WaitCommand(0.25)*/
                     );
                 }
             }
@@ -55,17 +57,27 @@ public class IntakeCmd extends Command {
         if (DriverStation.isTeleop()) {
 
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean yPressed = xbox.getYButtonPressed();
             boolean bPressed = xbox.getBButtonPressed();
             boolean lbPressed = xbox.getLeftBumperButton();
+            boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
             if (ltPressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(speed);
-            }else {
+            }else{
                 Intake.setIntakeSpeed(0);
             }
+
+            /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
+                if (shoot.FrontLeftRPM() <= -20){
+                    activeIntakeCycle = new IntakeCycle(Intake)
+                        .finallyDo(interrupted -> Intake.setExtendSpeed(Constants.Intake.ExtendSpeed));
+                    CommandScheduler.getInstance().schedule(activeIntakeCycle);
+                }
+            }*/
 
             if(bPressed){
                 IntakePos = Constants.Intake.maxExtend;
@@ -73,6 +85,14 @@ public class IntakeCmd extends Command {
             } else if (yPressed){
                  IntakePos = Constants.Intake.minExtend;
                 Intake.setIntakePosition(IntakePos);
+            } else if (ltPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                Intake.roller(Rollerspeed);
+            } else if (joyLeftPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                Intake.roller(-Rollerspeed);
+            } else if (!rtPressed & !ltPressed){
+                Intake.roller(0);
             }
 
             if (lbPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {
