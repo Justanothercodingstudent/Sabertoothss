@@ -121,7 +121,9 @@ public final class Constants {
         public static final double AngleI = 0;
         public static final double AngleD = 0;
 
-        public static final int trackedAprilTagId = 20;
+        public static final int trackedAprilTagId = 2;
+        public static final double tagLostDelaySeconds = 1.0;
+        public static final double noTagFallbackAngle = MinAngle;
 
         // Distance (m) to hood motor rotations lookup table.
         // Tune these values for your shooter.

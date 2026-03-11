@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -16,6 +17,7 @@ public class Angler extends SubsystemBase{
     private final Limelight limelight;
 
     private double AnglerPos;
+    private double lastTagSeenTimestampSeconds;
 
     public Angler(Limelight limelight) {
         this.limelight = limelight;
@@ -37,6 +39,7 @@ public class Angler extends SubsystemBase{
         Angler.setPosition(0.0);
 
         AnglerPos = Constants.Angler.MinAngle;
+        lastTagSeenTimestampSeconds = Timer.getFPGATimestamp();
     }
 
     public Angler() {
@@ -108,14 +111,27 @@ public class Angler extends SubsystemBase{
 
     public void updateFromTrackedAprilTag() {
         if (limelight == null) {
-            setAnglePosition(distanceToMotorRotations(0.0));
             return;
         }
 
-        double distanceMeters = limelight.getDistanceToTag(Constants.Angler.trackedAprilTagId);
-        SmartDashboard.putNumber("AprilTag 20 Distance", distanceMeters);
-        if (distanceMeters >= -01) {
+        int trackedTagId = Constants.Angler.trackedAprilTagId;
+        double distanceMeters = limelight.getDistanceToTag(trackedTagId);
+        boolean hasTrackedTag = distanceMeters >= 0.0;
+        double nowSeconds = Timer.getFPGATimestamp();
+
+        SmartDashboard.putNumber("AprilTag " + trackedTagId + " Distance", distanceMeters);
+        SmartDashboard.putBoolean("AprilTag " + trackedTagId + " Seen", hasTrackedTag);
+
+        if (hasTrackedTag) {
+            lastTagSeenTimestampSeconds = nowSeconds;
             setAnglePosition(distanceToMotorRotations(distanceMeters));
+            return;
+        }
+
+        double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
+        SmartDashboard.putNumber("AprilTag " + trackedTagId + " Time Since Seen", timeSinceLastSeen);
+        if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
+            setAnglePosition(Constants.Angler.noTagFallbackAngle);
         }
     }
 

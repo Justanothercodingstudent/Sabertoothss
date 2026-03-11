@@ -87,7 +87,7 @@ public class RobotContainer {
     limelight.setDefaultCommand(limelightCmd);
 
     Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, driver);
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator);
     Spin.setDefaultCommand(ShootCmd);
 
     Intake = new intake();
