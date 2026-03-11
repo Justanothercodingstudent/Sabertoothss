@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.Constants;
 
 
@@ -225,7 +226,7 @@ public class Swerve extends SubsystemBase {
              SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
 
             // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
-            SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());            
+            SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());  
 
                 
         }

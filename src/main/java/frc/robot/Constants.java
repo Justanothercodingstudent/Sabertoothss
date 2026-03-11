@@ -98,10 +98,10 @@ public final class Constants {
 
     public static final class climber{
         public static final int climberID = 19;
-        public static final double ClimbSpeed = 0.25;
+        public static final double ClimbSpeed = 0.5;
 
         public static final double minClimb = 0;
-        public static final double maxClimb = 78; // was 96
+        public static final double maxClimb = 90; // was 96
 
         public static  final double climbP = 1;
         public static final double climbI = 0;
@@ -121,18 +121,17 @@ public final class Constants {
         public static final double AngleI = 0;
         public static final double AngleD = 0;
 
-        public static final int trackedAprilTagId = 2;
-        public static final double tagLostDelaySeconds = 1.0;
+        public static final int trackedAprilTagId = 20;
+        public static final double tagLostDelaySeconds = 0.5;
         public static final double noTagFallbackAngle = MinAngle;
 
         // Distance (m) to hood motor rotations lookup table.
         // Tune these values for your shooter.
         public static final double[][] distanceToRotationTable = {
             {0.0, 0.0},
-            {0.5, 0.5},
-            {1.0, 1.5},
-            {2.5, 2.2},
-            {4.0, 3.7},
+            {1.5, 1.0},
+            {4.0, 3.7}
+            
         };
     }
 
@@ -236,10 +235,10 @@ public final class Constants {
       public static final NeutralModeValue driveNeutralMode = NeutralModeValue.Brake;
 
       //cancoder offsets
-      public static final double offset0 = 74.0;
-      public static final double offset1 = -149.3;
-      public static final double offset2 = -159.3;
-      public static final double offset3 = 17.9;
+      public static final double offset0 = 74.5;
+      public static final double offset1 = -149.6;
+      public static final double offset2 = -169.5;
+      public static final double offset3 = 18.3;
 
       /* Module Specific Constants */
       /* Front Left Module - Module 0 */
