@@ -43,7 +43,7 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
-        public static final boolean redTeam = DriverStation.getAlliance().get() == Alliance.Red;
+        public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         public static boolean forceRedTeamForTesting = true; // Set true for testing
         public static final double[] reefIDsBlue = {
             18, // closeMiddleReefIDBlue
@@ -83,7 +83,7 @@ public final class Constants {
         public static final int IntakeID = 55;
         public static final double IntakeSpeed = -0.50;
         public static final double ExtendSpeed = 0.1;
-        public static final double JigSpeed = 0.2;
+        public static final double JigSpeed = 0.35;
 
         public static final int IntakeOutID = 13;
 
