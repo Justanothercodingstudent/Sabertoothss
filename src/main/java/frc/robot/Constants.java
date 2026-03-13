@@ -121,7 +121,7 @@ public final class Constants {
         public static final double AngleI = 0;
         public static final double AngleD = 0;
 
-        public static final int trackedAprilTagId = 20;
+        public static final int trackedAprilTagId = 1;
         public static final double tagLostDelaySeconds = 0.5;
         public static final double noTagFallbackAngle = MinAngle;
 

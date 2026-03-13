@@ -2,6 +2,7 @@ package frc.robot.autos;
 
 import java.sql.Driver;
 
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -67,5 +68,9 @@ public class Autos {
        // NamedCommands.registerCommand("setRest" , autoController.setRest());
 
        NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
+
+       //NamedCommands.registerCommand("Shoot", autoController.Shoot());
+       
+       //NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
     }
 }

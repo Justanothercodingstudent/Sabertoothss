@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import frc.robot.Constants;
-import frc.robot.Constants.TeamDependentFactors;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 
@@ -9,30 +8,41 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 
 public class TeleopSwerve extends Command {    
-    private Swerve s_Swerve;    
-    private DoubleSupplier translationSup;
-    private DoubleSupplier strafeSup;
-    private DoubleSupplier rotationSup;
-    private BooleanSupplier robotCentricSup;
-    private Limelight limelight;
+    private static final int TARGET_TAG_ID = 1;
+    private static final double TAG_AIM_KP = 0.025;
+    private static final double TAG_AIM_KI = 0.0;
+    private static final double TAG_AIM_KD = 0.0;
+    private static final double TAG_AIM_TOLERANCE_DEGREES = 1.5;
+    private static final double TAG_AIM_MAX_ANGULAR_SPEED = 2.0;
+    private static final double TAG_AIM_MAX_ANGULAR_ACCELERATION = 6.0;
 
-    private XboxController xbox;
-    private BooleanSupplier parallelMotionSup;
-    private BooleanSupplier allowRotationSup;
-    private boolean wasParallelModeActive = false;
-    private double storedHeading = 0;
-    private double lastKnownTagYaw = 0;
+    private final Swerve s_Swerve;    
+    private final DoubleSupplier translationSup;
+    private final DoubleSupplier strafeSup;
+    private final DoubleSupplier rotationSup;
+    private final BooleanSupplier robotCentricSup;
+    private final Limelight limelight;
+    private final BooleanSupplier aimAtTagSup;
+    private final PIDController tagAimController = new PIDController(TAG_AIM_KP, TAG_AIM_KI, TAG_AIM_KD);
+    private final SlewRateLimiter tagAimOutputLimiter =
+        new SlewRateLimiter(TAG_AIM_MAX_ANGULAR_ACCELERATION);
 
-    public TeleopSwerve(Swerve s_Swerve, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, XboxController xbox, Limelight aprilTagDetection, BooleanSupplier parallelMotionSup, BooleanSupplier allowRotationSup) {
+    public TeleopSwerve(
+            Swerve s_Swerve,
+            DoubleSupplier translationSup,
+            DoubleSupplier strafeSup,
+            DoubleSupplier rotationSup,
+            BooleanSupplier robotCentricSup,
+            Limelight aprilTagDetection,
+            BooleanSupplier aimAtTagSup) {
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
 
@@ -41,17 +51,14 @@ public class TeleopSwerve extends Command {
         this.rotationSup = rotationSup;
         this.robotCentricSup = robotCentricSup;
         this.limelight = aprilTagDetection;
-
-        this.xbox = xbox;
-
-        this.parallelMotionSup = parallelMotionSup;
-        this.allowRotationSup = allowRotationSup;
-
-
+        this.aimAtTagSup = aimAtTagSup;
+        tagAimController.setTolerance(TAG_AIM_TOLERANCE_DEGREES);
     }
 
     @Override
     public void initialize() {
+        tagAimController.reset();
+        tagAimOutputLimiter.reset(0.0);
     }
 
     @Override
@@ -59,66 +66,47 @@ public class TeleopSwerve extends Command {
         SmartDashboard.putString("pose", 
             s_Swerve.getPose().getX() + ", " + s_Swerve.getPose().getY());
 
-        // Track button states
-        boolean parallelMotionActive = parallelMotionSup.getAsBoolean(); // A button
-        boolean allowRotation = allowRotationSup.getAsBoolean(); // B button
-        boolean justPressedA = parallelMotionActive && !wasParallelModeActive;
-        boolean justReleasedA = !parallelMotionActive && wasParallelModeActive;
-
-        // If A is just pressed, find closest AprilTag and store its heading
-        if (justPressedA) {
-            double[] validTagIds = TeamDependentFactors.getReefIDs();
-            double closestTagId = limelight.getClosestTag(validTagIds);
-
-            if (closestTagId != -1) {
-                double[] tagData = limelight.getTarget((int) closestTagId);
-                if (tagData != null) {
-                    lastKnownTagYaw = tagData[0]; // Extract tag yaw (adjust if needed) 
-                }
-            }
-
-            // Store the original heading to return to when A is released
-            storedHeading = s_Swerve.getHeading().getDegrees();
-        }
-
-        // If A is held, force the heading to the last known AprilTag yaw
-        if (parallelMotionActive && !allowRotation) {
-            s_Swerve.setHeading(Rotation2d.fromDegrees(lastKnownTagYaw - storedHeading)); //adjust if necessary
-            
-        }
-
-        // If A is released, return to the stored heading
-        if (justReleasedA) {
-            s_Swerve.setHeading(Rotation2d.fromDegrees(storedHeading));
-        }
-
-        // Normal swerve drive behavior
         double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband);
         double strafeVal = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband);
         double rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband);
+        double rotationCommand = rotationVal * Constants.Swerve.maxAngularVelocity;
 
-        // If A is held and B is NOT held, lock rotation
-        if (parallelMotionActive && !allowRotation) {
-            rotationVal = 0;
+        boolean aimAtTag = aimAtTagSup.getAsBoolean();
+        double[] tagData = limelight == null ? null : limelight.getTarget(TARGET_TAG_ID);
+        boolean tagVisible = tagData != null;
+
+        SmartDashboard.putBoolean("Tag 1 Aim Enabled", aimAtTag);
+        SmartDashboard.putBoolean("Tag 1 Visible", tagVisible);
+
+        if (aimAtTag && tagVisible) {
+            double yawErrorDegrees = tagData[1];
+            rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
+                tagAimController.calculate(yawErrorDegrees, 0.0),
+                -TAG_AIM_MAX_ANGULAR_SPEED,
+                TAG_AIM_MAX_ANGULAR_SPEED
+            ));
+
+            if (tagAimController.atSetpoint()) {
+                rotationCommand = 0.0;
+                tagAimOutputLimiter.reset(0.0);
+            }
+
+            SmartDashboard.putNumber("Tag 1 Aim Error Degrees", yawErrorDegrees);
+            SmartDashboard.putNumber("Tag 1 Aim Rotation Command", rotationCommand);
+        } else {
+            tagAimController.reset();
+            tagAimOutputLimiter.reset(0.0);
+            SmartDashboard.putNumber("Tag 1 Aim Error Degrees", 0.0);
+            SmartDashboard.putNumber("Tag 1 Aim Rotation Command", rotationCommand);
         }
 
-        // Apply speed limits based on elevator height
         double speedLimit = Constants.Swerve.maxSpeed;
 
-        // Drive the swerve
         s_Swerve.drive(
             new Translation2d(translationVal, strafeVal).times(speedLimit), 
-            rotationVal * Constants.Swerve.maxAngularVelocity, 
+            rotationCommand, 
             !robotCentricSup.getAsBoolean(), 
             true
         );
-
-        // Track previous state for edge detection
-        wasParallelModeActive = parallelMotionActive;
     }
-
-
-
-
-
 }

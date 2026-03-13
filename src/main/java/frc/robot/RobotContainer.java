@@ -86,10 +86,6 @@ public class RobotContainer {
     limelightCmd = new LimelightCmd(limelight);
     limelight.setDefaultCommand(limelightCmd);
 
-    Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, operator);
-    Spin.setDefaultCommand(ShootCmd);
-
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, operator);
     Intake.setDefaultCommand(intakeCmd);
@@ -98,9 +94,13 @@ public class RobotContainer {
     anglerCmd = new AnglerCmd(angler, operator);
     angler.setDefaultCommand(anglerCmd);
 
-     climb = new climber();
-     climbCmd = new climberCmd(climb, driver);
-     climb.setDefaultCommand(climbCmd);
+    Spin = new SpinnerAndShooter();
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler);
+    Spin.setDefaultCommand(ShootCmd);
+
+    climb = new climber();
+    climbCmd = new climberCmd(climb, driver);
+    climb.setDefaultCommand(climbCmd);
 
     initializePositions = new SequentialCommandGroup(
     );
@@ -112,14 +112,13 @@ public class RobotContainer {
             () -> -driver.getRawAxis(strafeAxis), 
             () -> -driver.getRawAxis(rotationAxis), 
             () -> false,
-            driver, limelight,
-            () -> driver.getXButtonPressed(),
-            () -> driver.getAButtonPressed()
+            limelight,
+            () -> driver.getAButton()
         )
     );
 
     chooser = new SendableChooser<>();
-    autoController = new AutoController();
+    autoController = new AutoController(Intake, Spin);
     autos = new Autos(s_Swerve, autoController, s_Swerve);
 
     configureAutoSelector();
