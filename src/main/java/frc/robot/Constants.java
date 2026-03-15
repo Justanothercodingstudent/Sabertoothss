@@ -12,7 +12,10 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -82,18 +85,81 @@ public final class Constants {
 
     }
 
-    public static class LimelightConstants {
-        public static final String limelightName = "limelight";
+    public static final class FieldConstants {
+        // Matches the PathPlanner navgrid field size in src/main/deploy/pathplanner/navgrid.json.
+        public static final double fieldLengthMeters = 16.54;
+        public static final Translation2d blueAutoAimTarget = new Translation2d(4.626, 4.035);
 
-        public static final double XOffset = 0.3175;
-        public static final double YOffset = 0.0635;
-        public static final double ZOffset = 0.3048; 
-        //tilt 24 degrees
+        public static Translation2d getAllianceAutoAimTarget() {
+            boolean isRedAlliance =
+                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 
-        //Offset if limelight from set robot heading
-        public static final double limelightHeadingOffset = 180;
+            if (!isRedAlliance) {
+                return blueAutoAimTarget;
+            }
 
-        public static final double minVisionTagArea = 0.05;
+            return new Translation2d(
+                fieldLengthMeters - blueAutoAimTarget.getX(),
+                blueAutoAimTarget.getY()
+            );
+        }
+    }
+
+    public static final class PhotonVisionConstants {
+        public static final String leftCameraName = "photon-left";
+        public static final String rightCameraName = "photon-right";
+
+        // Old single-Limelight mount, no longer used.
+        // public static final double cameraForwardOffsetMeters = 0.3175;
+        // public static final double cameraLateralOffsetMeters = 0.0635;
+        // public static final double cameraHeightMeters = 0.3048;
+        // public static final double cameraPitchDegrees = 24.0;
+        // public static final double cameraHeadingOffsetDegrees = 180.0;
+
+        public static final double cameraForwardOffsetInches = 9.895;
+        public static final double cameraLateralOffsetInches = 10.066;
+        public static final double cameraHeightInches = 8.207;
+        public static final double cameraPitchDegrees = 21.4;
+        public static final double leftCameraYawDegrees = 45.0;
+        public static final double rightCameraYawDegrees = -45.0;
+
+        public static final double cameraForwardOffsetMeters =
+            Units.inchesToMeters(cameraForwardOffsetInches);
+        public static final double cameraLateralOffsetMeters =
+            Units.inchesToMeters(cameraLateralOffsetInches);
+        public static final double cameraHeightMeters =
+            Units.inchesToMeters(cameraHeightInches);
+
+        // Auto-aim uses field pose directly, so no legacy camera heading compensation is needed.
+        public static final double cameraHeadingOffsetDegrees = 0.0;
+
+        public static final Transform3d robotToLeftCamera = new Transform3d(
+            new Translation3d(
+                cameraForwardOffsetMeters,
+                cameraLateralOffsetMeters,
+                cameraHeightMeters
+            ),
+            new Rotation3d(
+                0.0,
+                Units.degreesToRadians(cameraPitchDegrees),
+                Units.degreesToRadians(leftCameraYawDegrees)
+            )
+        );
+
+        public static final Transform3d robotToRightCamera = new Transform3d(
+            new Translation3d(
+                cameraForwardOffsetMeters,
+                -cameraLateralOffsetMeters,
+                cameraHeightMeters
+            ),
+            new Rotation3d(
+                0.0,
+                Units.degreesToRadians(cameraPitchDegrees),
+                Units.degreesToRadians(rightCameraYawDegrees)
+            )
+        );
+
+        public static final double minVisionTargetArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;
         public static final double maxSingleTagDistanceMeters = 4.0;
         public static final double maxMultiTagDistanceMeters = 7.0;
@@ -104,6 +170,44 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
+    }
+
+    @Deprecated(forRemoval = false, since = "2026")
+    public static class LimelightConstants {
+        public static final String limelightName = PhotonVisionConstants.leftCameraName;
+
+        // Old Limelight positioning, commented out per the PhotonVision swap.
+        // public static final double XOffset = 0.3175;
+        // public static final double YOffset = 0.0635;
+        // public static final double ZOffset = 0.3048;
+        // public static final double limelightHeadingOffset = 180.0;
+
+        public static final double XOffset = PhotonVisionConstants.cameraForwardOffsetMeters;
+        public static final double YOffset = PhotonVisionConstants.cameraLateralOffsetMeters;
+        public static final double ZOffset = PhotonVisionConstants.cameraHeightMeters;
+        public static final double limelightHeadingOffset =
+            PhotonVisionConstants.cameraHeadingOffsetDegrees;
+
+        public static final double minVisionTagArea = PhotonVisionConstants.minVisionTargetArea;
+        public static final double maxSingleTagAmbiguity =
+            PhotonVisionConstants.maxSingleTagAmbiguity;
+        public static final double maxSingleTagDistanceMeters =
+            PhotonVisionConstants.maxSingleTagDistanceMeters;
+        public static final double maxMultiTagDistanceMeters =
+            PhotonVisionConstants.maxMultiTagDistanceMeters;
+        public static final double maxSingleTagPoseDeltaMeters =
+            PhotonVisionConstants.maxSingleTagPoseDeltaMeters;
+        public static final double maxMultiTagPoseDeltaMeters =
+            PhotonVisionConstants.maxMultiTagPoseDeltaMeters;
+        public static final double visionStdDevBase = PhotonVisionConstants.visionStdDevBase;
+        public static final double visionStdDevPerMeter =
+            PhotonVisionConstants.visionStdDevPerMeter;
+        public static final double singleTagStdDevMultiplier =
+            PhotonVisionConstants.singleTagStdDevMultiplier;
+        public static final double lowAreaStdDevMultiplier =
+            PhotonVisionConstants.lowAreaStdDevMultiplier;
+        public static final double visionRotationStdDev =
+            PhotonVisionConstants.visionRotationStdDev;
     }
 
     public static final class Intake {

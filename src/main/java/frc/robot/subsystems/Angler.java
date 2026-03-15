@@ -14,13 +14,15 @@ import frc.robot.Constants;
 public class Angler extends SubsystemBase{
     private final TalonFX Angler;
     private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
-    private final Limelight limelight;
+    private final PhotonVisionSubsystem photonVision;
+    private final Swerve swerve;
 
     private double AnglerPos;
     private double lastTagSeenTimestampSeconds;
 
-    public Angler(Limelight limelight) {
-        this.limelight = limelight;
+    public Angler(PhotonVisionSubsystem photonVision, Swerve swerve) {
+        this.photonVision = photonVision;
+        this.swerve = swerve;
         
         Angler = new TalonFX(Constants.Angler.AnglerID);
         Angler.setNeutralMode(NeutralModeValue.Brake);
@@ -43,7 +45,7 @@ public class Angler extends SubsystemBase{
     }
 
     public Angler() {
-        this(null);
+        this(null, null);
     }
 
     public void AngleSpeed(double speed){
@@ -109,27 +111,26 @@ public class Angler extends SubsystemBase{
         return table[table.length - 1][1];
     }
 
-    public void updateFromTrackedAprilTag() {
-        if (limelight == null) {
+    public void updateFromVisionDistance() {
+        if (photonVision == null || swerve == null) {
             return;
         }
 
-        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.validAprilTagIds);;
-        double distanceMeters = limelight.getDistanceToTag(trackedTagId);
-        boolean hasTrackedTag = distanceMeters >= 0.0;
+        double distanceMeters = photonVision.getDistanceToAutoAimTarget(swerve.getPose());
+        boolean hasTrackedDistance = distanceMeters >= 0.0;
         double nowSeconds = Timer.getFPGATimestamp();
 
-        SmartDashboard.putNumber("AprilTag " + trackedTagId + " Distance", distanceMeters);
-        SmartDashboard.putBoolean("AprilTag " + trackedTagId + " Seen", hasTrackedTag);
+        SmartDashboard.putNumber("Auto Aim Distance", distanceMeters);
+        SmartDashboard.putBoolean("Auto Aim Distance Valid", hasTrackedDistance);
 
-        if (hasTrackedTag) {
+        if (hasTrackedDistance) {
             lastTagSeenTimestampSeconds = nowSeconds;
             setAnglePosition(distanceToMotorRotations(distanceMeters));
             return;
         }
 
         double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
-        SmartDashboard.putNumber("AprilTag " + trackedTagId + " Time Since Seen", timeSinceLastSeen);
+        SmartDashboard.putNumber("Auto Aim Time Since Seen", timeSinceLastSeen);
         if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
             setAnglePosition(Constants.Angler.noTagFallbackAngle);
         }
@@ -137,12 +138,17 @@ public class Angler extends SubsystemBase{
 
     @Override
     public void periodic(){
-        updateFromTrackedAprilTag();
+        updateFromVisionDistance();
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
 
-        SmartDashboard.putNumber("AprilTag 9 Distance", limelight.getDistanceToTag(9));
+        SmartDashboard.putNumber(
+            "AprilTag 9 Distance",
+            photonVision == null || swerve == null
+                ? -1.0
+                : photonVision.getDistanceToAutoAimTarget(swerve.getPose())
+        );
     }
 //helllloooooo
 }

@@ -4,35 +4,25 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
-import edu.wpi.first.wpilibj.DigitalSource;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
 import frc.robot.commands.climberCmd;
 import frc.robot.commands.AnglerCmd;
-import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.PhotonVisionSubsystem;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.climber;
-import frc. robot.subsystems.Angler;
+import frc.robot.subsystems.Angler;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -54,18 +44,14 @@ public class RobotContainer {
   private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kX.value);
 
   /* Subsystems */
-  private final Swerve s_Swerve = new Swerve();
+  private final PhotonVisionSubsystem photonVision;
+  private final Swerve s_Swerve;
   private final intake Intake;
   private final SpinnerAndShooter Spin;
   private final climber climb;
   private final Angler angler;
 
-  private Limelight limelight;
-  private Vision vision;
-
   /* Commands */
-  private LimelightCmd limelightCmd;
-
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
   private climberCmd climbCmd;
@@ -81,16 +67,14 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
 
-
-    limelight = new Limelight();
-    limelightCmd = new LimelightCmd(limelight);
-    limelight.setDefaultCommand(limelightCmd);
+    photonVision = new PhotonVisionSubsystem();
+    s_Swerve = new Swerve(photonVision);
 
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, operator);
     Intake.setDefaultCommand(intakeCmd);
 
-    angler = new Angler(limelight);
+    angler = new Angler(photonVision, s_Swerve);
     anglerCmd = new AnglerCmd(angler, driver);
     angler.setDefaultCommand(anglerCmd);
 
@@ -112,7 +96,7 @@ public class RobotContainer {
             () -> -driver.getRawAxis(strafeAxis), 
             () -> -driver.getRawAxis(rotationAxis), 
             () -> false,
-            limelight,
+            photonVision,
             () -> driver.getAButton()
         )
     );

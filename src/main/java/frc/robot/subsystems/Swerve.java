@@ -2,8 +2,6 @@ package frc.robot.subsystems;
 
 import frc.robot.SwerveModule;
 import frc.robot.Constants;
-import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.PoseEstimate;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -27,7 +25,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -45,8 +42,10 @@ public class Swerve extends SubsystemBase {
     private Rotation2d originalHeading;
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
+    private final PhotonVisionSubsystem photonVision;
 
-    public Swerve(){
+    public Swerve(PhotonVisionSubsystem photonVision){
+        this.photonVision = photonVision;
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(Constants.Swerve.SwerveStartHeading);
@@ -211,149 +210,118 @@ public class Swerve extends SubsystemBase {
         lastVisionTimestampSeconds = -1.0;
     }
 
-    private PoseEstimate getAlliancePoseEstimate(boolean useMegaTag2) {
-        String limelightName = Constants.LimelightConstants.limelightName;
-
-        if (useMegaTag2) {
-            LimelightHelpers.SetRobotOrientation(
-                limelightName,
-                getGyroYaw().getDegrees(),
-                0,
-                0,
-                0,
-                0,
-                0
-            );
-        }
-
-        boolean isRedAlliance =
-            DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-
-        if (isRedAlliance) {
-            return useMegaTag2
-                ? LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(limelightName)
-                : LimelightHelpers.getBotPoseEstimate_wpiRed(limelightName);
-        }
-
-        return useMegaTag2
-            ? LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName)
-            : LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
-    }
-
-    private PoseEstimate getPreferredVisionMeasurement() {
-        PoseEstimate megaTag1Estimate = getAlliancePoseEstimate(false);
-        PoseEstimate megaTag2Estimate = getAlliancePoseEstimate(true);
-
-        PoseEstimate preferredEstimate = megaTag2Estimate.tagCount >= 2 ? megaTag2Estimate : megaTag1Estimate;
-        PoseEstimate fallbackEstimate = preferredEstimate == megaTag1Estimate ? megaTag2Estimate : megaTag1Estimate;
-
-        if (isVisionMeasurementValid(preferredEstimate)) {
-            return preferredEstimate;
-        }
-
-        if (isVisionMeasurementValid(fallbackEstimate)) {
-            return fallbackEstimate;
-        }
-
-        return null;
-    }
-
-    private boolean isVisionMeasurementValid(PoseEstimate estimate) {
-        if (estimate == null || estimate.tagCount <= 0 || estimate.timestampSeconds <= 0.0) {
+    private boolean isVisionMeasurementValid(PhotonVisionSubsystem.VisionMeasurement estimate) {
+        if (estimate == null || estimate.tagCount() <= 0 || estimate.timestampSeconds() <= 0.0) {
             return false;
         }
 
-        if (estimate.timestampSeconds <= lastVisionTimestampSeconds) {
+        if (!Double.isFinite(estimate.pose().getX())
+            || !Double.isFinite(estimate.pose().getY())
+            || !Double.isFinite(estimate.pose().getRotation().getRadians())) {
             return false;
         }
 
-        if (!Double.isFinite(estimate.pose.getX())
-            || !Double.isFinite(estimate.pose.getY())
-            || !Double.isFinite(estimate.pose.getRotation().getRadians())) {
+        if (estimate.averageTagArea() < Constants.PhotonVisionConstants.minVisionTargetArea) {
             return false;
         }
 
-        if (estimate.avgTagArea < Constants.LimelightConstants.minVisionTagArea) {
-            return false;
-        }
-
-        if (estimate.tagCount == 1) {
-            if (estimate.avgTagDist > Constants.LimelightConstants.maxSingleTagDistanceMeters) {
+        if (estimate.tagCount() == 1) {
+            if (estimate.averageTagDistanceMeters()
+                > Constants.PhotonVisionConstants.maxSingleTagDistanceMeters) {
                 return false;
             }
 
-            if (estimate.rawFiducials.length > 0
-                && estimate.rawFiducials[0].ambiguity > Constants.LimelightConstants.maxSingleTagAmbiguity) {
+            if (estimate.bestTargetAmbiguity() >= 0.0
+                && estimate.bestTargetAmbiguity()
+                    > Constants.PhotonVisionConstants.maxSingleTagAmbiguity) {
                 return false;
             }
-        } else if (estimate.avgTagDist > Constants.LimelightConstants.maxMultiTagDistanceMeters) {
+        } else if (estimate.averageTagDistanceMeters()
+            > Constants.PhotonVisionConstants.maxMultiTagDistanceMeters) {
             return false;
         }
 
-        double poseDeltaMeters = estimate.pose
+        double poseDeltaMeters = estimate.pose()
             .getTranslation()
             .getDistance(poseEstimator.getEstimatedPosition().getTranslation());
-        double maxPoseDeltaMeters = estimate.tagCount > 1
-            ? Constants.LimelightConstants.maxMultiTagPoseDeltaMeters
-            : Constants.LimelightConstants.maxSingleTagPoseDeltaMeters;
+        double maxPoseDeltaMeters = estimate.tagCount() > 1
+            ? Constants.PhotonVisionConstants.maxMultiTagPoseDeltaMeters
+            : Constants.PhotonVisionConstants.maxSingleTagPoseDeltaMeters;
 
         return poseDeltaMeters <= maxPoseDeltaMeters;
     }
 
-    private double getVisionTranslationStdDev(PoseEstimate estimate) {
-        double translationStdDev = Constants.LimelightConstants.visionStdDevBase
-            + (estimate.avgTagDist * Constants.LimelightConstants.visionStdDevPerMeter
-                / Math.max(estimate.tagCount, 1));
+    private double getVisionTranslationStdDev(PhotonVisionSubsystem.VisionMeasurement estimate) {
+        double translationStdDev = Constants.PhotonVisionConstants.visionStdDevBase
+            + (estimate.averageTagDistanceMeters()
+                * Constants.PhotonVisionConstants.visionStdDevPerMeter
+                / Math.max(estimate.tagCount(), 1));
 
-        if (estimate.tagCount == 1) {
-            translationStdDev *= Constants.LimelightConstants.singleTagStdDevMultiplier;
+        if (estimate.tagCount() == 1) {
+            translationStdDev *= Constants.PhotonVisionConstants.singleTagStdDevMultiplier;
         }
 
-        if (estimate.avgTagArea < 0.15) {
-            translationStdDev *= Constants.LimelightConstants.lowAreaStdDevMultiplier;
+        if (estimate.averageTagArea() < 0.15) {
+            translationStdDev *= Constants.PhotonVisionConstants.lowAreaStdDevMultiplier;
         }
 
         return Math.max(0.05, Math.min(translationStdDev, 2.0));
     }
 
-    private void addVisionMeasurementIfAvailable() {
-        PoseEstimate visionMeasurement = getPreferredVisionMeasurement();
-
-        SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurement != null);
-
-        if (visionMeasurement == null) {
+    private void addVisionMeasurementsIfAvailable() {
+        if (photonVision == null) {
+            SmartDashboard.putBoolean("Vision Measurement Accepted", false);
             return;
         }
 
-        double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
-        poseEstimator.addVisionMeasurement(
-            visionMeasurement.pose,
-            visionMeasurement.timestampSeconds,
-            VecBuilder.fill(
-                translationStdDev,
-                translationStdDev,
-                Constants.LimelightConstants.visionRotationStdDev
-            )
-        );
+        boolean acceptedMeasurement = false;
 
-        lastVisionTimestampSeconds = visionMeasurement.timestampSeconds;
-        lastAcceptedVisionPose = visionMeasurement.pose;
+        for (PhotonVisionSubsystem.VisionMeasurement visionMeasurement
+            : photonVision.getVisionMeasurementsSince(lastVisionTimestampSeconds)) {
+            if (!isVisionMeasurementValid(visionMeasurement)) {
+                continue;
+            }
 
-        SmartDashboard.putNumber("Vision Tag Count", visionMeasurement.tagCount);
-        SmartDashboard.putNumber("Vision Avg Tag Dist", visionMeasurement.avgTagDist);
-        SmartDashboard.putNumber("Vision Avg Tag Area", visionMeasurement.avgTagArea);
-        SmartDashboard.putNumber("Vision Std Dev XY", translationStdDev);
-        SmartDashboard.putNumber("Vision Pose X", visionMeasurement.pose.getX());
-        SmartDashboard.putNumber("Vision Pose Y", visionMeasurement.pose.getY());
+            double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
+            poseEstimator.addVisionMeasurement(
+                visionMeasurement.pose(),
+                visionMeasurement.timestampSeconds(),
+                VecBuilder.fill(
+                    translationStdDev,
+                    translationStdDev,
+                    Constants.PhotonVisionConstants.visionRotationStdDev
+                )
+            );
+
+            lastVisionTimestampSeconds = visionMeasurement.timestampSeconds();
+            lastAcceptedVisionPose = visionMeasurement.pose();
+            acceptedMeasurement = true;
+
+            SmartDashboard.putNumber("Vision Tag Count", visionMeasurement.tagCount());
+            SmartDashboard.putNumber(
+                "Vision Avg Tag Dist",
+                visionMeasurement.averageTagDistanceMeters()
+            );
+            SmartDashboard.putNumber("Vision Avg Tag Area", visionMeasurement.averageTagArea());
+            SmartDashboard.putNumber("Vision Std Dev XY", translationStdDev);
+            SmartDashboard.putNumber("Vision Pose X", visionMeasurement.pose().getX());
+            SmartDashboard.putNumber("Vision Pose Y", visionMeasurement.pose().getY());
+            SmartDashboard.putString("Vision Camera", visionMeasurement.cameraName());
+        }
+
+        SmartDashboard.putBoolean("Vision Measurement Accepted", acceptedMeasurement);
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
                                  boolean returnToOriginal,
                                  boolean allowRotation,
-                                 Limelight limelight) {
+                                 PhotonVisionSubsystem photonVision) {
 
-        // Attempt to get a fresh detected Pose from the limelight
-        Pose2d detectedPose = limelight.getAdjustedRobotPose();
+        Pose2d detectedPose = photonVision == null
+            ? null
+            : photonVision.getBestEstimatedPose()
+                .map(PhotonVisionSubsystem.VisionMeasurement::pose)
+                .orElse(null);
 
         // 1) If we see a new valid pose, update lastKnownTagHeading
         //    (only do this if we actually got a detection!)
@@ -381,7 +349,7 @@ public class Swerve extends SubsystemBase {
     public void periodic(){
         swerveOdometry.update(getGyroYaw(), getModulePositions());
         poseEstimator.update(getGyroYaw(), getModulePositions());
-        addVisionMeasurementIfAvailable();
+        addVisionMeasurementsIfAvailable();
 
         SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
         SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
