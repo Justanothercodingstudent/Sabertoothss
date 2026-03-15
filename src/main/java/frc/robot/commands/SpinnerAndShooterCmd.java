@@ -127,7 +127,7 @@ public class SpinnerAndShooterCmd extends Command{
                 }*/
 
                 double ShootSpeed = AnglerShoot(angler.getAnglePos());
-                double ShootReq = ShootReq(shoot.FrontLeftRPM());
+                double ShootReq = ShootReq(angler.getAnglePos());
 
                 //double ShootSpeed = SmartDashboard.getNumber("Shoot Speed",   Constants.Spin.ShootSpeed);
                 //ShootSpeed = Constants.Spin.ShootSpeed;
@@ -137,9 +137,9 @@ public class SpinnerAndShooterCmd extends Command{
                 if(shoot.FrontLeftRPM() <= ShootReq){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
-                } else if(shoot.FrontLeftRPM() <= ShootReq){
-                    shoot.roller(Rollerspeed);
-                    shoot.SpinSpeed(SpinSpeed);
+                } else {
+                    shoot.SpinSpeed(0);
+                    shoot.roller(0);
                 }
             } else if (joyLeftPressed){
                 Rollerspeed = Constants.Spin.Rollerspeed;

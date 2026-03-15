@@ -45,6 +45,18 @@ public final class Constants {
     public static class TeamDependentFactors {
         public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         public static boolean forceRedTeamForTesting = true; // Set true for testing
+
+        public static final double[] validAprilTagIds = {
+            2,
+            3,  
+            4,  
+            5,  
+            8, 
+            9, 
+            10,
+            11   
+        };
+
         public static final double[] reefIDsBlue = {
             18, // closeMiddleReefIDBlue
             19, // closeLeftReefIDBlue
@@ -66,6 +78,8 @@ public final class Constants {
         public static double[] getReefIDs() {
             return redTeam ? reefIDsRed : reefIDsBlue;
         }
+
+
     }
 
     public static class LimelightConstants {
@@ -143,7 +157,8 @@ public final class Constants {
         public static final double[][] distanceToRotationTable = {
             {0.0, 0.0},
             {1.5, 1.0},
-            {4.0, 3.7}
+            {2.8, 2.0},
+            {4.0, 3.7},
             
         };
     }
@@ -164,21 +179,23 @@ public final class Constants {
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
-        public static final double SpinSpeed = -0.5;
-        public static final double TurnSpeed = -0.5;
+        public static final double SpinSpeed = -0.8;
 
         public static final double[][] ShootSpeedTable = {
-            {0.0, 0.0},
-            {2.0, 0.25},
-            {2.8, 0.35},
-            {3.7, 0.5}
+            //{AnglePos(Rotations), Shoot Speed}
+            {0.0, 0.30},
+            {1.0, 0.32},
+            {1.7, 0.35},
+            {2.5, 0.37},
+            {3.7, 0.65}
             
         };
 
-        public static final double[][] ShootReqTable = {
-            {2.0, -15.0},
-            {2.8, -35.0},
-            {3.7, -45.0}
+        public static final double[][] ShootReqTable = { 
+            //{AnglePos(Rotations), Roll Speed Requirement}
+            {1.0, -28.0},
+            {1.7, -31.0},
+            {2.5, -35.0},
         };
     }
 

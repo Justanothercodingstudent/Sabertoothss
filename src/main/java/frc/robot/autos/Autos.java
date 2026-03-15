@@ -67,10 +67,12 @@ public class Autos {
         // Register Named Commands and print them
        // NamedCommands.registerCommand("setRest" , autoController.setRest());
 
-       NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
+       /*NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
 
-       //NamedCommands.registerCommand("Shoot", autoController.Shoot());
+       NamedCommands.registerCommand("Shoot", autoController.Shoot());
        
-       //NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
+       NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
+
+       NamedCommands.registerCommand("Intake", autoController.Intake());*/
     }
 }

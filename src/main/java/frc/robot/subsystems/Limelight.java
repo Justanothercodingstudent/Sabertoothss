@@ -117,8 +117,8 @@ public class Limelight extends SubsystemBase {
         return closestTag;
     }
 
-    public double getDistanceToTag(int targetTagId) {
-        LimelightHelpers.RawFiducial fiducial = getRawFiducial(targetTagId);
+    public double getDistanceToTag(double targetTagId) {
+        LimelightHelpers.RawFiducial fiducial = getRawFiducial((int) targetTagId);
         if (fiducial == null) {
             return -1.0;
         }
@@ -167,6 +167,8 @@ public class Limelight extends SubsystemBase {
         updateValues();
         SmartDashboard.putNumber("Nearest April Tag Red", getClosestTag(Constants.TeamDependentFactors.reefIDsRed));
         SmartDashboard.putNumber("Nearest April Tag Blue", getClosestTag(Constants.TeamDependentFactors.reefIDsBlue));
+
+        SmartDashboard.putNumber("Nearest Hub Tage", getClosestTag(Constants.TeamDependentFactors.validAprilTagIds));
 
         SmartDashboard.putNumber("BotPose x", getAdjustedRobotPose().getTranslation().getX());
         SmartDashboard.putNumber("BotPose y", getAdjustedRobotPose().getTranslation().getY());
