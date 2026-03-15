@@ -71,12 +71,25 @@ public final class Constants {
     public static class LimelightConstants {
         public static final String limelightName = "limelight";
 
-        public static final double XOffset = 0;
-        public static final double YOffset = 0;
-        public static final double ZOffset = 0;
+        public static final double XOffset = 0.3175;
+        public static final double YOffset = 0.0635;
+        public static final double ZOffset = 0.3048; 
+        //tilt 24 degrees
 
         //Offset if limelight from set robot heading
         public static final double limelightHeadingOffset = 180;
+
+        public static final double minVisionTagArea = 0.05;
+        public static final double maxSingleTagAmbiguity = 0.70;
+        public static final double maxSingleTagDistanceMeters = 4.0;
+        public static final double maxMultiTagDistanceMeters = 7.0;
+        public static final double maxSingleTagPoseDeltaMeters = 1.5;
+        public static final double maxMultiTagPoseDeltaMeters = 3.0;
+        public static final double visionStdDevBase = 0.10;
+        public static final double visionStdDevPerMeter = 0.12;
+        public static final double singleTagStdDevMultiplier = 1.5;
+        public static final double lowAreaStdDevMultiplier = 1.25;
+        public static final double visionRotationStdDev = 9999999.0;
     }
 
     public static final class Intake {

@@ -44,9 +44,9 @@ public class SpinnerAndShooterCmd extends Command{
             if (rtPressed){
                 if (angler.getAnglePos() <= 2.0){
                     ShootSpeed = 0.25;
-                } else if (angler.getAnglePos() <= 3.0 && angler.getAnglePos() >= 2.0) {
+                } else if (angler.getAnglePos() <= 3.7 && angler.getAnglePos() >= 2.0) {
                     ShootSpeed = 0.35;
-                }else if (angler.getAnglePos() >= 3.0){
+                }else if (angler.getAnglePos() >= 3.7){
                     ShootSpeed = 0.5;
                 }
 
