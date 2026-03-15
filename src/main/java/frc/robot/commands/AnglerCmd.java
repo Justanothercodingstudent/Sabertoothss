@@ -43,7 +43,7 @@ public class AnglerCmd extends Command{
             boolean ypressed = xbox.getYButtonPressed();
 
 
-            if (ypressed){
+            /*if (ypressed){
                 if (AnglePos <= 4.5){
                     Constants.Angler.TestAngle += 0.5;
                     AnglePos = Constants.Angler.TestAngle;
@@ -57,7 +57,7 @@ public class AnglerCmd extends Command{
                     AnglePos = Constants.Angler.TestAngle;
                     Angler.setAnglePosition(AnglePos);
                 }
-            }
+            }*/
 
             /*  if (ypressed){
                 AnglePos = Constants.Angler.MaxAngle;

@@ -77,7 +77,7 @@ public class Angler extends SubsystemBase{
         Angler.set(speed * Constants.Angler.AngleSpeed);
     }
 
-    /*private double distanceToMotorRotations(double distanceMeters) {
+    private double distanceToMotorRotations(double distanceMeters) {
         double[][] table = Constants.Angler.distanceToRotationTable;
         if (table.length == 0) {
             return AnglerPos;
@@ -107,9 +107,9 @@ public class Angler extends SubsystemBase{
         }
 
         return table[table.length - 1][1];
-    }*/
+    }
 
-    /*public void updateFromTrackedAprilTag() {
+    public void updateFromTrackedAprilTag() {
         if (limelight == null) {
             return;
         }
@@ -133,16 +133,16 @@ public class Angler extends SubsystemBase{
         if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
             setAnglePosition(Constants.Angler.noTagFallbackAngle);
         }
-    }*/
+    }
 
     @Override
     public void periodic(){
-        //updateFromTrackedAprilTag();
+        updateFromTrackedAprilTag();
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
 
         SmartDashboard.putNumber("AprilTag 9 Distance", limelight.getDistanceToTag(9));
     }
-
+//helllloooooo
 }

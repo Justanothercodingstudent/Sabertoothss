@@ -109,13 +109,13 @@ public class SpinnerAndShooterCmd extends Command{
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
 
-            if(apressed){
+            /*if(apressed){
                 Constants.Spin.ShootSpeed += 0.05;
             }
 
             if (xpressed){
                 Constants.Spin.ShootSpeed -= 0.05;
-            }
+            }*/
 
             if (rtPressed){
                 /*if (angler.getAnglePos() <= 2.0){
@@ -126,18 +126,18 @@ public class SpinnerAndShooterCmd extends Command{
                     ShootSpeed = 0.5;
                 }*/
 
-                /*double ShootSpeed = AnglerShoot(angler.getAnglePos());
-                double ShootReq = ShootReq(shoot.FrontLeftRPM());*/
+                double ShootSpeed = AnglerShoot(angler.getAnglePos());
+                double ShootReq = ShootReq(shoot.FrontLeftRPM());
 
                 //double ShootSpeed = SmartDashboard.getNumber("Shoot Speed",   Constants.Spin.ShootSpeed);
-                ShootSpeed = Constants.Spin.ShootSpeed;
+                //ShootSpeed = Constants.Spin.ShootSpeed;
                 SpinSpeed = Constants.Spin.SpinSpeed;
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 shoot.ShootSpeed(ShootSpeed);
-                if(shoot.FrontLeftRPM() <= -15){
+                if(shoot.FrontLeftRPM() <= ShootReq){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
-                } else if(shoot.FrontLeftRPM() <= -15){
+                } else if(shoot.FrontLeftRPM() <= ShootReq){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
                 }
