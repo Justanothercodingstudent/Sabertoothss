@@ -125,7 +125,7 @@ public final class Constants {
         public static final int AnglerID = 18;
         public static final double AngleSpeed = 0.15;
 
-        public static final double TestAngle = 10.0;
+        public static double TestAngle = 0.0;
 
         public static final double MaxAngle = 5.0;
         public static final double MinAngle = 0;
@@ -134,7 +134,7 @@ public final class Constants {
         public static final double AngleI = 0;
         public static final double AngleD = 0;
 
-        public static final int trackedAprilTagId = 1;
+        public static final int trackedAprilTagId = 9;
         public static final double tagLostDelaySeconds = 0.5;
         public static final double noTagFallbackAngle = MinAngle;
 
@@ -162,10 +162,24 @@ public final class Constants {
 
         public static final double Rollerspeed = 0.2; 
 
-        public static final double ShootSpeed = 0.4;
+        public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.5;
         public static final double TurnSpeed = -0.5;
+
+        public static final double[][] ShootSpeedTable = {
+            {0.0, 0.0},
+            {2.0, 0.25},
+            {2.8, 0.35},
+            {3.7, 0.5}
+            
+        };
+
+        public static final double[][] ShootReqTable = {
+            {2.0, -15.0},
+            {2.8, -35.0},
+            {3.7, -45.0}
+        };
     }
 
 

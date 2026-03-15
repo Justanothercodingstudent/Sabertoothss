@@ -91,7 +91,7 @@ public class RobotContainer {
     Intake.setDefaultCommand(intakeCmd);
 
     angler = new Angler(limelight);
-    anglerCmd = new AnglerCmd(angler, operator);
+    anglerCmd = new AnglerCmd(angler, driver);
     angler.setDefaultCommand(anglerCmd);
 
     Spin = new SpinnerAndShooter();

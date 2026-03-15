@@ -73,12 +73,16 @@ public class SpinnerAndShooter extends SubsystemBase{
         FrontRoll.set(speed);
     }
 
+    
+
     @Override
     public void periodic() {
 
         
 
         SmartDashboard.putNumber("LeftFront Shoot Speed", FrontLeftRPM());
+
+        SmartDashboard.putNumber("Speed of Shooter", Constants.Spin.ShootSpeed);
 
        /*SmartDashboard.putNumber("Left Front Shoot Volts", LeftFront.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Right Front Shoot Volts", RightFront.getMotorVoltage().getValueAsDouble());
