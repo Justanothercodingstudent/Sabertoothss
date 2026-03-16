@@ -95,10 +95,10 @@ public final class Constants {
     }
 
     public static final class FieldConstants {
-        private static final AprilTagFieldLayout reefscapeLayout =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-        public static final double fieldLengthMeters = reefscapeLayout.getFieldLength();
-        public static final double fieldWidthMeters = reefscapeLayout.getFieldWidth();
+        private static final AprilTagFieldLayout rebuiltLayout =
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+        public static final double fieldLengthMeters = rebuiltLayout.getFieldLength();
+        public static final double fieldWidthMeters = rebuiltLayout.getFieldWidth();
         public static final Translation2d blueAutoAimTarget =
             averageTagTranslations(TeamDependentFactors.reefIDsBlue);
         public static final Translation2d redAutoAimTarget =
@@ -110,7 +110,7 @@ public final class Constants {
             int countedTags = 0;
 
             for (double tagId : tagIds) {
-                var tagPose = reefscapeLayout.getTagPose((int) tagId);
+                var tagPose = rebuiltLayout.getTagPose((int) tagId);
                 if (tagPose.isEmpty()) {
                     continue;
                 }

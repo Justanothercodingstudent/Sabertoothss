@@ -84,7 +84,7 @@ public class PhotonVisionSubsystem extends SubsystemBase {
             .thenComparing(Comparator.comparingDouble(VisionMeasurement::averageTagDistanceMeters));
 
     private final AprilTagFieldLayout fieldLayout =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     private final Field2d photonVisionField = new Field2d();
     private final CameraState[] cameraStates = new CameraState[] {
         new CameraState(
