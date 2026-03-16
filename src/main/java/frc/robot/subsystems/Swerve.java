@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import frc.robot.SwerveModule;
 import frc.robot.Constants;
 
@@ -40,8 +42,12 @@ public class Swerve extends SubsystemBase {
     public PathPlannerAuto a1;
     private Rotation2d lastKnownTagHeading;
     private Rotation2d originalHeading;
+    private Rotation2d driverHeadingOffset;
+    private boolean hasFieldPoseReference;
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
+    private boolean hasAcceptedVisionMeasurement;
+    private String lastVisionRejectReason;
     private final PhotonVisionSubsystem photonVision;
 
     public Swerve(PhotonVisionSubsystem photonVision){
@@ -68,8 +74,12 @@ public class Swerve extends SubsystemBase {
 
         lastKnownTagHeading = new Rotation2d(); 
         originalHeading = new Rotation2d();
+        driverHeadingOffset = new Rotation2d();
+        hasFieldPoseReference = false;
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
+        hasAcceptedVisionMeasurement = false;
+        lastVisionRejectReason = "No vision measurements processed yet";
         }
                     
     public ChassisSpeeds getChassisSpeeds() {
@@ -97,7 +107,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation, 
-                                    getHeading()
+                                    getDriverHeading()
                                 )
                                 : new ChassisSpeeds(
                                     translation.getX(), 
@@ -165,6 +175,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void setPose(Pose2d pose) {
+        hasFieldPoseReference = true;
         resetPoseTrackers(pose);
     }
 
@@ -176,12 +187,20 @@ public class Swerve extends SubsystemBase {
         return getPose().getRotation();
     }
 
+    public Rotation2d getDriverHeading() {
+        return getGyroYaw().minus(driverHeadingOffset);
+    }
+
+    public boolean hasFieldPoseReference() {
+        return hasFieldPoseReference;
+    }
+
     public void setHeading(Rotation2d heading){
         resetPoseTrackers(new Pose2d(getPose().getTranslation(), heading));
     }
 
     public void zeroHeading(){
-        resetPoseTrackers(new Pose2d(getPose().getTranslation(), new Rotation2d()));
+        driverHeadingOffset = getGyroYaw();
     }
 
     public Command flipHeading(){
@@ -204,41 +223,89 @@ public class Swerve extends SubsystemBase {
         originalHeading = heading;
     }
 
+    private Pose2d getVisionSeedPose(PhotonVisionSubsystem.VisionMeasurement visionMeasurement) {
+        Rotation2d seedHeading = getHeading();
+
+        if (visionMeasurement.tagCount() > 1) {
+            seedHeading = visionMeasurement.pose().getRotation();
+        }
+
+        return new Pose2d(visionMeasurement.pose().getTranslation(), seedHeading);
+    }
+
     private void resetPoseTrackers(Pose2d pose) {
         swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
         poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
-        lastVisionTimestampSeconds = -1.0;
+        lastVisionTimestampSeconds = photonVision == null
+            ? -1.0
+            : photonVision.getBestEstimatedPose()
+                .map(PhotonVisionSubsystem.VisionMeasurement::timestampSeconds)
+                .orElse(-1.0);
     }
 
-    private boolean isVisionMeasurementValid(PhotonVisionSubsystem.VisionMeasurement estimate) {
-        if (estimate == null || estimate.tagCount() <= 0 || estimate.timestampSeconds() <= 0.0) {
+    private boolean shouldSeedPoseFromVision(PhotonVisionSubsystem.VisionMeasurement visionMeasurement) {
+        if (hasFieldPoseReference || hasAcceptedVisionMeasurement) {
             return false;
+        }
+
+        return poseEstimator.getEstimatedPosition().getTranslation().getNorm()
+                <= Constants.PhotonVisionConstants.poseSeedOriginToleranceMeters
+            && swerveOdometry.getPoseMeters().getTranslation().getNorm()
+                <= Constants.PhotonVisionConstants.poseSeedOriginToleranceMeters
+            && visionMeasurement != null
+            && visionMeasurement.tagCount() >= Constants.PhotonVisionConstants.minVisionSeedTagCount;
+    }
+
+    private boolean isPoseWithinField(Pose2d pose) {
+        double fieldMargin = Constants.PhotonVisionConstants.visionFieldBoundaryMarginMeters;
+
+        return pose.getX() >= -fieldMargin
+            && pose.getX() <= Constants.FieldConstants.fieldLengthMeters + fieldMargin
+            && pose.getY() >= -fieldMargin
+            && pose.getY() <= Constants.FieldConstants.fieldWidthMeters + fieldMargin;
+    }
+
+    private String getVisionMeasurementRejectReason(PhotonVisionSubsystem.VisionMeasurement estimate) {
+        if (estimate == null || estimate.tagCount() <= 0 || estimate.timestampSeconds() <= 0.0) {
+            return "Missing tags or timestamp";
         }
 
         if (!Double.isFinite(estimate.pose().getX())
             || !Double.isFinite(estimate.pose().getY())
             || !Double.isFinite(estimate.pose().getRotation().getRadians())) {
-            return false;
+            return "Pose contained NaN or infinity";
+        }
+
+        if (!isPoseWithinField(estimate.pose())) {
+            return "Pose outside field bounds";
         }
 
         if (estimate.averageTagArea() < Constants.PhotonVisionConstants.minVisionTargetArea) {
-            return false;
+            return "Target area too small";
         }
 
         if (estimate.tagCount() == 1) {
             if (estimate.averageTagDistanceMeters()
                 > Constants.PhotonVisionConstants.maxSingleTagDistanceMeters) {
-                return false;
+                return "Single-tag distance too large";
             }
 
             if (estimate.bestTargetAmbiguity() >= 0.0
                 && estimate.bestTargetAmbiguity()
                     > Constants.PhotonVisionConstants.maxSingleTagAmbiguity) {
-                return false;
+                return "Single-tag ambiguity too high";
             }
         } else if (estimate.averageTagDistanceMeters()
             > Constants.PhotonVisionConstants.maxMultiTagDistanceMeters) {
-            return false;
+            return "Multi-tag distance too large";
+        }
+
+        if (shouldSeedPoseFromVision(estimate)) {
+            return null;
+        }
+
+        if (!hasFieldPoseReference) {
+            return "Waiting for multi-tag vision seed or manual pose reset";
         }
 
         double poseDeltaMeters = estimate.pose()
@@ -248,7 +315,14 @@ public class Swerve extends SubsystemBase {
             ? Constants.PhotonVisionConstants.maxMultiTagPoseDeltaMeters
             : Constants.PhotonVisionConstants.maxSingleTagPoseDeltaMeters;
 
-        return poseDeltaMeters <= maxPoseDeltaMeters;
+        SmartDashboard.putNumber("Vision Pose Delta", poseDeltaMeters);
+        SmartDashboard.putNumber("Vision Max Pose Delta", maxPoseDeltaMeters);
+
+        if (poseDeltaMeters > maxPoseDeltaMeters) {
+            return "Pose delta too large";
+        }
+
+        return null;
     }
 
     private double getVisionTranslationStdDev(PhotonVisionSubsystem.VisionMeasurement estimate) {
@@ -271,31 +345,49 @@ public class Swerve extends SubsystemBase {
     private void addVisionMeasurementsIfAvailable() {
         if (photonVision == null) {
             SmartDashboard.putBoolean("Vision Measurement Accepted", false);
+            SmartDashboard.putBoolean("Vision Measurement Accepted This Cycle", false);
+            SmartDashboard.putString("Vision Reject Reason", "PhotonVision subsystem missing");
             return;
         }
 
-        boolean acceptedMeasurement = false;
+        List<PhotonVisionSubsystem.VisionMeasurement> visionMeasurements =
+            photonVision.getVisionMeasurementsSince(lastVisionTimestampSeconds);
+        boolean acceptedMeasurementThisCycle = false;
+        boolean seededPoseThisCycle = false;
+        String rejectReasonThisCycle = visionMeasurements.isEmpty()
+            ? photonVision.getStatusSummary()
+            : "No valid vision measurements this cycle";
 
-        for (PhotonVisionSubsystem.VisionMeasurement visionMeasurement
-            : photonVision.getVisionMeasurementsSince(lastVisionTimestampSeconds)) {
-            if (!isVisionMeasurementValid(visionMeasurement)) {
+        for (PhotonVisionSubsystem.VisionMeasurement visionMeasurement : visionMeasurements) {
+            String rejectReason = getVisionMeasurementRejectReason(visionMeasurement);
+            if (rejectReason != null) {
+                rejectReasonThisCycle = rejectReason;
                 continue;
             }
 
             double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
-            poseEstimator.addVisionMeasurement(
-                visionMeasurement.pose(),
-                visionMeasurement.timestampSeconds(),
-                VecBuilder.fill(
-                    translationStdDev,
-                    translationStdDev,
-                    Constants.PhotonVisionConstants.visionRotationStdDev
-                )
-            );
+            if (shouldSeedPoseFromVision(visionMeasurement)) {
+                hasFieldPoseReference = true;
+                resetPoseTrackers(getVisionSeedPose(visionMeasurement));
+                seededPoseThisCycle = true;
+            } else {
+                poseEstimator.addVisionMeasurement(
+                    visionMeasurement.pose(),
+                    visionMeasurement.timestampSeconds(),
+                    VecBuilder.fill(
+                        translationStdDev,
+                        translationStdDev,
+                        Constants.PhotonVisionConstants.visionRotationStdDev
+                    )
+                );
+            }
 
             lastVisionTimestampSeconds = visionMeasurement.timestampSeconds();
             lastAcceptedVisionPose = visionMeasurement.pose();
-            acceptedMeasurement = true;
+            hasAcceptedVisionMeasurement = true;
+            hasFieldPoseReference = true;
+            acceptedMeasurementThisCycle = true;
+            lastVisionRejectReason = "Accepted";
 
             SmartDashboard.putNumber("Vision Tag Count", visionMeasurement.tagCount());
             SmartDashboard.putNumber(
@@ -309,7 +401,14 @@ public class Swerve extends SubsystemBase {
             SmartDashboard.putString("Vision Camera", visionMeasurement.cameraName());
         }
 
-        SmartDashboard.putBoolean("Vision Measurement Accepted", acceptedMeasurement);
+        if (!acceptedMeasurementThisCycle) {
+            lastVisionRejectReason = rejectReasonThisCycle;
+        }
+
+        SmartDashboard.putBoolean("Vision Measurement Accepted", hasAcceptedVisionMeasurement);
+        SmartDashboard.putBoolean("Vision Measurement Accepted This Cycle", acceptedMeasurementThisCycle);
+        SmartDashboard.putBoolean("Vision Pose Seeded This Cycle", seededPoseThisCycle);
+        SmartDashboard.putString("Vision Reject Reason", lastVisionRejectReason);
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
@@ -356,6 +455,8 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
         SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
         SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
+        SmartDashboard.putNumber("Driver Heading", getDriverHeading().getDegrees());
+        SmartDashboard.putBoolean("Field Pose Ready", hasFieldPoseReference);
         SmartDashboard.putNumber("Last Vision Pose X", lastAcceptedVisionPose.getX());
         SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
 

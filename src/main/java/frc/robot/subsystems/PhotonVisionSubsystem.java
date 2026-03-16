@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -15,7 +14,10 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,6 +33,15 @@ public class PhotonVisionSubsystem extends SubsystemBase {
         String cameraName
     ) {}
 
+    public static record RobotRelativeTargetObservation(
+        int tagId,
+        Translation2d robotRelativeTargetTranslation,
+        double robotRelativeYawDegrees,
+        double targetArea,
+        double distanceMeters,
+        String cameraName
+    ) {}
+
     private record TagObservation(
         int tagId,
         double distanceMeters,
@@ -42,12 +53,19 @@ public class PhotonVisionSubsystem extends SubsystemBase {
         private final PhotonCamera camera;
         private final PhotonPoseEstimator poseEstimator;
         private final String name;
+        private final Transform3d robotToCamera;
         private PhotonPipelineResult latestResult = new PhotonPipelineResult();
         private VisionMeasurement latestMeasurement;
+        private String latestStatus = "No frames received yet";
 
-        private CameraState(String name, PhotonPoseEstimator poseEstimator) {
+        private CameraState(
+            String name,
+            Transform3d robotToCamera,
+            PhotonPoseEstimator poseEstimator
+        ) {
             this.name = name;
             this.camera = new PhotonCamera(name);
+            this.robotToCamera = robotToCamera;
             this.poseEstimator = poseEstimator;
         }
     }
@@ -67,21 +85,46 @@ public class PhotonVisionSubsystem extends SubsystemBase {
 
     private final AprilTagFieldLayout fieldLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    private final Field2d photonVisionField = new Field2d();
     private final CameraState[] cameraStates = new CameraState[] {
         new CameraState(
             Constants.PhotonVisionConstants.leftCameraName,
+            Constants.PhotonVisionConstants.robotToLeftCamera,
             new PhotonPoseEstimator(fieldLayout, Constants.PhotonVisionConstants.robotToLeftCamera)
         ),
         new CameraState(
             Constants.PhotonVisionConstants.rightCameraName,
+            Constants.PhotonVisionConstants.robotToRightCamera,
             new PhotonPoseEstimator(fieldLayout, Constants.PhotonVisionConstants.robotToRightCamera)
         )
     };
 
     private VisionMeasurement bestRobotPoseEstimate;
 
+    public PhotonVisionSubsystem() {
+        SmartDashboard.putData("PhotonVision Field", photonVisionField);
+    }
+
     public Optional<VisionMeasurement> getBestEstimatedPose() {
         return Optional.ofNullable(bestRobotPoseEstimate);
+    }
+
+    public String getStatusSummary() {
+        StringBuilder statusSummary = new StringBuilder();
+
+        for (int i = 0; i < cameraStates.length; i++) {
+            if (i > 0) {
+                statusSummary.append(" | ");
+            }
+
+            CameraState cameraState = cameraStates[i];
+            statusSummary
+                .append(cameraState.name)
+                .append(": ")
+                .append(cameraState.latestStatus);
+        }
+
+        return statusSummary.toString();
     }
 
     public List<VisionMeasurement> getVisionMeasurementsSince(double timestampSeconds) {
@@ -91,6 +134,33 @@ public class PhotonVisionSubsystem extends SubsystemBase {
             .filter(measurement -> measurement.timestampSeconds() > timestampSeconds)
             .sorted(OLDEST_FIRST)
             .toList();
+    }
+
+    public Optional<RobotRelativeTargetObservation> getBestRobotRelativeAllianceTarget() {
+        boolean preferRedAlliance = Constants.TeamDependentFactors.isRedAlliance();
+        Comparator<RobotRelativeTargetObservation> targetComparator =
+            Comparator.<RobotRelativeTargetObservation>comparingInt(
+                    observation -> isPreferredAllianceTag(observation.tagId(), preferRedAlliance) ? 0 : 1
+                )
+                .thenComparing(
+                    Comparator.comparingDouble(RobotRelativeTargetObservation::targetArea).reversed()
+                )
+                .thenComparingDouble(
+                    observation -> Math.abs(observation.robotRelativeYawDegrees())
+                )
+                .thenComparingDouble(RobotRelativeTargetObservation::distanceMeters);
+
+        return Arrays.stream(cameraStates)
+            .flatMap(cameraState -> cameraState.latestResult.getTargets().stream()
+                .filter(target -> isReefTag(target.getFiducialId()))
+                .map(target -> buildRobotRelativeTargetObservation(
+                    cameraState,
+                    target,
+                    getAutoAimTargetForTag(target.getFiducialId())
+                ))
+                .flatMap(Optional::stream))
+            .sorted(targetComparator)
+            .findFirst();
     }
 
     public double getClosestTag(double[] validTagIds) {
@@ -130,12 +200,100 @@ public class PhotonVisionSubsystem extends SubsystemBase {
     }
 
     public double getDistanceToAutoAimTarget(Pose2d robotPose) {
-        return getAllianceAutoAimTarget().getDistance(robotPose.getTranslation());
+        return getBestRobotRelativeAllianceTarget()
+            .map(RobotRelativeTargetObservation::distanceMeters)
+            .orElseGet(() -> getAllianceAutoAimTarget().getDistance(robotPose.getTranslation()));
+    }
+
+    private boolean containsTag(double[] tagIds, int tagId) {
+        for (double configuredTagId : tagIds) {
+            if (tagId == (int) configuredTagId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isReefTag(int tagId) {
+        return containsTag(Constants.TeamDependentFactors.reefIDsBlue, tagId)
+            || containsTag(Constants.TeamDependentFactors.reefIDsRed, tagId);
+    }
+
+    private boolean isPreferredAllianceTag(int tagId, boolean preferRedAlliance) {
+        return preferRedAlliance
+            ? containsTag(Constants.TeamDependentFactors.reefIDsRed, tagId)
+            : containsTag(Constants.TeamDependentFactors.reefIDsBlue, tagId);
+    }
+
+    private Translation2d getAutoAimTargetForTag(int tagId) {
+        return containsTag(Constants.TeamDependentFactors.reefIDsRed, tagId)
+            ? Constants.FieldConstants.redAutoAimTarget
+            : Constants.FieldConstants.blueAutoAimTarget;
+    }
+
+    private Optional<RobotRelativeTargetObservation> buildRobotRelativeTargetObservation(
+        CameraState cameraState,
+        PhotonTrackedTarget target,
+        Translation2d autoAimTarget
+    ) {
+        Translation2d robotRelativeTagTranslation = getRobotRelativeTagTranslation(cameraState, target);
+        Translation2d robotRelativeTargetTranslation =
+            getTagToAutoAimTargetInTagFrame(target.getFiducialId(), autoAimTarget)
+                .map(tagToTargetInTagFrame -> robotRelativeTagTranslation.plus(
+                    tagToTargetInTagFrame.rotateBy(
+                        getRobotRelativeTagPose(cameraState, target).getRotation()
+                    )
+                ))
+                .orElse(robotRelativeTagTranslation);
+
+        if (!Double.isFinite(robotRelativeTargetTranslation.getX())
+            || !Double.isFinite(robotRelativeTargetTranslation.getY())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+            new RobotRelativeTargetObservation(
+                target.getFiducialId(),
+                robotRelativeTargetTranslation,
+                robotRelativeTargetTranslation.getAngle().getDegrees(),
+                target.getArea(),
+                robotRelativeTargetTranslation.getNorm(),
+                cameraState.name
+            )
+        );
+    }
+
+    private Pose2d getRobotRelativeTagPose(CameraState cameraState, PhotonTrackedTarget target) {
+        Pose3d robotPose = new Pose3d();
+        Pose3d cameraPose = robotPose.transformBy(cameraState.robotToCamera);
+        return cameraPose.transformBy(target.getBestCameraToTarget()).toPose2d();
+    }
+
+    private Translation2d getRobotRelativeTagTranslation(
+        CameraState cameraState,
+        PhotonTrackedTarget target
+    ) {
+        return getRobotRelativeTagPose(cameraState, target).getTranslation();
+    }
+
+    private Optional<Translation2d> getTagToAutoAimTargetInTagFrame(
+        int tagId,
+        Translation2d autoAimTarget
+    ) {
+        return fieldLayout.getTagPose(tagId)
+            .map(Pose3d::toPose2d)
+            .map(tagFieldPose -> autoAimTarget
+                .minus(tagFieldPose.getTranslation())
+                .rotateBy(tagFieldPose.getRotation().unaryMinus()));
     }
 
     private void updateCameraState(CameraState cameraState) {
         List<PhotonPipelineResult> unreadResults = cameraState.camera.getAllUnreadResults();
         if (unreadResults.isEmpty()) {
+            if (!cameraState.camera.isConnected()) {
+                cameraState.latestStatus = "Camera disconnected";
+            }
             return;
         }
 
@@ -144,20 +302,41 @@ public class PhotonVisionSubsystem extends SubsystemBase {
         cameraState.latestMeasurement = buildVisionMeasurement(cameraState, latestResult).orElse(null);
     }
 
+    private boolean hasFieldLayoutTag(PhotonPipelineResult result) {
+        return result.getTargets().stream()
+            .mapToInt(PhotonTrackedTarget::getFiducialId)
+            .filter(fiducialId -> fiducialId >= 0)
+            .anyMatch(fiducialId -> fieldLayout.getTagPose(fiducialId).isPresent());
+    }
+
     private Optional<VisionMeasurement> buildVisionMeasurement(
         CameraState cameraState,
         PhotonPipelineResult result
     ) {
         if (!result.hasTargets()) {
+            cameraState.latestStatus = "No AprilTags detected";
             return Optional.empty();
         }
 
-        Optional<EstimatedRobotPose> estimatedRobotPose =
-            result.getTargets().size() > 1
-                ? cameraState.poseEstimator.estimateCoprocMultiTagPose(result)
-                : cameraState.poseEstimator.estimateLowestAmbiguityPose(result);
+        Optional<EstimatedRobotPose> estimatedRobotPose = Optional.empty();
+        String estimationMode = "LOWEST_AMBIGUITY";
+
+        if (result.getTargets().size() > 1) {
+            estimatedRobotPose = cameraState.poseEstimator.estimateCoprocMultiTagPose(result);
+            estimationMode = "MULTI_TAG_PNP_ON_COPROCESSOR";
+
+            if (estimatedRobotPose.isEmpty()) {
+                estimatedRobotPose = cameraState.poseEstimator.estimateLowestAmbiguityPose(result);
+                estimationMode = "LOWEST_AMBIGUITY fallback";
+            }
+        } else {
+            estimatedRobotPose = cameraState.poseEstimator.estimateLowestAmbiguityPose(result);
+        }
 
         if (estimatedRobotPose.isEmpty()) {
+            cameraState.latestStatus = hasFieldLayoutTag(result)
+                ? "Field tags seen, but no 3D pose estimate. Check calibration and 3D mode"
+                : "Detected tag IDs not in loaded field layout";
             return Optional.empty();
         }
 
@@ -175,6 +354,7 @@ public class PhotonVisionSubsystem extends SubsystemBase {
             .filter(ambiguity -> ambiguity >= 0.0)
             .min()
             .orElse(-1.0);
+        cameraState.latestStatus = "Pose ready via " + estimationMode;
 
         return Optional.of(
             new VisionMeasurement(
@@ -217,8 +397,12 @@ public class PhotonVisionSubsystem extends SubsystemBase {
         for (CameraState cameraState : cameraStates) {
             updateCameraState(cameraState);
             SmartDashboard.putBoolean(
-                "PhotonVision " + cameraState.name + " Connected",
-                cameraState.camera.isConnected()
+                "PhotonVision " + cameraState.name + " Has Targets",
+                cameraState.latestResult.hasTargets()
+            );
+            SmartDashboard.putNumber(
+                "PhotonVision " + cameraState.name + " Target Count",
+                cameraState.latestResult.getTargets().size()
             );
         }
 
@@ -229,19 +413,8 @@ public class PhotonVisionSubsystem extends SubsystemBase {
             .findFirst()
             .orElse(null);
 
-        SmartDashboard.putNumber("Nearest April Tag Red", getClosestTag(Constants.TeamDependentFactors.reefIDsRed));
-        SmartDashboard.putNumber("Nearest April Tag Blue", getClosestTag(Constants.TeamDependentFactors.reefIDsBlue));
-        SmartDashboard.putNumber("Nearest Hub Tage", getClosestTag(Constants.TeamDependentFactors.validAprilTagIds));
-
         if (bestRobotPoseEstimate != null) {
-            SmartDashboard.putNumber("PhotonVision Pose X", bestRobotPoseEstimate.pose().getX());
-            SmartDashboard.putNumber("PhotonVision Pose Y", bestRobotPoseEstimate.pose().getY());
-            SmartDashboard.putNumber(
-                "PhotonVision Pose Heading",
-                bestRobotPoseEstimate.pose().getRotation().getDegrees()
-            );
-            SmartDashboard.putNumber("PhotonVision Tag Count", bestRobotPoseEstimate.tagCount());
-            SmartDashboard.putString("PhotonVision Camera", bestRobotPoseEstimate.cameraName());
+            photonVisionField.setRobotPose(bestRobotPoseEstimate.pose());
         }
     }
 }

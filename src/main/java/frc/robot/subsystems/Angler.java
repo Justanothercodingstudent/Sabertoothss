@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -18,7 +17,6 @@ public class Angler extends SubsystemBase{
     private final Swerve swerve;
 
     private double AnglerPos;
-    private double lastTagSeenTimestampSeconds;
 
     public Angler(PhotonVisionSubsystem photonVision, Swerve swerve) {
         this.photonVision = photonVision;
@@ -41,7 +39,6 @@ public class Angler extends SubsystemBase{
         Angler.setPosition(0.0);
 
         AnglerPos = Constants.Angler.MinAngle;
-        lastTagSeenTimestampSeconds = Timer.getFPGATimestamp();
     }
 
     public Angler() {
@@ -116,23 +113,11 @@ public class Angler extends SubsystemBase{
             return;
         }
 
-        double distanceMeters = photonVision.getDistanceToAutoAimTarget(swerve.getPose());
-        boolean hasTrackedDistance = distanceMeters >= 0.0;
-        double nowSeconds = Timer.getFPGATimestamp();
+        double distanceMeters = photonVision.getDistanceToAutoAimTarget(swerve.getOdometryPose());
+        SmartDashboard.putNumber("Hub Center Distance", distanceMeters);
 
-        SmartDashboard.putNumber("Auto Aim Distance", distanceMeters);
-        SmartDashboard.putBoolean("Auto Aim Distance Valid", hasTrackedDistance);
-
-        if (hasTrackedDistance) {
-            lastTagSeenTimestampSeconds = nowSeconds;
+        if (distanceMeters >= 0.0) {
             setAnglePosition(distanceToMotorRotations(distanceMeters));
-            return;
-        }
-
-        double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
-        SmartDashboard.putNumber("Auto Aim Time Since Seen", timeSinceLastSeen);
-        if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
-            setAnglePosition(Constants.Angler.noTagFallbackAngle);
         }
     }
 
@@ -142,13 +127,6 @@ public class Angler extends SubsystemBase{
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
-
-        SmartDashboard.putNumber(
-            "AprilTag 9 Distance",
-            photonVision == null || swerve == null
-                ? -1.0
-                : photonVision.getDistanceToAutoAimTarget(swerve.getPose())
-        );
     }
 //helllloooooo
 }

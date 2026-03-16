@@ -11,6 +11,8 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -46,8 +48,7 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
-        public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-        public static boolean forceRedTeamForTesting = true; // Set true for testing
+        public static boolean forceRedTeamForTesting = false; // Set true only when intentionally forcing red
 
         public static final double[] validAprilTagIds = {
             2,
@@ -78,36 +79,68 @@ public final class Constants {
             9   // farRightReefIDRed
         };
 
+        public static boolean isRedAlliance() {
+            if (forceRedTeamForTesting) {
+                return true;
+            }
+
+            return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        }
+
         public static double[] getReefIDs() {
-            return redTeam ? reefIDsRed : reefIDsBlue;
+            return isRedAlliance() ? reefIDsRed : reefIDsBlue;
         }
 
 
     }
 
     public static final class FieldConstants {
-        // Matches the PathPlanner navgrid field size in src/main/deploy/pathplanner/navgrid.json.
-        public static final double fieldLengthMeters = 16.54;
-        public static final Translation2d blueAutoAimTarget = new Translation2d(4.626, 4.035);
+        private static final AprilTagFieldLayout reefscapeLayout =
+            AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+        public static final double fieldLengthMeters = reefscapeLayout.getFieldLength();
+        public static final double fieldWidthMeters = reefscapeLayout.getFieldWidth();
+        public static final Translation2d blueAutoAimTarget =
+            averageTagTranslations(TeamDependentFactors.reefIDsBlue);
+        public static final Translation2d redAutoAimTarget =
+            averageTagTranslations(TeamDependentFactors.reefIDsRed);
+
+        private static Translation2d averageTagTranslations(double[] tagIds) {
+            double summedX = 0.0;
+            double summedY = 0.0;
+            int countedTags = 0;
+
+            for (double tagId : tagIds) {
+                var tagPose = reefscapeLayout.getTagPose((int) tagId);
+                if (tagPose.isEmpty()) {
+                    continue;
+                }
+
+                summedX += tagPose.get().getX();
+                summedY += tagPose.get().getY();
+                countedTags++;
+            }
+
+            if (countedTags == 0) {
+                return new Translation2d();
+            }
+
+            return new Translation2d(summedX / countedTags, summedY / countedTags);
+        }
 
         public static Translation2d getAllianceAutoAimTarget() {
-            boolean isRedAlliance =
-                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            boolean isRedAlliance = TeamDependentFactors.isRedAlliance();
 
             if (!isRedAlliance) {
                 return blueAutoAimTarget;
             }
 
-            return new Translation2d(
-                fieldLengthMeters - blueAutoAimTarget.getX(),
-                blueAutoAimTarget.getY()
-            );
+            return redAutoAimTarget;
         }
     }
 
     public static final class PhotonVisionConstants {
-        public static final String leftCameraName = "photon-left";
-        public static final String rightCameraName = "photon-right";
+        public static final String leftCameraName = "Arducam_OV9281_USB_Camera";
+        public static final String rightCameraName = "Arducam_OV9281_USB_Camera (1)";
 
         // Old single-Limelight mount, no longer used.
         // public static final double cameraForwardOffsetMeters = 0.3175;
@@ -160,11 +193,14 @@ public final class Constants {
         );
 
         public static final double minVisionTargetArea = 0.05;
-        public static final double maxSingleTagAmbiguity = 0.70;
-        public static final double maxSingleTagDistanceMeters = 4.0;
+        public static final double maxSingleTagAmbiguity = 0.25;
+        public static final double maxSingleTagDistanceMeters = 3.0;
         public static final double maxMultiTagDistanceMeters = 7.0;
-        public static final double maxSingleTagPoseDeltaMeters = 1.5;
+        public static final double maxSingleTagPoseDeltaMeters = 1.0;
         public static final double maxMultiTagPoseDeltaMeters = 3.0;
+        public static final int minVisionSeedTagCount = 2;
+        public static final double poseSeedOriginToleranceMeters = 0.25;
+        public static final double visionFieldBoundaryMarginMeters = 0.25;
         public static final double visionStdDevBase = 0.10;
         public static final double visionStdDevPerMeter = 0.12;
         public static final double singleTagStdDevMultiplier = 1.5;
@@ -262,7 +298,8 @@ public final class Constants {
             {0.0, 0.0},
             {1.5, 1.0},
             {2.8, 2.0},
-            {4.0, 3.7},
+            {4.0, 2.2},
+            {5.0, 2.4},
             
         };
     }
@@ -291,7 +328,7 @@ public final class Constants {
             {1.0, 0.32},
             {1.7, 0.35},
             {2.5, 0.37},
-            {3.7, 0.65}
+            {3.7, 0.40}
             
         };
 
