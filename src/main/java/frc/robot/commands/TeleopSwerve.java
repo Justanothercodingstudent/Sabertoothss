@@ -100,9 +100,8 @@ public class TeleopSwerve extends Command {
 
         boolean aimAtTag = aimAtTagSup.getAsBoolean();
         boolean fieldPoseReady = s_Swerve.hasFieldPoseReference();
-        Pose2d odometryPose = s_Swerve.getOdometryPose();
         Pose2d fieldPose = s_Swerve.getPose();
-        Pose2d aimPose = fieldPoseReady ? fieldPose : odometryPose;
+        Pose2d aimPose = fieldPose;
         Translation2d configuredAutoAimTarget = photonVision.getAllianceAutoAimTarget();
         Translation2d autoAimTarget = configuredAutoAimTarget;
         Optional<PhotonVisionSubsystem.RobotRelativeTargetObservation> directAutoAimTarget =
@@ -119,7 +118,7 @@ public class TeleopSwerve extends Command {
 
         Translation2d robotTranslation = aimPose.getTranslation();
         Translation2d targetOffset = autoAimTarget.minus(robotTranslation);
-        double distanceToTarget = photonVision.getDistanceToAutoAimTarget(aimPose);
+        double distanceToTarget = photonVision.getDistanceToAutoAimTarget(fieldPose);
         Rotation2d gyroHeading = s_Swerve.getGyroYaw();
         AutoAimState autoAimState = new AutoAimState(
             gyroHeading,

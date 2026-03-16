@@ -113,7 +113,7 @@ public class Angler extends SubsystemBase{
             return;
         }
 
-        double distanceMeters = photonVision.getDistanceToAutoAimTarget(swerve.getOdometryPose());
+        double distanceMeters = photonVision.getDistanceToAutoAimTarget(swerve.getPose());
         SmartDashboard.putNumber("Hub Center Distance", distanceMeters);
 
         if (distanceMeters >= 0.0) {
