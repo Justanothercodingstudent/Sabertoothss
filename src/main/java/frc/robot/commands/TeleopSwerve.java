@@ -29,6 +29,11 @@ public class TeleopSwerve extends Command {
     private static final double AUTO_AIM_CROSSOVER_LOCK_DISTANCE_METERS = 0.75;
     private static final double AUTO_AIM_HEADING_JUMP_GUARD_DISTANCE_METERS = 1.5;
     private static final double AUTO_AIM_MAX_HEADING_JUMP_DEGREES = 100.0;
+    private static final String AUTO_AIM_SOURCE_MANUAL = "Manual";
+    private static final String AUTO_AIM_SOURCE_DIRECT_TAG = "DIRECT_TAG";
+    private static final String AUTO_AIM_SOURCE_FIELD_TARGET = "FIELD_TARGET";
+    private static final String AUTO_AIM_SOURCE_LATCHED_HEADING = "LATCHED_HEADING";
+    private static final String AUTO_AIM_SOURCE_WAITING_FOR_TAG = "WAITING_FOR_TAG";
     private final Swerve s_Swerve;    
     private final DoubleSupplier translationSup;
     private final DoubleSupplier strafeSup;
@@ -43,6 +48,16 @@ public class TeleopSwerve extends Command {
     private boolean hasLatchedAutoAimTarget;
     private Rotation2d latchedAutoAimHeading = new Rotation2d();
     private boolean hasLatchedAutoAimHeading;
+
+    private static record AutoAimState(
+        Rotation2d currentHeading,
+        Rotation2d desiredHeading,
+        Rotation2d rawDesiredHeading,
+        double headingErrorDegrees,
+        double rotationCommand,
+        boolean usedLatchedHeading,
+        String source
+    ) {}
 
     public TeleopSwerve(
             Swerve s_Swerve,
@@ -93,27 +108,28 @@ public class TeleopSwerve extends Command {
         Optional<PhotonVisionSubsystem.RobotRelativeTargetObservation> directAutoAimTarget =
             photonVision.getBestRobotRelativeAllianceTarget();
 
-        if (aimAtTag) {
-            if (!hasLatchedAutoAimTarget) {
-                latchedAutoAimTarget = configuredAutoAimTarget;
-                hasLatchedAutoAimTarget = true;
-            }
+        if (aimAtTag && !hasLatchedAutoAimTarget) {
+            latchedAutoAimTarget = configuredAutoAimTarget;
+            hasLatchedAutoAimTarget = true;
+        }
 
+        if (aimAtTag && hasLatchedAutoAimTarget) {
             autoAimTarget = latchedAutoAimTarget;
-        } else {
-            hasLatchedAutoAimTarget = false;
         }
 
         Translation2d robotTranslation = aimPose.getTranslation();
         Translation2d targetOffset = autoAimTarget.minus(robotTranslation);
         double distanceToTarget = photonVision.getDistanceToAutoAimTarget(aimPose);
         Rotation2d gyroHeading = s_Swerve.getGyroYaw();
-        Rotation2d currentHeading = gyroHeading;
-        Rotation2d desiredHeading = gyroHeading;
-        Rotation2d rawDesiredHeading = gyroHeading;
-        double headingErrorDegrees = 0.0;
-        boolean usedLatchedHeading = false;
-        String autoAimSource = "Manual";
+        AutoAimState autoAimState = new AutoAimState(
+            gyroHeading,
+            gyroHeading,
+            gyroHeading,
+            0.0,
+            rotationCommand,
+            false,
+            AUTO_AIM_SOURCE_MANUAL
+        );
 
         SmartDashboard.putBoolean("Auto Aim Enabled", aimAtTag);
         SmartDashboard.putBoolean("Auto Aim Pose Ready", fieldPoseReady);
@@ -134,102 +150,30 @@ public class TeleopSwerve extends Command {
         );
 
         if (aimAtTag && distanceToTarget > MIN_AUTO_AIM_DISTANCE_METERS) {
-            if (directAutoAimTarget.isPresent()) {
-                PhotonVisionSubsystem.RobotRelativeTargetObservation observation =
-                    directAutoAimTarget.get();
-                double robotRelativeYawDegrees =
-                    observation.robotRelativeYawDegrees()
-                        + Constants.PhotonVisionConstants.cameraHeadingOffsetDegrees;
-
-                currentHeading = gyroHeading;
-                rawDesiredHeading = gyroHeading.rotateBy(
-                    Rotation2d.fromDegrees(robotRelativeYawDegrees)
-                );
-                desiredHeading = rawDesiredHeading;
-                headingErrorDegrees = robotRelativeYawDegrees;
-                rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
-                    tagAimController.calculate(0.0, headingErrorDegrees),
-                    -TAG_AIM_MAX_ANGULAR_SPEED,
-                    TAG_AIM_MAX_ANGULAR_SPEED
-                ));
-                latchedAutoAimHeading = desiredHeading;
-                hasLatchedAutoAimHeading = true;
-                autoAimSource = "DIRECT_TAG";
-            } else if (fieldPoseReady) {
-                currentHeading = s_Swerve.getHeading();
-                rawDesiredHeading = targetOffset.getAngle().rotateBy(
-                    Rotation2d.fromDegrees(Constants.PhotonVisionConstants.cameraHeadingOffsetDegrees)
-                );
-                desiredHeading = rawDesiredHeading;
-
-                if (!hasLatchedAutoAimHeading) {
-                    latchedAutoAimHeading = rawDesiredHeading;
-                    hasLatchedAutoAimHeading = true;
-                } else if (distanceToTarget <= AUTO_AIM_CROSSOVER_LOCK_DISTANCE_METERS) {
-                    desiredHeading = latchedAutoAimHeading;
-                    usedLatchedHeading = true;
-                } else {
-                    double desiredHeadingJumpDegrees =
-                        rawDesiredHeading.minus(latchedAutoAimHeading).getDegrees();
-
-                    if (distanceToTarget <= AUTO_AIM_HEADING_JUMP_GUARD_DISTANCE_METERS
-                        && Math.abs(desiredHeadingJumpDegrees) > AUTO_AIM_MAX_HEADING_JUMP_DEGREES) {
-                        desiredHeading = latchedAutoAimHeading;
-                        usedLatchedHeading = true;
-                    } else {
-                        latchedAutoAimHeading = rawDesiredHeading;
-                    }
-                }
-
-                headingErrorDegrees = desiredHeading.minus(currentHeading).getDegrees();
-                rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
-                    tagAimController.calculate(
-                        currentHeading.getDegrees(),
-                        desiredHeading.getDegrees()
-                    ),
-                    -TAG_AIM_MAX_ANGULAR_SPEED,
-                    TAG_AIM_MAX_ANGULAR_SPEED
-                ));
-                autoAimSource = "FIELD_TARGET";
-            } else if (hasLatchedAutoAimHeading) {
-                currentHeading = gyroHeading;
-                desiredHeading = latchedAutoAimHeading;
-                rawDesiredHeading = latchedAutoAimHeading;
-                headingErrorDegrees = desiredHeading.minus(currentHeading).getDegrees();
-                rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
-                    tagAimController.calculate(
-                        currentHeading.getDegrees(),
-                        desiredHeading.getDegrees()
-                    ),
-                    -TAG_AIM_MAX_ANGULAR_SPEED,
-                    TAG_AIM_MAX_ANGULAR_SPEED
-                ));
-                usedLatchedHeading = true;
-                autoAimSource = "LATCHED_HEADING";
-            } else {
-                tagAimController.reset();
-                tagAimOutputLimiter.reset(0.0);
-                autoAimSource = "WAITING_FOR_TAG";
-            }
-
-            if (autoAimSource.equals("DIRECT_TAG")
-                || autoAimSource.equals("FIELD_TARGET")
-                || autoAimSource.equals("LATCHED_HEADING")) {
-                if (Math.abs(headingErrorDegrees) <= TAG_AIM_TOLERANCE_DEGREES
-                    || tagAimController.atSetpoint()) {
-                    rotationCommand = 0.0;
-                    tagAimOutputLimiter.reset(0.0);
-                }
-            } else {
-                rotationCommand = 0.0;
-            }
-            SmartDashboard.putNumber("Auto Aim Current Heading Degrees", currentHeading.getDegrees());
-            SmartDashboard.putNumber("Auto Aim Desired Heading Degrees", desiredHeading.getDegrees());
-            SmartDashboard.putNumber("Auto Aim Raw Desired Heading Degrees", rawDesiredHeading.getDegrees());
-            SmartDashboard.putNumber("Auto Aim Error Degrees", headingErrorDegrees);
+            autoAimState = calculateAutoAimState(
+                fieldPoseReady,
+                gyroHeading,
+                targetOffset,
+                distanceToTarget,
+                directAutoAimTarget
+            );
+            rotationCommand = autoAimState.rotationCommand();
+            SmartDashboard.putNumber(
+                "Auto Aim Current Heading Degrees",
+                autoAimState.currentHeading().getDegrees()
+            );
+            SmartDashboard.putNumber(
+                "Auto Aim Desired Heading Degrees",
+                autoAimState.desiredHeading().getDegrees()
+            );
+            SmartDashboard.putNumber(
+                "Auto Aim Raw Desired Heading Degrees",
+                autoAimState.rawDesiredHeading().getDegrees()
+            );
+            SmartDashboard.putNumber("Auto Aim Error Degrees", autoAimState.headingErrorDegrees());
             SmartDashboard.putNumber("Auto Aim Rotation Command", rotationCommand);
-            SmartDashboard.putBoolean("Auto Aim Heading Latched", usedLatchedHeading);
-            SmartDashboard.putString("Auto Aim Source", autoAimSource);
+            SmartDashboard.putBoolean("Auto Aim Heading Latched", autoAimState.usedLatchedHeading());
+            SmartDashboard.putString("Auto Aim Source", autoAimState.source());
         } else {
             tagAimController.reset();
             tagAimOutputLimiter.reset(0.0);
@@ -241,7 +185,7 @@ public class TeleopSwerve extends Command {
             SmartDashboard.putNumber("Auto Aim Error Degrees", 0.0);
             SmartDashboard.putNumber("Auto Aim Rotation Command", rotationCommand);
             SmartDashboard.putBoolean("Auto Aim Heading Latched", false);
-            SmartDashboard.putString("Auto Aim Source", "Manual");
+            SmartDashboard.putString("Auto Aim Source", AUTO_AIM_SOURCE_MANUAL);
         }
 
         double speedLimit = Constants.Swerve.maxSpeed;
@@ -252,5 +196,158 @@ public class TeleopSwerve extends Command {
             !robotCentricSup.getAsBoolean(), 
             true
         );
+    }
+
+    private AutoAimState calculateAutoAimState(
+        boolean fieldPoseReady,
+        Rotation2d gyroHeading,
+        Translation2d targetOffset,
+        double distanceToTarget,
+        Optional<PhotonVisionSubsystem.RobotRelativeTargetObservation> directAutoAimTarget
+    ) {
+        if (directAutoAimTarget.isPresent()) {
+            return calculateDirectTagAutoAimState(gyroHeading, directAutoAimTarget.get());
+        }
+
+        if (fieldPoseReady) {
+            return calculateFieldTargetAutoAimState(targetOffset, distanceToTarget);
+        }
+
+        if (hasLatchedAutoAimHeading) {
+            return calculateLatchedHeadingAutoAimState(gyroHeading);
+        }
+
+        tagAimController.reset();
+        tagAimOutputLimiter.reset(0.0);
+        return new AutoAimState(
+            gyroHeading,
+            gyroHeading,
+            gyroHeading,
+            0.0,
+            0.0,
+            false,
+            AUTO_AIM_SOURCE_WAITING_FOR_TAG
+        );
+    }
+
+    private AutoAimState calculateDirectTagAutoAimState(
+        Rotation2d gyroHeading,
+        PhotonVisionSubsystem.RobotRelativeTargetObservation observation
+    ) {
+        double robotRelativeYawDegrees =
+            observation.robotRelativeYawDegrees()
+                + Constants.PhotonVisionConstants.cameraHeadingOffsetDegrees;
+        Rotation2d rawDesiredHeading = gyroHeading.rotateBy(Rotation2d.fromDegrees(robotRelativeYawDegrees));
+        double rotationCommand = getAutoAimRotationCommand(0.0, robotRelativeYawDegrees);
+
+        latchedAutoAimHeading = rawDesiredHeading;
+        hasLatchedAutoAimHeading = true;
+
+        return buildAutoAimState(
+            gyroHeading,
+            rawDesiredHeading,
+            rawDesiredHeading,
+            robotRelativeYawDegrees,
+            rotationCommand,
+            false,
+            AUTO_AIM_SOURCE_DIRECT_TAG
+        );
+    }
+
+    private AutoAimState calculateFieldTargetAutoAimState(
+        Translation2d targetOffset,
+        double distanceToTarget
+    ) {
+        Rotation2d currentHeading = s_Swerve.getHeading();
+        Rotation2d rawDesiredHeading = targetOffset.getAngle().rotateBy(
+            Rotation2d.fromDegrees(Constants.PhotonVisionConstants.cameraHeadingOffsetDegrees)
+        );
+        Rotation2d desiredHeading = rawDesiredHeading;
+        boolean usedLatchedHeading = false;
+
+        if (!hasLatchedAutoAimHeading) {
+            latchedAutoAimHeading = rawDesiredHeading;
+            hasLatchedAutoAimHeading = true;
+        } else if (distanceToTarget <= AUTO_AIM_CROSSOVER_LOCK_DISTANCE_METERS) {
+            desiredHeading = latchedAutoAimHeading;
+            usedLatchedHeading = true;
+        } else {
+            double desiredHeadingJumpDegrees = rawDesiredHeading.minus(latchedAutoAimHeading).getDegrees();
+
+            if (distanceToTarget <= AUTO_AIM_HEADING_JUMP_GUARD_DISTANCE_METERS
+                && Math.abs(desiredHeadingJumpDegrees) > AUTO_AIM_MAX_HEADING_JUMP_DEGREES) {
+                desiredHeading = latchedAutoAimHeading;
+                usedLatchedHeading = true;
+            } else {
+                latchedAutoAimHeading = rawDesiredHeading;
+            }
+        }
+
+        double headingErrorDegrees = desiredHeading.minus(currentHeading).getDegrees();
+        double rotationCommand = getAutoAimRotationCommand(
+            currentHeading.getDegrees(),
+            desiredHeading.getDegrees()
+        );
+
+        return buildAutoAimState(
+            currentHeading,
+            desiredHeading,
+            rawDesiredHeading,
+            headingErrorDegrees,
+            rotationCommand,
+            usedLatchedHeading,
+            AUTO_AIM_SOURCE_FIELD_TARGET
+        );
+    }
+
+    private AutoAimState calculateLatchedHeadingAutoAimState(Rotation2d gyroHeading) {
+        double headingErrorDegrees = latchedAutoAimHeading.minus(gyroHeading).getDegrees();
+        double rotationCommand = getAutoAimRotationCommand(
+            gyroHeading.getDegrees(),
+            latchedAutoAimHeading.getDegrees()
+        );
+
+        return buildAutoAimState(
+            gyroHeading,
+            latchedAutoAimHeading,
+            latchedAutoAimHeading,
+            headingErrorDegrees,
+            rotationCommand,
+            true,
+            AUTO_AIM_SOURCE_LATCHED_HEADING
+        );
+    }
+
+    private AutoAimState buildAutoAimState(
+        Rotation2d currentHeading,
+        Rotation2d desiredHeading,
+        Rotation2d rawDesiredHeading,
+        double headingErrorDegrees,
+        double rotationCommand,
+        boolean usedLatchedHeading,
+        String source
+    ) {
+        if (Math.abs(headingErrorDegrees) <= TAG_AIM_TOLERANCE_DEGREES || tagAimController.atSetpoint()) {
+            tagAimOutputLimiter.reset(0.0);
+            rotationCommand = 0.0;
+        }
+
+        return new AutoAimState(
+            currentHeading,
+            desiredHeading,
+            rawDesiredHeading,
+            headingErrorDegrees,
+            rotationCommand,
+            usedLatchedHeading,
+            source
+        );
+    }
+
+    private double getAutoAimRotationCommand(double currentHeadingDegrees, double desiredHeadingDegrees) {
+        return tagAimOutputLimiter.calculate(MathUtil.clamp(
+            tagAimController.calculate(currentHeadingDegrees, desiredHeadingDegrees),
+            -TAG_AIM_MAX_ANGULAR_SPEED,
+            TAG_AIM_MAX_ANGULAR_SPEED
+        ));
     }
 }

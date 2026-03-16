@@ -139,20 +139,14 @@ public class PhotonVisionSubsystem extends SubsystemBase {
     public Optional<RobotRelativeTargetObservation> getBestRobotRelativeAllianceTarget() {
         boolean preferRedAlliance = Constants.TeamDependentFactors.isRedAlliance();
         Comparator<RobotRelativeTargetObservation> targetComparator =
-            Comparator.<RobotRelativeTargetObservation>comparingInt(
-                    observation -> isPreferredAllianceTag(observation.tagId(), preferRedAlliance) ? 0 : 1
-                )
-                .thenComparing(
-                    Comparator.comparingDouble(RobotRelativeTargetObservation::targetArea).reversed()
-                )
-                .thenComparingDouble(
-                    observation -> Math.abs(observation.robotRelativeYawDegrees())
-                )
+            Comparator.comparingDouble(RobotRelativeTargetObservation::targetArea)
+                .reversed()
+                .thenComparingDouble(observation -> Math.abs(observation.robotRelativeYawDegrees()))
                 .thenComparingDouble(RobotRelativeTargetObservation::distanceMeters);
 
         return Arrays.stream(cameraStates)
             .flatMap(cameraState -> cameraState.latestResult.getTargets().stream()
-                .filter(target -> isReefTag(target.getFiducialId()))
+                .filter(target -> isPreferredAllianceTag(target.getFiducialId(), preferRedAlliance))
                 .map(target -> buildRobotRelativeTargetObservation(
                     cameraState,
                     target,
@@ -213,11 +207,6 @@ public class PhotonVisionSubsystem extends SubsystemBase {
         }
 
         return false;
-    }
-
-    private boolean isReefTag(int tagId) {
-        return containsTag(Constants.TeamDependentFactors.reefIDsBlue, tagId)
-            || containsTag(Constants.TeamDependentFactors.reefIDsRed, tagId);
     }
 
     private boolean isPreferredAllianceTag(int tagId, boolean preferRedAlliance) {
