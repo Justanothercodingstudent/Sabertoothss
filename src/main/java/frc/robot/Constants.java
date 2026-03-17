@@ -189,18 +189,18 @@ public final class Constants {
         public static final double SpinSpeed = -0.8;
 
         // We are changing our code to be RPM based as opposed to just speed based
-        public static int TestTargetRPS = 28; // Based on hood angle 1.0 
-        public static double ShooterToleranceRPS = 6.0; // 10 percent tolerance
+        public static int TestTargetRPS = 35; // Based on hood angle 1.0 
+        public static double ShooterToleranceRPS = 2; // 10 percent tolerance
 
         //PID for new shooter control method\
 
-        public static final double LeftSideShooterkV = 0.2;
-        public static final double LeftSideShooterkP = 0;
+        public static final double LeftSideShooterkV = 0.12;
+        public static final double LeftSideShooterkP = 0.65; // was .6
         public static final double LeftSideShooterkI = 0;
         public static final double LeftSideShooterkD = 0;
 
-        public static final double RightSideShooterkV = 0.2;
-        public static final double RightSideShooterkP = 0;
+        public static final double RightSideShooterkV = 0.12;
+        public static final double RightSideShooterkP = 0.65;
         public static final double RightSideShooterkI = 0;
         public static final double RightSideShooterkD = 0;
 
