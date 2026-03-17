@@ -46,7 +46,7 @@ public class IntakeWheels extends Command{
             if (ltPressed){
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 Intake.roller(Rollerspeed);
-            } else if (Spin.FrontLeftRPM() >= -5){
+            } else if (Spin.getLeftRPS() >= -5){
                 Intake.roller(0);
             }
 
