@@ -164,8 +164,12 @@ public final class Constants {
     }
 
     public static final class Spin{
-        // public static final boolean RightInverted = false;
-        // public static final boolean LeftInverted = true; TalonFX doesn't have an invert function??
+        public static final boolean RightInverted = false;
+        public static final boolean LeftInverted = true; 
+
+        // IF TRUE USE NEW SHOOTER FUNCTIONALITY ELSE
+        // IT USES OLD SHOOTER FUNCTIONALITY (SPEED BASED NOT RPS BASED)
+        public static final boolean ClosedLoopShooter = true;
 
         public static final int UptakeID = 17;
 
@@ -185,8 +189,8 @@ public final class Constants {
         public static final double SpinSpeed = -0.8;
 
         // We are changing our code to be RPM based as opposed to just speed based
-        public static int TestTargetRPS = 20;
-        public static int ShooterToleranceRPS = 100;
+        public static int TestTargetRPS = 60; // 3600 RPM
+        public static double ShooterToleranceRPS = 6.0; // 10 percent tolerance
 
         //PID for new shooter control method\
 

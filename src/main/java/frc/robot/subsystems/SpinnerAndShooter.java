@@ -14,6 +14,8 @@ import frc.robot.Constants;
 
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
@@ -59,6 +61,20 @@ public class SpinnerAndShooter extends SubsystemBase{
         FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
         FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
 
+        TalonFXConfiguration leftConfig = new TalonFXConfiguration();
+        leftConfig.MotorOutput.Inverted = Constants.Spin.LeftInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+        LeftFront.getConfigurator().apply(leftConfig);
+
+        TalonFXConfiguration rightConfig = new TalonFXConfiguration();
+        rightConfig.MotorOutput.Inverted = Constants.Spin.RightInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+        RightFront.getConfigurator().apply(rightConfig);
+
+        
+
         LeftBack.setControl(new Follower(LeftFront.getDeviceID(), MotorAlignmentValue.Aligned));
         RightBack.setControl(new Follower(RightFront.getDeviceID(), MotorAlignmentValue.Aligned));
 
@@ -100,8 +116,14 @@ public class SpinnerAndShooter extends SubsystemBase{
         RightFront.setControl(RightRequest.withVelocity(RightRPS));
     }
 
-    public void STOP(){
+    public void STOPSHOOTER(){
         setShooterRPS(0, 0);
+    }
+
+    public void STOPALL(){
+        STOPSHOOTER();
+        SpinSpeed(0);
+        roller(0);
     }
 
     public double getLeftRPS(){

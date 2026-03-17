@@ -133,8 +133,14 @@ public class SpinnerAndShooterCmd extends Command{
                 //ShootSpeed = Constants.Spin.ShootSpeed;
                 SpinSpeed = Constants.Spin.SpinSpeed;
                 Rollerspeed = Constants.Spin.Rollerspeed;
-                shoot.ShootSpeed(ShootSpeed);
-                if(shoot.FrontLeftRPM() <= ShootReq){
+
+                if (Constants.Spin.ClosedLoopShooter) {
+                    shoot.setShooterRPS(ShootSpeed, ShootSpeed);
+                } else {
+                    shoot.OpenShootSpeed(ShootSpeed);
+                }
+
+                if(shoot.getLeftRPS() >= ShootReq){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
                 } else {
@@ -144,10 +150,15 @@ public class SpinnerAndShooterCmd extends Command{
             } else if (joyLeftPressed){
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 shoot.roller(-Rollerspeed);
-            } else if (!rtPressed & !ltPressed){
+            } else if (!rtPressed && !ltPressed){
                 shoot.SpinSpeed(0);
                 shoot.roller(0);
-                shoot.ShootSpeed(Constants.Spin.CoastSpeed);
+
+                if (Constants.Spin.ClosedLoopShooter) {
+                    shoot.setShooterRPS(Constants.Spin.CoastSpeed, Constants.Spin.CoastSpeed);
+                } else {
+                    shoot.OpenShootSpeed(Constants.Spin.CoastSpeed);
+                }
                 
             }
         }
