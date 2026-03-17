@@ -60,7 +60,8 @@ public class AutoController {
     public Command Shoot(){
         return new ParallelCommandGroup(
             new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
-            new InstantCommand(() -> Shoot.ShootSpeed(ShootSpeed), Shoot),
+            // TODO: Change this to use the new shooter functionality instead of the old one, but for now we will just leave the old one commented since we haven't tested the new one yet
+            //new InstantCommand(() -> Shoot.ShootSpeed(ShootSpeed), Shoot),
             new WaitCommand(0.5),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
             new WaitCommand(2),
