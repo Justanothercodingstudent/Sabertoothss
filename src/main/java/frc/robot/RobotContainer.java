@@ -26,6 +26,7 @@ import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
 import frc.robot.commands.climberCmd;
 import frc.robot.commands.AnglerCmd;
+import frc.robot.commands.IntakeWheels;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
@@ -71,6 +72,8 @@ public class RobotContainer {
   private climberCmd climbCmd;
   private AnglerCmd anglerCmd;
 
+  private IntakeWheels InWheels;
+
   private Autos autos;
   private AutoController autoController;
 
@@ -89,6 +92,9 @@ public class RobotContainer {
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, operator);
     Intake.setDefaultCommand(intakeCmd);
+
+    InWheels = new IntakeWheels(Intake, driver);
+    Intake.setDefaultCommand(InWheels);
 
     angler = new Angler(limelight);
     anglerCmd = new AnglerCmd(angler, driver);

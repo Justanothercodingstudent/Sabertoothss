@@ -47,6 +47,7 @@ public final class Constants {
         public static boolean forceRedTeamForTesting = true; // Set true for testing
 
         public static final double[] validAprilTagIds = {
+            1,
             2,
             3,  
             4,  
@@ -109,12 +110,12 @@ public final class Constants {
     public static final class Intake {
         public static final int IntakeID = 55;
         public static final double IntakeSpeed = -0.50;
-        public static final double ExtendSpeed = 0.1;
+        public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
         public static final int IntakeOutID = 13;
 
-        public static final double maxExtend = 12.5;
+        public static final double maxExtend = 12.0;
         public static final double JigExtend = 6.5;
         public static final double minExtend = 0.0;
 
@@ -175,27 +176,27 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.2; 
+        public static final double Rollerspeed = 0.3; 
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
-        public static final double SpinSpeed = -0.8;
+        public static final double SpinSpeed = -0.50;
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
             {0.0, 0.30},
-            {1.0, 0.32},
-            {1.7, 0.35},
-            {2.5, 0.37},
+            {1.0, 0.35},
+            {1.7, 0.38},
+            {2.5, 0.4},
             {3.7, 0.65}
             
         };
 
         public static final double[][] ShootReqTable = { 
             //{AnglePos(Rotations), Roll Speed Requirement}
-            {1.0, -28.0},
-            {1.7, -31.0},
-            {2.5, -35.0},
+            {1.0, -26.0},
+            {1.7, -29.0},
+            {2.5, -33.0},
         };
     }
 

@@ -88,9 +88,6 @@ public class IntakeCmd extends Command {
             } else if (ltPressed){
                 Rollerspeed = Constants.Spin.Rollerspeed;
                 Intake.roller(Rollerspeed);
-            } else if (joyLeftPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                Intake.roller(-Rollerspeed);
             } else if (!rtPressed & !ltPressed){
                 Intake.roller(0);
             }
