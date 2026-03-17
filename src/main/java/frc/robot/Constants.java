@@ -181,6 +181,21 @@ public final class Constants {
         public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.8;
 
+        // We are changing our code to be RPM based as opposed to just speed based
+        public static int TestTargetRPM = 2000;
+
+        //PID for new shooter control method\
+
+        public static final double LeftSideShooterkV = 0.2;
+        public static final double LeftSideShooterkP = 0;
+        public static final double LeftSideShooterkI = 0;
+        public static final double LeftSideShooterkD = 0;
+
+        public static final double RightSideShooterkV = 0.2;
+        public static final double RightSideShooterkP = 0;
+        public static final double RightSideShooterkI = 0;
+        public static final double RightSideShooterkD = 0;
+
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
             {0.0, 0.30},

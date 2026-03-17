@@ -12,6 +12,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.Constants;
 
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.Follower;
+
 public class SpinnerAndShooter extends SubsystemBase{
 
     private TalonFX UptakeMotor;
@@ -24,6 +28,9 @@ public class SpinnerAndShooter extends SubsystemBase{
 
     private TalonFX BackRoll;
     private TalonFX FrontRoll;
+
+    private final VelocityVoltage leftRequest = new VelocityVoltage(0);
+    private final VelocityVoltage rightRequest = new VelocityVoltage(0);
    
     
 
@@ -49,6 +56,24 @@ public class SpinnerAndShooter extends SubsystemBase{
 
         FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
         FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
+
+        LeftBack.setControl(new Follower(LeftFront.getDeviceID(), false));
+        RightBack.setControl(new Follower(RightFront.getDeviceID(), false));
+
+        var LeftGains = new Slot0Configs();
+        LeftGains.kV = Constants.Spin.LeftSideShooterkV;
+        LeftGains.kP = Constants.Spin.LeftSideShooterkP;
+        LeftGains.kI = Constants.Spin.LeftSideShooterkI;
+        LeftGains.kD = Constants.Spin.LeftSideShooterkD;
+
+        var RightGains = new Slot0Configs();
+        RightGains.kV = Constants.Spin.RightSideShooterkV;
+        RightGains.kP = Constants.Spin.RightSideShooterkP;
+        RightGains.kI = Constants.Spin.RightSideShooterkI;
+        RightGains.kD = Constants.Spin.RightSideShooterkD;
+
+        LeftFront.getConfigurator().apply(LeftGains);
+        RightFront.getConfigurator().apply(RightGains);
     }
 
      public double FrontLeftRPM(){
@@ -65,6 +90,10 @@ public class SpinnerAndShooter extends SubsystemBase{
 
         LeftBack.set(-speed);
         RightBack.set(speed);
+    }
+
+    public void ShootRPM(){
+        
     }
     
 
