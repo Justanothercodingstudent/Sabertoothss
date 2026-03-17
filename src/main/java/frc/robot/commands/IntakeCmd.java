@@ -64,13 +64,6 @@ public class IntakeCmd extends Command {
             boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
-            if (ltPressed){
-                speed = Constants.Intake.IntakeSpeed;
-                Intake.setIntakeSpeed(speed);
-            }else{
-                Intake.setIntakeSpeed(0);
-            }
-
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
                 if (shoot.FrontLeftRPM() <= -20){
                     activeIntakeCycle = new IntakeCycle(Intake)
@@ -85,9 +78,6 @@ public class IntakeCmd extends Command {
             } else if (yPressed){
                  IntakePos = Constants.Intake.minExtend;
                 Intake.setIntakePosition(IntakePos);
-            } else if (ltPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                Intake.roller(Rollerspeed);
             } else if (!rtPressed & !ltPressed){
                 Intake.roller(0);
             }

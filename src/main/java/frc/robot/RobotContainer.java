@@ -89,20 +89,19 @@ public class RobotContainer {
     limelightCmd = new LimelightCmd(limelight);
     limelight.setDefaultCommand(limelightCmd);
 
-    Intake = new intake();
-    intakeCmd = new IntakeCmd(Intake, operator);
-    Intake.setDefaultCommand(intakeCmd);
-
-    InWheels = new IntakeWheels(Intake, driver);
-    Intake.setDefaultCommand(InWheels);
-
     angler = new Angler(limelight);
-    anglerCmd = new AnglerCmd(angler, driver);
+    anglerCmd = new AnglerCmd(angler, operator);
     angler.setDefaultCommand(anglerCmd);
 
     Spin = new SpinnerAndShooter();
     ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler);
     Spin.setDefaultCommand(ShootCmd);
+
+    Intake = new intake();
+    intakeCmd = new IntakeCmd(Intake, operator);
+    Intake.setDefaultCommand(intakeCmd);
+
+    InWheels = new IntakeWheels(Intake, driver, Spin);
 
     climb = new climber();
     climbCmd = new climberCmd(climb, driver);

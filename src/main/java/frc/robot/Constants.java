@@ -58,29 +58,20 @@ public final class Constants {
             11   
         };
 
-        public static final double[] reefIDsBlue = {
-            18, // closeMiddleReefIDBlue
-            19, // closeLeftReefIDBlue
-            17, // closeRightReefIDBlue
-            21, // farMiddleReefIDBlue
-            20, // farLeftReefIDBlue
-            22  // farRightReefIDBlue
+        public static final double[] BlueTags = {
+            18,
+            19,
+            20,
+            21,
+            24,
+            25,
+            26,
+            27
         };
 
-        public static final double[] reefIDsRed = {
-            7,  // closeMiddleReefIDRed
-            6,  // closeLeftReefIDRed
-            8,  // closeRightReefIDRed
-            10, // farMiddleReefIDRed
-            11, // farLeftReefIDRed
-            9   // farRightReefIDRed
-        };
-
-        public static double[] getReefIDs() {
-            return redTeam ? reefIDsRed : reefIDsBlue;
+        public static double[] getHubIDs() {
+            return redTeam ? validAprilTagIds : BlueTags;
         }
-
-
     }
 
     public static class LimelightConstants {
@@ -271,7 +262,6 @@ public final class Constants {
       /* Swerve Profiling Values */
       /** Meters per Second */
       public static final double maxSpeed = 1.5; //done
-      public static final double ElevatorAboveHalfMultiplier = 0.25;
       /** Radians per Second */
       public static final double maxAngularVelocity = 2 * 2 * Math.PI; //done
 

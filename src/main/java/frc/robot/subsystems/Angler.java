@@ -114,7 +114,7 @@ public class Angler extends SubsystemBase{
             return;
         }
 
-        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.validAprilTagIds);;
+        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.getHubIDs());;
         double distanceMeters = limelight.getDistanceToTag(trackedTagId);
         boolean hasTrackedTag = distanceMeters >= 0.0;
         double nowSeconds = Timer.getFPGATimestamp();
@@ -137,7 +137,6 @@ public class Angler extends SubsystemBase{
 
     @Override
     public void periodic(){
-        updateFromTrackedAprilTag();
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);

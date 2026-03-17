@@ -165,10 +165,8 @@ public class Limelight extends SubsystemBase {
     @Override
     public void periodic() {
         updateValues();
-        SmartDashboard.putNumber("Nearest April Tag Red", getClosestTag(Constants.TeamDependentFactors.reefIDsRed));
-        SmartDashboard.putNumber("Nearest April Tag Blue", getClosestTag(Constants.TeamDependentFactors.reefIDsBlue));
 
-        SmartDashboard.putNumber("Nearest Hub Tage", getClosestTag(Constants.TeamDependentFactors.validAprilTagIds));
+        SmartDashboard.putNumber("Nearest Hub Tag", getClosestTag(Constants.TeamDependentFactors.getHubIDs()));
 
         SmartDashboard.putNumber("BotPose x", getAdjustedRobotPose().getTranslation().getX());
         SmartDashboard.putNumber("BotPose y", getAdjustedRobotPose().getTranslation().getY());

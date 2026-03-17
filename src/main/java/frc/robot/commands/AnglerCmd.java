@@ -42,6 +42,9 @@ public class AnglerCmd extends Command{
             boolean bpressed = xbox.getBButtonPressed();
             boolean ypressed = xbox.getYButtonPressed();
 
+            if (rtPressed){
+                Angler.updateFromTrackedAprilTag();
+            } 
 
             /*if (ypressed){
                 if (AnglePos <= 4.5){
