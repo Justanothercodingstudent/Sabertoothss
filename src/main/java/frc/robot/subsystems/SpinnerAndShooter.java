@@ -12,6 +12,14 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.Constants;
 
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+
+
 public class SpinnerAndShooter extends SubsystemBase{
 
     private TalonFX UptakeMotor;
@@ -24,6 +32,9 @@ public class SpinnerAndShooter extends SubsystemBase{
 
     private TalonFX BackRoll;
     private TalonFX FrontRoll;
+
+    private final VelocityVoltage LeftRequest = new VelocityVoltage(0);
+    private final VelocityVoltage RightRequest = new VelocityVoltage(0);
    
     
 
@@ -49,22 +60,83 @@ public class SpinnerAndShooter extends SubsystemBase{
 
         FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
         FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
-    }
 
-     public double FrontLeftRPM(){
-        return LeftFront.getVelocity().getValueAsDouble();
-     }
+        TalonFXConfiguration leftConfig = new TalonFXConfiguration();
+        leftConfig.MotorOutput.Inverted = Constants.Spin.LeftInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+        LeftFront.getConfigurator().apply(leftConfig);
+
+        TalonFXConfiguration rightConfig = new TalonFXConfiguration();
+        rightConfig.MotorOutput.Inverted = Constants.Spin.RightInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+        RightFront.getConfigurator().apply(rightConfig);
+
+        
+
+        LeftBack.setControl(new Follower(LeftFront.getDeviceID(), MotorAlignmentValue.Aligned));
+        RightBack.setControl(new Follower(RightFront.getDeviceID(), MotorAlignmentValue.Aligned));
+
+        var LeftGains = new Slot0Configs();
+        LeftGains.kV = Constants.Spin.LeftSideShooterkV;
+        LeftGains.kP = Constants.Spin.LeftSideShooterkP;
+        LeftGains.kI = Constants.Spin.LeftSideShooterkI;
+        LeftGains.kD = Constants.Spin.LeftSideShooterkD;
+
+        var RightGains = new Slot0Configs();
+        RightGains.kV = Constants.Spin.RightSideShooterkV;
+        RightGains.kP = Constants.Spin.RightSideShooterkP;
+        RightGains.kI = Constants.Spin.RightSideShooterkI;
+        RightGains.kD = Constants.Spin.RightSideShooterkD;
+
+        LeftFront.getConfigurator().apply(LeftGains);
+        RightFront.getConfigurator().apply(RightGains);
+    }
 
     public void SpinSpeed(double speed){
         UptakeMotor.set(speed);
     }
 
-    public void ShootSpeed(double speed){
-        LeftFront.set(-speed);
-        RightFront.set(speed);
+    // public void ShootSpeed(double speed){
+    //     LeftFront.set(-speed);
+    //     RightFront.set(speed);
 
-        LeftBack.set(-speed);
-        RightBack.set(speed);
+    //     LeftBack.set(-speed);
+    //     RightBack.set(speed);
+    // }
+
+    public void OpenShootSpeed(double speed){
+        LeftFront.set(speed);
+        RightFront.set(speed);
+    }
+
+    public void setShooterRPS( double LeftRPS, double RightRPS){
+        LeftFront.setControl(LeftRequest.withVelocity(LeftRPS));
+        RightFront.setControl(RightRequest.withVelocity(RightRPS));
+    }
+
+    public void STOPSHOOTER(){
+        setShooterRPS(0, 0);
+    }
+
+    public void STOPALL(){
+        STOPSHOOTER();
+        SpinSpeed(0);
+        roller(0);
+    }
+
+    public double getLeftRPS(){
+        return LeftFront.getVelocity().getValueAsDouble();
+     }
+
+     public double getRightRPS(){
+        return RightFront.getVelocity().getValueAsDouble();
+    }
+
+    public boolean isAtSpeed(){
+        return Math.abs(getLeftRPS() - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS
+            && Math.abs(getRightRPS() - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS;
     }
     
 
@@ -78,9 +150,10 @@ public class SpinnerAndShooter extends SubsystemBase{
     @Override
     public void periodic() {
 
-        
-
-        SmartDashboard.putNumber("LeftFront Shoot Speed", FrontLeftRPM());
+        SmartDashboard.putNumber("Left Shooter RPS", getLeftRPS());
+        SmartDashboard.putNumber("Right Shooter RPS", getRightRPS());
+        SmartDashboard.putNumber("Target Shooter RPS", Constants.Spin.TestTargetRPS);
+        SmartDashboard.putBoolean("Shooter At Speed", isAtSpeed());
 
         SmartDashboard.putNumber("Speed of Shooter", Constants.Spin.ShootSpeed);
 
