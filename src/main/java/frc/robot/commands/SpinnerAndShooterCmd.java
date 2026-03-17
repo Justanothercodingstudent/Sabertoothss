@@ -135,7 +135,7 @@ public class SpinnerAndShooterCmd extends Command{
                 Rollerspeed = Constants.Spin.Rollerspeed;
 
                 if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(ShootSpeed, ShootSpeed);
+                    shoot.setShooterRPS(Constants.Spin.TestTargetRPS, Constants.Spin.TestTargetRPS);
                 } else {
                     shoot.OpenShootSpeed(ShootSpeed);
                 }
@@ -155,9 +155,9 @@ public class SpinnerAndShooterCmd extends Command{
                 shoot.roller(0);
 
                 if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(Constants.Spin.CoastSpeed, Constants.Spin.CoastSpeed);
+                    shoot.setShooterRPS(Constants.Spin.TestTargetRPS, Constants.Spin.TestTargetRPS);
                 } else {
-                    shoot.OpenShootSpeed(Constants.Spin.CoastSpeed);
+                    shoot.OpenShootSpeed(Constants.Spin.ShootSpeed);
                 }
                 
             }
