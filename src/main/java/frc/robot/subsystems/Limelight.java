@@ -68,6 +68,7 @@ public class Limelight extends SubsystemBase {
 
 
     public void updateValues() {
+        applyHubCenterOffset();
 
         /*LimelightHelpers.LimelightTarget_Fiducial[] targets = LimelightHelpers.getLatestResults(name).targets_Fiducials;
         
@@ -137,6 +138,51 @@ public class Limelight extends SubsystemBase {
             fiducial.txnc,
             fiducial.tync
         };
+    }
+
+    public static Translation2d getHubCenterOffset(int tagId) {
+        switch (tagId) {
+            case 2:  return new Translation2d(0.0001016, -0.6033770);
+            case 3:  return new Translation2d(0.6036564, -0.3555746);
+            case 4:  return new Translation2d(0.6036564, 0.0000254);
+            case 5:  return new Translation2d(0.0001016, 0.6034278);
+            case 8:  return new Translation2d(-0.3554984, 0.6034278);
+            case 9:  return new Translation2d(-0.6036564, 0.3556254);
+            case 10: return new Translation2d(-0.6036564, 0.0000254);
+            case 11: return new Translation2d(-0.3554984, -0.6033770);
+            case 18: return new Translation2d(-0.0001524, 0.6034278);
+            case 19: return new Translation2d(-0.6037072, 0.3556254);
+            case 20: return new Translation2d(-0.6037072, 0.0000254);
+            case 21: return new Translation2d(-0.0001524, -0.6033770);
+            case 24: return new Translation2d(0.3554476, -0.6033770);
+            case 25: return new Translation2d(0.6036056, -0.3555746);
+            case 26: return new Translation2d(0.6036056, 0.0000254);
+            case 27: return new Translation2d(0.3554476, 0.6034278);
+            default:
+                throw new IllegalArgumentException("Tag " + tagId + " is not a hub tag");
+        }
+    }
+
+    public Translation2d getCurrentHubCenterOffset() {
+        int tagId = (int) LimelightHelpers.getFiducialID(name);
+        if (tagId <= 0) {
+            return new Translation2d();
+        }
+
+        try {
+            return getHubCenterOffset(tagId);
+        } catch (IllegalArgumentException ex) {
+            return new Translation2d();
+        }
+    }
+
+    public void applyHubCenterOffset() {
+        Translation2d offset = getCurrentHubCenterOffset();
+        LimelightHelpers.setFiducial3DOffset(name, offset.getX(), offset.getY(), 0.0);
+
+        SmartDashboard.putNumber("Limelight Offset Tag ID", LimelightHelpers.getFiducialID(name));
+        SmartDashboard.putNumber("Limelight Fiducial Offset X", offset.getX());
+        SmartDashboard.putNumber("Limelight Fiducial Offset Y", offset.getY());
     }
 
 
