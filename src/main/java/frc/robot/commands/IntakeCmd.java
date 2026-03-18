@@ -78,8 +78,6 @@ public class IntakeCmd extends Command {
             } else if (yPressed){
                  IntakePos = Constants.Intake.minExtend;
                 Intake.setIntakePosition(IntakePos);
-            } else if (!rtPressed & !ltPressed){
-                Intake.roller(0);
             }
 
             if (lbPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {

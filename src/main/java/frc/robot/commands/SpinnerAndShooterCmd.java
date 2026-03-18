@@ -112,6 +112,8 @@ public class SpinnerAndShooterCmd extends Command{
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
 
+            
+
             /*if(apressed){
                 Constants.Spin.ShootSpeed += 0.05;
             }
@@ -129,8 +131,10 @@ public class SpinnerAndShooterCmd extends Command{
                     ShootSpeed = 0.5;
                 }*/
 
-                double ShootSpeed = AnglerShoot(angler.getAnglePos());
+                double TableShootSpeed = AnglerShoot(angler.getAnglePos());
                 double ShootReq = ShootReq(angler.getAnglePos());
+
+                SmartDashboard.putNumber("Shoot Speed Target", TableShootSpeed);
 
                 //double ShootSpeed = SmartDashboard.getNumber("Shoot Speed",   Constants.Spin.ShootSpeed);
                 //ShootSpeed = Constants.Spin.ShootSpeed;
@@ -138,7 +142,7 @@ public class SpinnerAndShooterCmd extends Command{
                 Rollerspeed = Constants.Spin.Rollerspeed;
 
                 if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(ShootSpeed, ShootSpeed);
+                    shoot.setShooterRPS(TableShootSpeed, TableShootSpeed);
                 } else {
                     shoot.OpenShootSpeed(ShootSpeed);
                 }
@@ -155,14 +159,9 @@ public class SpinnerAndShooterCmd extends Command{
                 shoot.roller(-Rollerspeed);
             } else if (!rtPressed && !ltPressed){
                 shoot.SpinSpeed(0);
-                if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(Constants.Spin.TestTargetRPS, Constants.Spin.TestTargetRPS);
-                } else {
-                    shoot.OpenShootSpeed(Constants.Spin.ShootSpeed);
-                }
-            } else if (shoot.getLeftRPS() >= -5 && Intake.getIntakeSpeed() <= 0.1) {
+                shoot.OpenShootSpeed(0);
+            } else if (shoot.getLeftRPS() < 5 && Intake.getIntakeSpeed() < 1) {
                 shoot.roller(0);
-                
             }
         }
 

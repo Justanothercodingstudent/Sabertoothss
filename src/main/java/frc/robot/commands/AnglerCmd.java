@@ -44,7 +44,9 @@ public class AnglerCmd extends Command{
 
             if (rtPressed){
                 Angler.updateFromTrackedAprilTag();
-            } 
+            } else {
+                Angler.setAnglePosition(0);
+            }
 
             /*if (ypressed){
                 if (AnglePos <= 4.5){

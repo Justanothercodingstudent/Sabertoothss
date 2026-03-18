@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 
 public class TeleopSwerve extends Command {    
-    private static final int TARGET_TAG_ID = 1;
     private static final double TAG_AIM_KP = 0.025;
     private static final double TAG_AIM_KI = 0.0;
     private static final double TAG_AIM_KD = 0.0;
@@ -72,11 +71,17 @@ public class TeleopSwerve extends Command {
         double rotationCommand = rotationVal * Constants.Swerve.maxAngularVelocity;
 
         boolean aimAtTag = aimAtTagSup.getAsBoolean();
-        double[] tagData = limelight == null ? null : limelight.getTarget(TARGET_TAG_ID);
+        double targetTagId = limelight == null
+            ? -1.0
+            : limelight.getClosestTag(Constants.TeamDependentFactors.getHubIDs());
+        double[] tagData = targetTagId < 0.0
+            ? null
+            : limelight.getTarget((int) targetTagId);
         boolean tagVisible = tagData != null;
 
-        SmartDashboard.putBoolean("Tag 1 Aim Enabled", aimAtTag);
-        SmartDashboard.putBoolean("Tag 1 Visible", tagVisible);
+        SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag);
+        SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
+        SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
 
         if (aimAtTag && tagVisible) {
             double yawErrorDegrees = tagData[1];
@@ -91,13 +96,13 @@ public class TeleopSwerve extends Command {
                 tagAimOutputLimiter.reset(0.0);
             }
 
-            SmartDashboard.putNumber("Tag 1 Aim Error Degrees", yawErrorDegrees);
-            SmartDashboard.putNumber("Tag 1 Aim Rotation Command", rotationCommand);
+            SmartDashboard.putNumber("Tag Aim Error Degrees", yawErrorDegrees);
+            SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
         } else {
             tagAimController.reset();
             tagAimOutputLimiter.reset(0.0);
-            SmartDashboard.putNumber("Tag 1 Aim Error Degrees", 0.0);
-            SmartDashboard.putNumber("Tag 1 Aim Rotation Command", rotationCommand);
+            SmartDashboard.putNumber("Tag Aim Error Degrees", 0.0);
+            SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
         }
 
         double speedLimit = Constants.Swerve.maxSpeed;
