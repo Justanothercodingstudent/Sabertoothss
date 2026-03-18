@@ -184,31 +184,33 @@ public final class Constants {
         public static int TestTargetRPS = 0; // Based on hood angle 1.0 
         public static double ShooterToleranceRPS = 2; // 10 percent tolerance
 
-        public static double MaxRPS = 50;
-
         //PID for new shooter control method\
 
         public static final double LeftSideShooterkV = 0.12;
-        public static final double LeftSideShooterkP = 0.65; // was .6
+        public static final double LeftSideShooterkP = 0.65; // was .6  Causes Osscilation error if sent to 0 from  PID Needs ~.3 to run to 0
         public static final double LeftSideShooterkI = 0;
         public static final double LeftSideShooterkD = 0;
 
         public static final double RightSideShooterkV = 0.12;
-        public static final double RightSideShooterkP = 0.65;
+        public static final double RightSideShooterkP = 0.65; //Causes Osscilation error if sent to 0 from PID Needs ~.3 to run to 0
         public static final double RightSideShooterkI = 0;
         public static final double RightSideShooterkD = 0;
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
             {0.0, 0},
-            {1.0, 32},
-            {1.7, 35},
-            {2.5, 37},
+            {1.0, 28},
+            {1.7, 31},
+            {2.5, 35},
             {3.7, 40}
             
         };
 
-        public static final double[][] ShootReqTable = { 
+
+
+        //TODO something with this table
+        
+        public static final double[][] ShootReqTable = {                         
             //{AnglePos(Rotations), Roll Speed Requirement}
             {1.0, -28.0},
             {1.7, -31.0},
