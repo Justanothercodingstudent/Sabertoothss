@@ -140,6 +140,38 @@ public class Limelight extends SubsystemBase {
         };
     }
 
+    private boolean isValidTagId(int tagId, double[] validTagIds) {
+        for (double validTagId : validTagIds) {
+            if (tagId == (int) validTagId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public double getCurrentTargetTagId() {
+        if (!LimelightHelpers.getTV(name)) {
+            return -1.0;
+        }
+
+        int tagId = (int) LimelightHelpers.getFiducialID(name);
+        return tagId > 0 ? tagId : -1.0;
+    }
+
+    public double getCurrentHubTagId() {
+        int tagId = (int) getCurrentTargetTagId();
+        if (tagId <= 0 || !isValidTagId(tagId, Constants.TeamDependentFactors.getHubIDs())) {
+            return -1.0;
+        }
+
+        return tagId;
+    }
+
+    public double getHubAimErrorDegrees() {
+        return getCurrentHubTagId() < 0.0 ? 0.0 : LimelightHelpers.getTX(name);
+    }
+
     public static Translation2d getHubCenterOffset(int tagId) {
         switch (tagId) {
             case 2:  return new Translation2d(0.0001016, -0.6033770);
@@ -164,7 +196,7 @@ public class Limelight extends SubsystemBase {
     }
 
     public Translation2d getCurrentHubCenterOffset() {
-        int tagId = (int) LimelightHelpers.getFiducialID(name);
+        int tagId = (int) getCurrentHubTagId();
         if (tagId <= 0) {
             return new Translation2d();
         }

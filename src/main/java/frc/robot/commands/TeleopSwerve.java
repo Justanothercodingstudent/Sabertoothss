@@ -73,18 +73,15 @@ public class TeleopSwerve extends Command {
         boolean aimAtTag = aimAtTagSup.getAsBoolean();
         double targetTagId = limelight == null
             ? -1.0
-            : limelight.getClosestTag(Constants.TeamDependentFactors.getHubIDs());
-        double[] tagData = targetTagId < 0.0
-            ? null
-            : limelight.getTarget((int) targetTagId);
-        boolean tagVisible = tagData != null;
+            : limelight.getCurrentHubTagId();
+        boolean tagVisible = targetTagId >= 0.0;
 
         SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag);
         SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
         SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
 
         if (aimAtTag && tagVisible) {
-            double yawErrorDegrees = tagData[1];
+            double yawErrorDegrees = limelight.getHubAimErrorDegrees();
             rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
                 tagAimController.calculate(yawErrorDegrees, 0.0),
                 -TAG_AIM_MAX_ANGULAR_SPEED,
