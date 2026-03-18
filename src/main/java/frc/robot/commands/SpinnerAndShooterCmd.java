@@ -7,10 +7,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.Angler;
 import frc.robot.Constants;
+import frc.robot.Constants.Intake;
+import frc.robot.subsystems.intake;
 
 public class SpinnerAndShooterCmd extends Command{
     
     private final SpinnerAndShooter shoot;
+    private final intake Intake;
     private final Angler angler;
     private final XboxController xbox;
 
@@ -18,12 +21,12 @@ public class SpinnerAndShooterCmd extends Command{
     private double ShootReq;
     private double SpinSpeed;
     private double Rollerspeed;
-    public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox, Angler angler){
+    public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox, Angler angler, intake Intake){
         this.shoot = shoot;
         addRequirements(this.shoot);
 
         this.angler = angler;
-
+        this.Intake = Intake;
         this.xbox = xbox;
     }
 
@@ -135,7 +138,7 @@ public class SpinnerAndShooterCmd extends Command{
                 Rollerspeed = Constants.Spin.Rollerspeed;
 
                 if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(Constants.Spin.TestTargetRPS, Constants.Spin.TestTargetRPS);
+                    shoot.setShooterRPS(ShootSpeed, ShootSpeed);
                 } else {
                     shoot.OpenShootSpeed(ShootSpeed);
                 }
@@ -152,13 +155,13 @@ public class SpinnerAndShooterCmd extends Command{
                 shoot.roller(-Rollerspeed);
             } else if (!rtPressed && !ltPressed){
                 shoot.SpinSpeed(0);
-                shoot.roller(0);
-
                 if (Constants.Spin.ClosedLoopShooter) {
                     shoot.setShooterRPS(Constants.Spin.TestTargetRPS, Constants.Spin.TestTargetRPS);
                 } else {
                     shoot.OpenShootSpeed(Constants.Spin.ShootSpeed);
                 }
+            } else if (shoot.getLeftRPS() >= -5 && Intake.getIntakeSpeed() <= 0.1) {
+                shoot.roller(0);
                 
             }
         }

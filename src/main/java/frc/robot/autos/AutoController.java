@@ -60,7 +60,7 @@ public class AutoController {
     public Command Shoot(){
         return new ParallelCommandGroup(
             new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
-            new InstantCommand(() -> Shoot.ShootSpeed(ShootSpeed), Shoot),
+            new InstantCommand(() -> Shoot.setShooterRPS(ShootSpeed, ShootSpeed), Shoot),
             new WaitCommand(0.5),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
             new WaitCommand(2),

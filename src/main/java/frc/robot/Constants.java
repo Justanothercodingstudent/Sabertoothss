@@ -156,6 +156,13 @@ public final class Constants {
     }
 
     public static final class Spin{
+        public static final boolean RightInverted = false;
+        public static final boolean LeftInverted = true; 
+
+        // IF TRUE USE NEW SHOOTER FUNCTIONALITY ELSE
+        // IT USES OLD SHOOTER FUNCTIONALITY (SPEED BASED NOT RPS BASED)
+        public static final boolean ClosedLoopShooter = true;
+
         public static final int UptakeID = 17;
 
         public static final int LeftFrontID = 16;
@@ -167,27 +174,43 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.3; 
+        public static final double Rollerspeed = 0.2; 
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
-        public static final double SpinSpeed = -0.50;
+        public static final double SpinSpeed = -0.8;
+
+        // We are changing our code to be RPM based as opposed to just speed based
+        public static int TestTargetRPS = 3; // Based on hood angle 1.0 
+        public static double ShooterToleranceRPS = 2; // 10 percent tolerance
+
+        //PID for new shooter control method\
+
+        public static final double LeftSideShooterkV = 0.12;
+        public static final double LeftSideShooterkP = 0.65; // was .6
+        public static final double LeftSideShooterkI = 0;
+        public static final double LeftSideShooterkD = 0;
+
+        public static final double RightSideShooterkV = 0.12;
+        public static final double RightSideShooterkP = 0.65;
+        public static final double RightSideShooterkI = 0;
+        public static final double RightSideShooterkD = 0;
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
-            {0.0, 0.30},
-            {1.0, 0.35},
-            {1.7, 0.38},
-            {2.5, 0.4},
-            {3.7, 0.65}
+            {0.0, 30},
+            {1.0, 32},
+            {1.7, 35},
+            {2.5, 37},
+            {3.7, 40}
             
         };
 
         public static final double[][] ShootReqTable = { 
             //{AnglePos(Rotations), Roll Speed Requirement}
-            {1.0, -26.0},
-            {1.7, -29.0},
-            {2.5, -33.0},
+            {1.0, -28.0},
+            {1.7, -31.0},
+            {2.5, -35.0},
         };
     }
 

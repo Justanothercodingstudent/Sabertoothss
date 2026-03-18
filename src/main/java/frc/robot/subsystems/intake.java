@@ -54,6 +54,10 @@ public class intake extends SubsystemBase {
 
         intakePos = Constants.Intake.minExtend;
     }
+
+    public double getIntakeSpeed() {
+        return intakeMotor.getVelocity().getValueAsDouble();
+    }
     
 
     public void setIntakeSpeed(double speed) {
