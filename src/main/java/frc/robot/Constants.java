@@ -83,7 +83,7 @@ public final class Constants {
         //tilt 24 degrees
 
         //Offset if limelight from set robot heading
-        public static final double limelightHeadingOffset = 180;
+        public static final double limelightHeadingOffset = 180;//180;
 
         public static final double minVisionTagArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;

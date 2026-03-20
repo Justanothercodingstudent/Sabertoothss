@@ -85,6 +85,7 @@ public class TeleopSwerve extends Command {
 
         if (aimAtTag && tagVisible) {
             double yawErrorDegrees = tagData[1];
+            //double Elastic = rotationVal/4;
             rotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
                 tagAimController.calculate(yawErrorDegrees, 0.0),
                 -TAG_AIM_MAX_ANGULAR_SPEED,

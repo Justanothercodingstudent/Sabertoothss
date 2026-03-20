@@ -51,7 +51,7 @@ public class Autos {
             swerve::drive, // Drive method
             new PPHolonomicDriveController( // Built-in holonomic path controller
                 new PIDConstants(0.5, 0.0, 0.0), // Translation PID
-                new PIDConstants(0.35, 0.0, 0.0)  // Rotation PID
+                new PIDConstants(0.5, 0.0, 0.0)  // Rotation PID
             ),
             config, // Pass the loaded RobotConfig
             () -> {

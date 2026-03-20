@@ -131,7 +131,7 @@ public class RobotContainer {
 }
 
 private void configureAutoSelector() {
-  chooser.setDefaultOption("Leave", new PathPlannerAuto("Leave"));
+  chooser.setDefaultOption("Shoot", new PathPlannerAuto("Shoot"));
   //chooser.addOption("Leave", new PathPlannerAuto("Leave"));
 
 
