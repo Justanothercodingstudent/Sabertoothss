@@ -117,4 +117,18 @@ public class AutoController {
             new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
         );
     }
+
+    public Command FIRE(){
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> IntakeExtend()),
+            new InstantCommand(() -> Shoot()),
+            new WaitCommand(0.5),
+            new InstantCommand(() -> Uptake()),
+            new InstantCommand(() -> Rollers()),
+            new WaitCommand(1),
+            new InstantCommand(() -> ShootStop()),
+            new InstantCommand(() -> RollersStop()),
+            new InstantCommand(() -> UptakeStop())
+        );
+    }
 }
