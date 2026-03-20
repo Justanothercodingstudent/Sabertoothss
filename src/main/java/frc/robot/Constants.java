@@ -106,7 +106,7 @@ public final class Constants {
 
         public static final int IntakeOutID = 13;
 
-        public static final double maxExtend = 12.0;
+        public static final double maxExtend = 12.25;
         public static final double JigExtend = 6.5;
         public static final double minExtend = 0.0;
 
@@ -199,10 +199,10 @@ public final class Constants {
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
             {0.0, 0},
-            {1.0, 28},
-            {1.7, 31},
-            {2.5, 35},
-            {3.7, 40}
+            {1.0, 30},
+            {1.7, 33},
+            {2.5, 34},
+            {3.4, 35}
             
         };
 
@@ -212,9 +212,9 @@ public final class Constants {
         
         public static final double[][] ShootReqTable = {                         
             //{AnglePos(Rotations), Roll Speed Requirement}
-            {1.0, -28.0},
-            {1.7, -31.0},
-            {2.5, -35.0},
+            {1.0, 28.0},
+            {1.7, 31.0},
+            {2.5, 33.0},
         };
     }
 

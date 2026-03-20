@@ -89,8 +89,10 @@ public class IntakeCmd extends Command {
             if(bPressed){
                 IntakePos = Constants.Intake.maxExtend;
                 Intake.setIntakePosition(IntakePos);
-            } else if (yPressed){
-                 IntakePos = Constants.Intake.minExtend;
+            } 
+            
+            if (yPressed){
+                IntakePos = Constants.Intake.minExtend;
                 Intake.setIntakePosition(IntakePos);
             }
 

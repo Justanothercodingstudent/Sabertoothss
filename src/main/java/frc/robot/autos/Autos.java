@@ -1,6 +1,7 @@
 package frc.robot.autos;
 
 import java.sql.Driver;
+import java.util.jar.Attributes.Name;
 
 import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -67,12 +68,18 @@ public class Autos {
         // Register Named Commands and print them
        // NamedCommands.registerCommand("setRest" , autoController.setRest());
 
-       /*NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
+       NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
 
        NamedCommands.registerCommand("Shoot", autoController.Shoot());
-       
-       NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
+       NamedCommands.registerCommand("Shoot Stop", autoController.ShootStop());
 
-       NamedCommands.registerCommand("Intake", autoController.Intake());*/
+       NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
+       NamedCommands.registerCommand("Intake", autoController.Intake());
+       NamedCommands.registerCommand("Intake Stop", autoController.IntakeStop());
+
+       NamedCommands.registerCommand("Rollers", autoController.Rollers());
+       NamedCommands.registerCommand("Rollers Stop", autoController.RollersStop());
+       NamedCommands.registerCommand("Uptake", autoController.Uptake());
+       NamedCommands.registerCommand("Uptake Stop", autoController.UptakeStop());
     }
 }

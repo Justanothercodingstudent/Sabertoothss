@@ -131,12 +131,12 @@ public class RobotContainer {
 }
 
 private void configureAutoSelector() {
-  //chooser.setDefaultOption("Middle to H, Score L4", new PathPlannerAuto("Score L4 Auto"));
+  chooser.setDefaultOption("Leave", new PathPlannerAuto("Leave"));
   //chooser.addOption("Leave", new PathPlannerAuto("Leave"));
 
 
 
-  //SmartDashboard.putData("Auto Mode", chooser);
+  SmartDashboard.putData("Auto Mode", chooser);
 }
 
 

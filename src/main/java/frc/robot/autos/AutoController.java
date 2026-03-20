@@ -1,5 +1,7 @@
 package frc.robot.autos;
 
+import java.time.Instant;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -59,20 +61,27 @@ public class AutoController {
 
     public Command Shoot(){
         return new ParallelCommandGroup(
+            new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
             new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
-            new InstantCommand(() -> Shoot.setShooterRPS(ShootSpeed, ShootSpeed), Shoot),
-            new WaitCommand(0.5),
-            new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
-            new WaitCommand(2),
-            new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.CoastSpeed), Shoot)
+            new InstantCommand(() -> Shoot.setShooterRPS(ShootSpeed, ShootSpeed), Shoot)
+        );
+    }
+
+    public Command ShootStop(){
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> angler.setAnglePosition(0), angler),
+            new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot)
         );
     }
 
     public Command Intake(){
         return new ParallelCommandGroup(
-            new InstantCommand(() -> Intake.setIntakeSpeed(Constants.Intake.IntakeSpeed), Intake),
-            new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
-            new WaitCommand(2),
+            new InstantCommand(() -> Intake.setIntakeSpeed(Constants.Intake.IntakeSpeed), Intake)
+        );
+    }
+
+    public Command IntakeStop(){
+        return new ParallelCommandGroup(
             new InstantCommand(() -> Intake.setIntakeSpeed(0), Intake)
         );
     }
@@ -83,6 +92,27 @@ public class AutoController {
         );
     }
 
+    public Command Rollers(){
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)
+        );
+    }
 
-    
+     public Command RollersStop(){
+         return new ParallelCommandGroup(
+             new InstantCommand(() -> Shoot.roller(0), Shoot)
+         );
+    }
+
+    public Command Uptake(){
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot)
+        );
+    }
+
+    public Command UptakeStop(){
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
+        );
+    }
 }
