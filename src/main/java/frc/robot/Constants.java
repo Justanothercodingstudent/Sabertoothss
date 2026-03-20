@@ -184,18 +184,18 @@ public final class Constants {
         //PID for new shooter control method\
 
         public static final double LeftSideShooterkV = 0.12;
-        public static final double LeftSideShooterkP = 0.65; // was .6  Causes Osscilation error if sent to 0 from  PID Needs ~.3 to run to 0
+        public static final double LeftSideShooterkP = 0.62; // was .6  Causes Osscilation error if sent to 0 from  PID Needs ~.3 to run to 0
         public static final double LeftSideShooterkI = 0;
         public static final double LeftSideShooterkD = 0;
 
         public static final double RightSideShooterkV = 0.12;
-        public static final double RightSideShooterkP = 0.65; //Causes Osscilation error if sent to 0 from PID Needs ~.3 to run to 0
+        public static final double RightSideShooterkP = 0.62; //Causes Osscilation error if sent to 0 from PID Needs ~.3 to run to 0
         public static final double RightSideShooterkI = 0;
         public static final double RightSideShooterkD = 0;
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
-            {0.0, 0},
+            {0.0, 28},
             {1.0, 30},
             {1.7, 33},
             {2.5, 34},
@@ -344,13 +344,13 @@ public final class Constants {
   public static final class AutoConstants {
       public static final String defaultAutoName = "Shoot";
 
-      public static final double translationKP = 0.5;
-      public static final double translationKI = 0.0;
+      public static final double translationKP = 2.12;
+      public static final double translationKI = 0.01;
       public static final double translationKD = 0.0;
 
-      public static final double rotationKP = 0.5;
-      public static final double rotationKI = 0.0;
-      public static final double rotationKD = 0.0;
+      public static final double rotationKP = 0;
+      public static final double rotationKI = 0;
+      public static final double rotationKD = 0;
   }
 
   public static final RobotConfig PATHPLANNER_ROBOT_CONFIG = loadPathPlannerRobotConfig();

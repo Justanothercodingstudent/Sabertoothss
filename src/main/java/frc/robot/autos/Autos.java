@@ -2,6 +2,7 @@ package frc.robot.autos;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,6 +30,10 @@ public final class Autos {
             "Uptake", autoController.Uptake(),
             "Uptake Stop", autoController.UptakeStop()
         ));
+
+        NamedCommands.registerCommands(Map.of(
+            "FIRE", autoController.FIRE()
+        ));
     }
 
     public static SendableChooser<Command> buildChooser() {
@@ -41,4 +46,6 @@ public final class Autos {
         chooser.setDefaultOption("Do Nothing", Commands.none());
         return chooser;
     }
+        // This is a lambda that will be called to register the named commands when the AutoBuilder is configured.
+        // You can put any code here that you want to run when the AutoBuilder is ready, such as registering additional commands or performing setup tasks.)
 }

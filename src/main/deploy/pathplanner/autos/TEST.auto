@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Backwards"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FIRE"
+            "pathName": "Test"
           }
         }
       ]
