@@ -50,14 +50,14 @@ public class Swerve extends SubsystemBase {
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(Constants.Swerve.SwerveStartHeading);
-    
+
         mSwerveMods = new SwerveModule[] {
             new SwerveModule(0, Constants.Swerve.Mod0.constants),
             new SwerveModule(1, Constants.Swerve.Mod1.constants),
             new SwerveModule(2, Constants.Swerve.Mod2.constants),
             new SwerveModule(3, Constants.Swerve.Mod3.constants)
             };
-        
+
         swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
         poseEstimator = new SwerveDrivePoseEstimator(
             Constants.Swerve.swerveKinematics,
@@ -65,14 +65,15 @@ public class Swerve extends SubsystemBase {
             getModulePositions(),
             new Pose2d()
         );
+        configureLimelightForMegaTag2();
         autonMovingEnabled = true;
 
-        lastKnownTagHeading = new Rotation2d(); 
+        lastKnownTagHeading = new Rotation2d();
         originalHeading = new Rotation2d();
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         }
-                    
+
     public ChassisSpeeds getChassisSpeeds() {
         return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
     }
@@ -82,7 +83,7 @@ public class Swerve extends SubsystemBase {
         if (!autonMovingEnabled) {
             speeds = new ChassisSpeeds();
         }
-        
+
         SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
@@ -95,14 +96,14 @@ public class Swerve extends SubsystemBase {
         SwerveModuleState[] swerveModuleStates =
             Constants.Swerve.swerveKinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation, 
+                                    translation.getX(),
+                                    translation.getY(),
+                                    rotation,
                                     getHeading()
                                 )
                                 : new ChassisSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
+                                    translation.getX(),
+                                    translation.getY(),
                                     rotation)
                                 );
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
@@ -110,7 +111,7 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods){
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
-    }    
+    }
 
     public TalonFX[] getTalons() {
         TalonFX[] talons = new TalonFX[8];
@@ -124,7 +125,7 @@ public class Swerve extends SubsystemBase {
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
-        
+
         for(SwerveModule mod : mSwerveMods){
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
@@ -211,6 +212,21 @@ public class Swerve extends SubsystemBase {
         lastVisionTimestampSeconds = -1.0;
     }
 
+    private void configureLimelightForMegaTag2() {
+        String limelightName = Constants.LimelightConstants.limelightName;
+
+        LimelightHelpers.setCameraPose_RobotSpace(
+            limelightName,
+            Constants.LimelightConstants.XOffset,
+            Constants.LimelightConstants.YOffset,
+            Constants.LimelightConstants.ZOffset,
+            Constants.LimelightConstants.cameraRollDegrees,
+            Constants.LimelightConstants.cameraPitchDegrees,
+            Constants.LimelightConstants.cameraYawDegrees
+        );
+    }
+
+
     private PoseEstimate getAlliancePoseEstimate(boolean useMegaTag2) {
         String limelightName = Constants.LimelightConstants.limelightName;
 
@@ -241,18 +257,15 @@ public class Swerve extends SubsystemBase {
     }
 
     private PoseEstimate getPreferredVisionMeasurement() {
-        PoseEstimate megaTag1Estimate = getAlliancePoseEstimate(false);
         PoseEstimate megaTag2Estimate = getAlliancePoseEstimate(true);
+        PoseEstimate megaTag1Estimate = getAlliancePoseEstimate(false);
 
-        PoseEstimate preferredEstimate = megaTag2Estimate.tagCount >= 2 ? megaTag2Estimate : megaTag1Estimate;
-        PoseEstimate fallbackEstimate = preferredEstimate == megaTag1Estimate ? megaTag2Estimate : megaTag1Estimate;
-
-        if (isVisionMeasurementValid(preferredEstimate)) {
-            return preferredEstimate;
+        if (isVisionMeasurementValid(megaTag2Estimate)) {
+            return megaTag2Estimate;
         }
 
-        if (isVisionMeasurementValid(fallbackEstimate)) {
-            return fallbackEstimate;
+        if (isVisionMeasurementValid(megaTag1Estimate)) {
+            return megaTag1Estimate;
         }
 
         return null;
@@ -394,15 +407,15 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods){
              SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
              SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
-             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
 
             // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
-            SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());  
+            SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
 
-                
+
         }
     }
-}       
+}
 
 
 /*
@@ -416,4 +429,4 @@ public class Swerve extends SubsystemBase {
  */
 
 
- /* */ 
+ /* */

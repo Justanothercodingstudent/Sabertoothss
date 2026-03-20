@@ -49,13 +49,13 @@ public final class Constants {
         public static final double[] validAprilTagIds = {
             1,
             2,
-            3,  
-            4,  
-            5,  
-            8, 
-            9, 
+            3,
+            4,
+            5,
+            8,
+            9,
             10,
-            11   
+            11
         };
 
         public static final double[] BlueTags = {
@@ -79,11 +79,15 @@ public final class Constants {
 
         public static final double XOffset = 0.3175;
         public static final double YOffset = 0.0635;
-        public static final double ZOffset = 0.3048; 
-        //tilt 24 degrees
+        public static final double ZOffset = 0.3048;
+
+        // Camera pose relative to robot center for MegaTag2.
+        public static final double cameraRollDegrees = 0.0;
+        public static final double cameraPitchDegrees = 24.0;
+        public static final double cameraYawDegrees = 180.0;
 
         //Offset if limelight from set robot heading
-        public static final double limelightHeadingOffset = 180;//180;
+        public static final double limelightHeadingOffset = cameraYawDegrees;
 
         public static final double minVisionTagArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;
@@ -151,13 +155,13 @@ public final class Constants {
             {1.5, 1.0},
             {2.8, 2.0},
             {4.0, 3.7},
-            
+
         };
     }
 
     public static final class Spin{
         public static final boolean RightInverted = false;
-        public static final boolean LeftInverted = true; 
+        public static final boolean LeftInverted = true;
 
         // IF TRUE USE NEW SHOOTER FUNCTIONALITY ELSE
         // IT USES OLD SHOOTER FUNCTIONALITY (SPEED BASED NOT RPS BASED)
@@ -174,14 +178,14 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.2; 
+        public static final double Rollerspeed = 0.2;
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.8;
 
         // We are changing our code to be RPM based as opposed to just speed based
-        public static int TestTargetRPS = 0; // Based on hood angle 1.0 
+        public static int TestTargetRPS = 0; // Based on hood angle 1.0
         public static double ShooterToleranceRPS = 2; // 10 percent tolerance
 
         //PID for new shooter control method\
@@ -203,14 +207,14 @@ public final class Constants {
             {1.7, 33},
             {2.5, 34},
             {3.4, 35}
-            
+
         };
 
 
 
         //TODO something with this table
-        
-        public static final double[][] ShootReqTable = {                         
+
+        public static final double[][] ShootReqTable = {
             //{AnglePos(Rotations), Roll Speed Requirement}
             {1.0, 28.0},
             {1.7, 31.0},
@@ -225,7 +229,7 @@ public final class Constants {
 
       public static final int SwerveStartHeading = 0;
 
-      public static final COTSTalonFXSwerveConstants chosenModule = 
+      public static final COTSTalonFXSwerveConstants chosenModule =
       COTSTalonFXSwerveConstants.SDS.MK4i.KrakenX60(COTSTalonFXSwerveConstants.SDS.MK4i.driveRatios.L2);
 
       /* Drivetrain Constants */
@@ -233,7 +237,7 @@ public final class Constants {
       public static final double wheelBase = Units.inchesToMeters(24.25); // 22.8
       public static final double wheelCircumference = chosenModule.wheelCircumference;
 
-      /* Swerve Kinematics 
+      /* Swerve Kinematics
        * No need to ever change this unless you are not doing a traditional rectangular/square 4 module swerve */
        public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
           new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
@@ -309,7 +313,7 @@ public final class Constants {
           public static final int angleMotorID = 3;
           public static final int canCoderID = 2;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset0);
-          public static final SwerveModuleConstants constants = 
+          public static final SwerveModuleConstants constants =
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
       }
 
@@ -319,17 +323,17 @@ public final class Constants {
           public static final int angleMotorID = 12;
           public static final int canCoderID = 11;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset1);
-          public static final SwerveModuleConstants constants = 
+          public static final SwerveModuleConstants constants =
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
       }
-      
+
       /* Back Left Module - Module 2 */
       public static final class Mod2 { //done
           public static final int driveMotorID = 6;
           public static final int angleMotorID = 4;
           public static final int canCoderID = 5;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset2);
-          public static final SwerveModuleConstants constants = 
+          public static final SwerveModuleConstants constants =
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
       }
 
@@ -339,7 +343,7 @@ public final class Constants {
           public static final int angleMotorID = 9;
           public static final int canCoderID = 8;
           public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset3);
-          public static final SwerveModuleConstants constants = 
+          public static final SwerveModuleConstants constants =
               new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
       }
   }
@@ -349,11 +353,11 @@ public final class Constants {
       public static final double kMaxAccelerationMetersPerSecondSquared = 3;
       public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
       public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-  
+
       public static final double kPXController = 1;
       public static final double kPYController = 1;
       public static final double kPThetaController = 1;
-  
+
       /* Constraint for the motion profilied robot angle controller */
       public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
           new TrapezoidProfile.Constraints(
