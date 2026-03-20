@@ -4,20 +4,13 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
-import edu.wpi.first.wpilibj.DigitalSource;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.LimelightCmd;
@@ -28,11 +21,10 @@ import frc.robot.commands.climberCmd;
 import frc.robot.commands.AnglerCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
-import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.climber;
-import frc. robot.subsystems.Angler;
+import frc.robot.subsystems.Angler;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -61,7 +53,6 @@ public class RobotContainer {
   private final Angler angler;
 
   private Limelight limelight;
-  private Vision vision;
 
   /* Commands */
   private LimelightCmd limelightCmd;
@@ -71,12 +62,9 @@ public class RobotContainer {
   private climberCmd climbCmd;
   private AnglerCmd anglerCmd;
 
-  private Autos autos;
   private AutoController autoController;
 
-  private Command initializePositions;
-
- private SendableChooser<Command> chooser;
+  private SendableChooser<Command> chooser;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -101,9 +89,6 @@ public class RobotContainer {
     climb = new climber();
     climbCmd = new climberCmd(climb, driver);
     climb.setDefaultCommand(climbCmd);
-
-    initializePositions = new SequentialCommandGroup(
-    );
     
     s_Swerve.setDefaultCommand(
         new TeleopSwerve(
@@ -117,10 +102,8 @@ public class RobotContainer {
         )
     );
 
-    chooser = new SendableChooser<>();
     autoController = new AutoController(Intake, Spin, angler);
-    autos = new Autos(s_Swerve, autoController, s_Swerve);
-
+    Autos.registerNamedCommands(s_Swerve, autoController);
     configureAutoSelector();
     configureButtonBindings();
   }
@@ -131,11 +114,7 @@ public class RobotContainer {
 }
 
 private void configureAutoSelector() {
-  chooser.setDefaultOption("Shoot", new PathPlannerAuto("Shoot"));
-  //chooser.addOption("Leave", new PathPlannerAuto("Leave"));
-
-
-
+  chooser = Autos.buildChooser();
   SmartDashboard.putData("Auto Mode", chooser);
 }
 
@@ -146,16 +125,9 @@ private void configureAutoSelector() {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-
-    // Get selected auto command, defaulting to a do-nothing command if null
-    Command autoCommand = chooser.getSelected();
-    if (autoCommand  == null) {
-        autoCommand = new InstantCommand(); // Default safe command
-    }
-    Command Heading_flip = new InstantCommand(()-> s_Swerve.flipHeading()); //s_Swerve.flipHeading(); // new InstantCommand(()-> s_Swerve.flipHeading());
-
-    // Run initialization, then the selected auto command
-   return new SequentialCommandGroup(initializePositions, autoCommand);
+    return chooser != null && chooser.getSelected() != null
+        ? chooser.getSelected()
+        : Commands.none();
 }
   
 

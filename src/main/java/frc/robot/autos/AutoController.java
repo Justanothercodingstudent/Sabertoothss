@@ -60,13 +60,10 @@ public class AutoController {
     }
 
     public Command Shoot(){
-        return new SequentialCommandGroup(
+        return new ParallelCommandGroup(
             new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
-            //new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
-            new WaitCommand(5),
-            new InstantCommand(() -> System.out.println("Shooter should shoot rn frfr")),
-            new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot)
-            //new InstantCommand(() -> Shoot.OpenShootSpeed(10), Shoot)
+            new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
+            new InstantCommand(() -> Shoot.setShooterRPS(ShootSpeed, ShootSpeed), Shoot)
         );
     }
 

@@ -7,14 +7,11 @@ package frc.robot;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -344,37 +341,30 @@ public final class Constants {
       }
   }
 
-  public static final class AutoConstants { //TODO: The below constants are used in the example auto, and must be tuned to specific robot
-      public static final double kMaxSpeedMetersPerSecond = 4.4; //was 3
-      public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-      public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-      public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-  
-      public static final double kPXController = 1;
-      public static final double kPYController = 1;
-      public static final double kPThetaController = 1;
-  
-      /* Constraint for the motion profilied robot angle controller */
-      public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-          new TrapezoidProfile.Constraints(
-              kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+  public static final class AutoConstants {
+      public static final String defaultAutoName = "Shoot";
 
-     public static final PPHolonomicDriveController kDriveController = new PPHolonomicDriveController(new PIDConstants(0.1,0.01,0),new PIDConstants(0.2,0,0));
+      public static final double translationKP = 0.5;
+      public static final double translationKI = 0.0;
+      public static final double translationKD = 0.0;
+
+      public static final double rotationKP = 0.5;
+      public static final double rotationKI = 0.0;
+      public static final double rotationKD = 0.0;
   }
 
-  public static final RobotConfig CONFIG;
-public static RobotConfig config;
+  public static final RobotConfig PATHPLANNER_ROBOT_CONFIG = loadPathPlannerRobotConfig();
 
-  static {
-      RobotConfig configTemp;
+  private static RobotConfig loadPathPlannerRobotConfig() {
       try {
-          configTemp = RobotConfig.fromGUISettings();
+          return RobotConfig.fromGUISettings();
       } catch (Exception e) {
-          // Handle exception as needed
-          e.printStackTrace();
-          configTemp = null; // or provide a default configuration umm
+          DriverStation.reportError(
+              "Failed to load PathPlanner robot config from deploy/pathplanner/settings.json",
+              e.getStackTrace()
+          );
+          return null;
       }
-      CONFIG = configTemp;
   }
 
   //public static final int elevatorMotor = ,

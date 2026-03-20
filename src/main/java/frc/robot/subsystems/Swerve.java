@@ -16,12 +16,10 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-//import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-//import com.pathplanner.lib.util.ReplanningConfig;
+import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -40,7 +38,6 @@ public class Swerve extends SubsystemBase {
     public SwerveModule[] mSwerveMods;
     public Pigeon2 gyro;
     public boolean autonMovingEnabled;
-    public PathPlannerAuto a1;
     private Rotation2d lastKnownTagHeading;
     private Rotation2d originalHeading;
     private double lastVisionTimestampSeconds;
@@ -66,50 +63,92 @@ public class Swerve extends SubsystemBase {
             new Pose2d()
         );
         autonMovingEnabled = true;
+        configureAutoBuilder();
 
         lastKnownTagHeading = new Rotation2d(); 
         originalHeading = new Rotation2d();
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         }
+
+    private void configureAutoBuilder() {
+        RobotConfig robotConfig = Constants.PATHPLANNER_ROBOT_CONFIG;
+        if (robotConfig == null) {
+            DriverStation.reportError("PathPlanner AutoBuilder was not configured because the robot config failed to load.", false);
+            return;
+        }
+
+        AutoBuilder.configure(
+            this::getPose,
+            this::setPose,
+            this::getChassisSpeeds,
+            (speeds, feedforwards) -> driveRobotRelative(speeds, feedforwards),
+            new PPHolonomicDriveController(
+                new PIDConstants(
+                    Constants.AutoConstants.translationKP,
+                    Constants.AutoConstants.translationKI,
+                    Constants.AutoConstants.translationKD
+                ),
+                new PIDConstants(
+                    Constants.AutoConstants.rotationKP,
+                    Constants.AutoConstants.rotationKI,
+                    Constants.AutoConstants.rotationKD
+                )
+            ),
+            robotConfig,
+            () -> DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red,
+            this
+        );
+    }
                     
     public ChassisSpeeds getChassisSpeeds() {
         return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
     }
 
     public void drive(ChassisSpeeds speeds) {
+        driveRobotRelative(speeds);
+    }
 
+    public void driveRobotRelative(ChassisSpeeds speeds) {
         if (!autonMovingEnabled) {
             speeds = new ChassisSpeeds();
         }
-        
+
+        setChassisSpeeds(speeds, false);
+    }
+
+    public void driveRobotRelative(ChassisSpeeds speeds, DriveFeedforwards feedforwards) {
+        driveRobotRelative(speeds);
+    }
+
+    private void setChassisSpeeds(ChassisSpeeds speeds, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
-        for(SwerveModule mod : mSwerveMods){
-            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], true);
+        for (SwerveModule mod : mSwerveMods) {
+            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        SwerveModuleState[] swerveModuleStates =
-            Constants.Swerve.swerveKinematics.toSwerveModuleStates(
-                fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation, 
-                                    getHeading()
-                                )
-                                : new ChassisSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation)
-                                );
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+        ChassisSpeeds chassisSpeeds =
+            fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                                translation.getX(),
+                                translation.getY(),
+                                rotation,
+                                getHeading()
+                            )
+                            : new ChassisSpeeds(
+                                translation.getX(),
+                                translation.getY(),
+                                rotation
+                            );
 
-        for(SwerveModule mod : mSwerveMods){
-            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+        if (!autonMovingEnabled && !isOpenLoop) {
+            chassisSpeeds = new ChassisSpeeds();
         }
+
+        setChassisSpeeds(chassisSpeeds, isOpenLoop);
     }    
 
     public TalonFX[] getTalons() {
@@ -159,10 +198,6 @@ public class Swerve extends SubsystemBase {
 
     public Pose2d getOdometryPose() {
         return swerveOdometry.getPoseMeters();
-    }
-
-    public void resetOdometryAuto(Pose2d pose){
-        return;
     }
 
     public void setPose(Pose2d pose) {
@@ -381,7 +416,7 @@ public class Swerve extends SubsystemBase {
     public void periodic(){
         swerveOdometry.update(getGyroYaw(), getModulePositions());
         poseEstimator.update(getGyroYaw(), getModulePositions());
-        //addVisionMeasurementIfAvailable();
+        addVisionMeasurementIfAvailable();
 
         SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
         SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());

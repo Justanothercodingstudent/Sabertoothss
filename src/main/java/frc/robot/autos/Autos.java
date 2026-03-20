@@ -1,85 +1,44 @@
 package frc.robot.autos;
 
-import java.sql.Driver;
-import java.util.jar.Attributes.Name;
+import java.util.Map;
 
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.HolonomicDriveController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
 
-public class Autos {
-    /*
-     * red2 & blue2 = just aim and shoot
-     * 
-     */
-    private RobotConfig config;
+public final class Autos {
+    private Autos() {}
 
+    public static void registerNamedCommands(Swerve swerve, AutoController autoController) {
+        NamedCommands.clearAll();
+        NamedCommands.registerCommands(Map.of(
+            "resetHeading", new InstantCommand(swerve::zeroHeading, swerve),
+            "Shoot", autoController.Shoot(),
+            "Shoot Stop", autoController.ShootStop(),
+            "Intake Extend", autoController.IntakeExtend(),
+            "Intake", autoController.Intake(),
+            "Intake Stop", autoController.IntakeStop(),
+            "Rollers", autoController.Rollers(),
+            "Rollers Stop", autoController.RollersStop(),
+            "Uptake", autoController.Uptake(),
+            "Uptake Stop", autoController.UptakeStop()
+        ));
+    }
 
-    public Autos(Swerve swerve, AutoController autoController, Swerve s_Swerve) {
-        // Load RobotConfig from GUI settings
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return; // Exit constructor if config fails to load
+    public static SendableChooser<Command> buildChooser() {
+        if (AutoBuilder.isConfigured()) {
+            return AutoBuilder.buildAutoChooser(Constants.AutoConstants.defaultAutoName);
         }
 
-        // Configure AutoBuilder
-        AutoBuilder.configure(
-            swerve::getPose, // Robot pose supplier
-            swerve::setPose, // Reset odometry method
-            swerve::getChassisSpeeds, // ChassisSpeeds supplier (must be robot-relative)
-            swerve::drive, // Drive method
-            new PPHolonomicDriveController( // Built-in holonomic path controller
-                new PIDConstants(1.5, 0.0, 0.0), // Translation PID
-                new PIDConstants(0.0, 0.0, 0.0)  // Rotation PID
-            ),
-            config, // Pass the loaded RobotConfig
-            () -> {
-                var alliance = DriverStation.getAlliance();
-                if (alliance.isPresent()) {
-                    return alliance.get() == DriverStation.Alliance.Red;
-                  }
-                  return false;
-                },
-            swerve // Set as the requirement subsystem
-        );
-
-
-        // Register Named Commands and print them
-       // NamedCommands.registerCommand("setRest" , autoController.setRest());
-
-       NamedCommands.registerCommand("resetHeading", new InstantCommand(() -> s_Swerve.zeroHeading(), s_Swerve));
-
-       NamedCommands.registerCommand("Shoot", autoController.Shoot());
-       NamedCommands.registerCommand("Shoot Stop", autoController.ShootStop());
-
-       NamedCommands.registerCommand("Intake Extend", autoController.IntakeExtend());
-       NamedCommands.registerCommand("Intake", autoController.Intake());
-       NamedCommands.registerCommand("Intake Stop", autoController.IntakeStop());
-
-       NamedCommands.registerCommand("Rollers", autoController.Rollers());
-       NamedCommands.registerCommand("Rollers Stop", autoController.RollersStop());
-       NamedCommands.registerCommand("Uptake", autoController.Uptake());
-       NamedCommands.registerCommand("Uptake Stop", autoController.UptakeStop());
+        DriverStation.reportError("PathPlanner AutoBuilder is not configured. Falling back to do-nothing auto.", false);
+        SendableChooser<Command> chooser = new SendableChooser<>();
+        chooser.setDefaultOption("Do Nothing", Commands.none());
+        return chooser;
     }
 }
