@@ -5,9 +5,57 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "New Path"
+            "name": "Intake Extend"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Uptake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Rollers"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot Stop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Rollers Stop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Uptake Stop"
           }
         }
       ]
