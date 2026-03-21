@@ -147,6 +147,8 @@ public class SpinnerAndShooterCmd extends Command{
                     shoot.OpenShootSpeed(ShootSpeed);
                 }
 
+                //shoot.setShooterRPS(33, 33);
+
                 if(shoot.getLeftRPS() >= ShootReq){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
@@ -160,9 +162,8 @@ public class SpinnerAndShooterCmd extends Command{
             } else if (!rtPressed && !ltPressed){
                 shoot.SpinSpeed(0);
                 shoot.OpenShootSpeed(0);
-            } else if (shoot.getLeftRPS() < 5 && Intake.getIntakeSpeed() < 1) {
                 shoot.roller(0);
-            }
+            } 
         }
 
         

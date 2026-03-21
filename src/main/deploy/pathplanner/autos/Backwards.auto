@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Test"
+            "pathName": "Backwards"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Work",
   "choreoAuto": false
 }

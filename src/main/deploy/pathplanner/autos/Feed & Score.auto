@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Extend"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "To Feed"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return(Feed)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Need Testing",
+  "choreoAuto": false
+}

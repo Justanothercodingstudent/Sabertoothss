@@ -59,22 +59,21 @@ public class AutoController {
         this.angler = angler;
     }
 
-    public Command Shoot(){
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
-            //new InstantCommand(() -> ShootSpeed = AnglerShoot(angler.getAnglePos())),
-            new WaitCommand(2),
-            new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot)
-            //new InstantCommand(() -> Shoot.OpenShootSpeed(10), Shoot)
-        );
-    }
+    // public Command Shoot(){
+    //     return new SequentialCommandGroup(
+    //         new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
+    //         new WaitCommand(2),
+    //         new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot)
+            
+    //     );
+    // }
 
-    public Command ShootStop(){
-        return new ParallelCommandGroup(
-            new InstantCommand(() -> angler.setAnglePosition(0), angler),
-            new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot)
-        );
-    }
+    // public Command ShootStop(){
+    //     return new ParallelCommandGroup(
+    //         new InstantCommand(() -> angler.setAnglePosition(0), angler),
+    //         new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot)
+    //     );
+    // }
 
     public Command Intake(){
         return new ParallelCommandGroup(
@@ -94,31 +93,47 @@ public class AutoController {
         );
     }
 
-    public Command Rollers(){
-        return new ParallelCommandGroup(
-            new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)
-        );
-    }
+    // public Command Rollers(){
+    //     return new ParallelCommandGroup(
+    //         new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)
+    //     );
+    // }
 
-     public Command RollersStop(){
-         return new ParallelCommandGroup(
-             new InstantCommand(() -> Shoot.roller(0), Shoot)
-         );
-    }
+    //  public Command RollersStop(){
+    //      return new ParallelCommandGroup(
+    //          new InstantCommand(() -> Shoot.roller(0), Shoot)
+    //      );
+    // }
 
-    public Command Uptake(){
-        return new ParallelCommandGroup(
-            new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot)
-        );
-    }
+    // public Command Uptake(){
+    //     return new ParallelCommandGroup(
+    //         new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot)
+    //     );
+    // }
 
-    public Command UptakeStop(){
-        return new ParallelCommandGroup(
+    // public Command UptakeStop(){
+    //     return new ParallelCommandGroup(
+    //         new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
+    //     );
+    // }
+
+    public Command ShootAndScore(){
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
+            new WaitCommand(1),
+            new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot),
+            new WaitCommand(0.5),
+            new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot),
+            new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
+            new WaitCommand(4),
+            new InstantCommand(() -> angler.setAnglePosition(0), angler),
+            new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot),
+            new InstantCommand(() -> Shoot.roller(0), Shoot),
             new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
         );
     }
 
-    public Command FIRE(){
+    /*public Command FIRE(){
         return new SequentialCommandGroup(
             new InstantCommand(() -> IntakeExtend()),
             new InstantCommand(() -> Shoot()),
@@ -130,5 +145,5 @@ public class AutoController {
             new InstantCommand(() -> RollersStop()),
             new InstantCommand(() -> UptakeStop())
         );
-    }
+    }*/
 }

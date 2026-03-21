@@ -20,19 +20,19 @@ public final class Autos {
         NamedCommands.clearAll();
         NamedCommands.registerCommands(Map.of(
             "resetHeading", new InstantCommand(swerve::zeroHeading, swerve),
-            "Shoot", autoController.Shoot(),
-            "Shoot Stop", autoController.ShootStop(),
+            // "Shoot", autoController.Shoot(),
+            // "Shoot Stop", autoController.ShootStop(),
             "Intake Extend", autoController.IntakeExtend(),
             "Intake", autoController.Intake(),
-            "Intake Stop", autoController.IntakeStop(),
-            "Rollers", autoController.Rollers(),
-            "Rollers Stop", autoController.RollersStop(),
-            "Uptake", autoController.Uptake(),
-            "Uptake Stop", autoController.UptakeStop()
+            "Intake Stop", autoController.IntakeStop()
+            // "Rollers", autoController.Rollers(),
+            // "Rollers Stop", autoController.RollersStop(),
+            // "Uptake", autoController.Uptake(),
+            // "Uptake Stop", autoController.UptakeStop()
         ));
 
         NamedCommands.registerCommands(Map.of(
-            "FIRE", autoController.FIRE()
+            "Shoot And Score", autoController.ShootAndScore()
         ));
     }
 

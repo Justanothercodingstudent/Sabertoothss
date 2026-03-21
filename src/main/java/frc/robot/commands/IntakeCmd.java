@@ -79,13 +79,6 @@ public class IntakeCmd extends Command {
                 Intake.setIntakeSpeed(0);
             }
 
-            if (ltPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                Intake.roller(Rollerspeed);
-            } else if (!ltPressed && !rtPressed) {
-                Intake.roller(0);
-            }
-
             if(bPressed){
                 IntakePos = Constants.Intake.maxExtend;
                 Intake.setIntakePosition(IntakePos);
