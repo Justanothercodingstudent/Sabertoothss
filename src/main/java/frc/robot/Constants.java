@@ -209,6 +209,7 @@ public final class Constants {
         
         public static final double[][] ShootReqTable = {                         
             //{AnglePos(Rotations), Roll Speed Requirement}
+            {0.0, 26.0},
             {1.0, 28.0},
             {1.7, 31.0},
             {2.5, 33.0},
