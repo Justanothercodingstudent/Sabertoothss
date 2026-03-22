@@ -65,6 +65,7 @@ public class RobotContainer {
   private AutoController autoController;
 
   private SendableChooser<Command> chooser;
+  private SendableChooser<Constants.TeamDependentFactors.TeamColorSelection> teamColorChooser;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -104,6 +105,7 @@ public class RobotContainer {
 
     autoController = new AutoController(Intake, Spin, angler);
     Autos.registerNamedCommands(s_Swerve, autoController);
+    configureTeamColorChooser();
     configureAutoSelector();
     configureButtonBindings();
   }
@@ -116,6 +118,11 @@ public class RobotContainer {
 private void configureAutoSelector() {
   chooser = Autos.buildChooser();
   SmartDashboard.putData("Auto Mode", chooser);
+}
+
+private void configureTeamColorChooser() {
+  teamColorChooser = Constants.TeamDependentFactors.getTeamColorChooser();
+  SmartDashboard.putData("Team Color", teamColorChooser);
 }
 
 

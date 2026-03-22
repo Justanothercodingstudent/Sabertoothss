@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Arrays;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -14,6 +16,7 @@ import frc.robot.LimelightHelpers;
 
 public class Limelight extends SubsystemBase {
     public String name;
+    private int[] configuredValidTagIds = new int[0];
 
     /*private double yUpperBound = 0;
     private double yDownBound = 480;
@@ -68,18 +71,21 @@ public class Limelight extends SubsystemBase {
 
 
     public void updateValues() {
-
-        /*LimelightHelpers.LimelightTarget_Fiducial[] targets = LimelightHelpers.getLatestResults(name).targets_Fiducials;
-        
-        double[] ids = new double[32];
-        for (var target : targets) {
-            ids. = target.fiducialID;
-            if (ids[i] == Constants.TeamDependentFactors.middleAprilTagId) {
-                var pos = percentPosition(targets[i]);
-                SmartDashboard.putNumber("yyyyyy", pos[1]);
-            }
+        int[] validTagIds = Constants.TeamDependentFactors.getHubIDsAsInt();
+        if (!Arrays.equals(configuredValidTagIds, validTagIds)) {
+            LimelightHelpers.SetFiducialIDFiltersOverride(name, validTagIds);
+            configuredValidTagIds = Arrays.copyOf(validTagIds, validTagIds.length);
         }
-        SmartDashboard.putNumberArray("ids", ids);*/
+
+        LimelightHelpers.RawFiducial[] rawFiducials = LimelightHelpers.getRawFiducials(name);
+        SmartDashboard.putString("Limelight Table Name", name);
+        SmartDashboard.putBoolean("Limelight Using Red Tags", Constants.TeamDependentFactors.isRedTeam());
+        SmartDashboard.putBoolean("Limelight Has Target", LimelightHelpers.getTV(name));
+        SmartDashboard.putNumber("Limelight Heartbeat", LimelightHelpers.getHeartbeat(name));
+        SmartDashboard.putNumber("Limelight Primary Tag ID", LimelightHelpers.getFiducialID(name));
+        SmartDashboard.putNumber("Limelight Raw Fiducial Count", rawFiducials.length);
+        SmartDashboard.putNumberArray("Limelight Raw Tag IDs", getRawFiducialIds(rawFiducials));
+        SmartDashboard.putNumberArray("Limelight Expected Tag IDs", Constants.TeamDependentFactors.getHubIDs());
     }
 
 
@@ -101,6 +107,25 @@ public class Limelight extends SubsystemBase {
         return null;
     }
 
+    private double[] getRawFiducialIds(LimelightHelpers.RawFiducial[] fiducials) {
+        double[] tagIds = new double[fiducials.length];
+        for (int i = 0; i < fiducials.length; i++) {
+            tagIds[i] = fiducials[i].id;
+        }
+
+        return tagIds;
+    }
+
+    private boolean isTrackedTag(double[] validTagIds, int tagId) {
+        for (double validTagId : validTagIds) {
+            if ((int) validTagId == tagId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public double getClosestTag(double[] validTagIds) {
         double closestTag = -1;
         double closestDistanceMeters = Double.MAX_VALUE;
@@ -114,29 +139,50 @@ public class Limelight extends SubsystemBase {
             }
         }
 
-        return closestTag;
+        if (closestTag >= 0.0) {
+            return closestTag;
+        }
+
+        int primaryTagId = (int) LimelightHelpers.getFiducialID(name);
+        if (LimelightHelpers.getTV(name) && isTrackedTag(validTagIds, primaryTagId)) {
+            return primaryTagId;
+        }
+
+        return -1.0;
     }
 
     public double getDistanceToTag(double targetTagId) {
         LimelightHelpers.RawFiducial fiducial = getRawFiducial((int) targetTagId);
-        if (fiducial == null) {
-            return -1.0;
+        if (fiducial != null) {
+            return fiducial.distToCamera;
         }
 
-        return fiducial.distToCamera;
+        if (LimelightHelpers.getTV(name) && (int) targetTagId == (int) LimelightHelpers.getFiducialID(name)) {
+            return LimelightHelpers.getTargetPose3d_CameraSpace(name).getTranslation().getNorm();
+        }
+
+        return -1.0;
     }
 
     public double[] getTarget(int id) {
         LimelightHelpers.RawFiducial fiducial = getRawFiducial(id);
-        if (fiducial == null) {
-            return null;
+        if (fiducial != null) {
+            return new double[] {
+                fiducial.id,
+                fiducial.txnc,
+                fiducial.tync
+            };
         }
 
-        return new double[] {
-            fiducial.id,
-            fiducial.txnc,
-            fiducial.tync
-        };
+        if (LimelightHelpers.getTV(name) && id == (int) LimelightHelpers.getFiducialID(name)) {
+            return new double[] {
+                id,
+                LimelightHelpers.getTXNC(name),
+                LimelightHelpers.getTYNC(name)
+            };
+        }
+
+        return null;
     }
 
 

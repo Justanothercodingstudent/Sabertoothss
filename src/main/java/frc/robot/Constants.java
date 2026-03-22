@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.lib.util.COTSTalonFXSwerveConstants;
 import frc.lib.util.SwerveModuleConstants;
 
@@ -40,8 +41,14 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
+        public enum TeamColorSelection {
+            DRIVER_STATION,
+            BLUE,
+            RED
+        }
+
+        private static final SendableChooser<TeamColorSelection> teamColorChooser = buildTeamColorChooser();
         public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-        public static boolean forceRedTeamForTesting = true; // Set true for testing
 
         public static final double[] validAprilTagIds = {
             1,
@@ -66,13 +73,57 @@ public final class Constants {
             27
         };
 
+        private static SendableChooser<TeamColorSelection> buildTeamColorChooser() {
+            SendableChooser<TeamColorSelection> chooser = new SendableChooser<>();
+            chooser.setDefaultOption("Driver Station", TeamColorSelection.DRIVER_STATION);
+            chooser.addOption("Blue", TeamColorSelection.BLUE);
+            chooser.addOption("Red", TeamColorSelection.RED);
+            return chooser;
+        }
+
+        public static SendableChooser<TeamColorSelection> getTeamColorChooser() {
+            return teamColorChooser;
+        }
+
+        public static TeamColorSelection getSelectedTeamColor() {
+            TeamColorSelection selectedTeamColor = teamColorChooser.getSelected();
+            return selectedTeamColor != null ? selectedTeamColor : TeamColorSelection.DRIVER_STATION;
+        }
+
+        public static boolean isRedTeam() {
+            TeamColorSelection selectedTeamColor = getSelectedTeamColor();
+            if (selectedTeamColor == TeamColorSelection.RED) {
+                redTeam = true;
+                return true;
+            }
+
+            if (selectedTeamColor == TeamColorSelection.BLUE) {
+                redTeam = false;
+                return false;
+            }
+
+            redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            return redTeam;
+        }
+
         public static double[] getHubIDs() {
-            return redTeam ? validAprilTagIds : BlueTags;
+            return isRedTeam() ? validAprilTagIds : BlueTags;
+        }
+
+        public static int[] getHubIDsAsInt() {
+            double[] hubIds = getHubIDs();
+            int[] hubIdsAsInt = new int[hubIds.length];
+
+            for (int i = 0; i < hubIds.length; i++) {
+                hubIdsAsInt[i] = (int) hubIds[i];
+            }
+
+            return hubIdsAsInt;
         }
     }
 
     public static class LimelightConstants {
-        public static final String limelightName = "limelight";
+        public static final String limelightName = "limelight-front";
 
         public static final double XOffset = 0.3175;
         public static final double YOffset = 0.0635;
@@ -97,7 +148,7 @@ public final class Constants {
 
     public static final class Intake {
         public static final int IntakeID = 55;
-        public static final double IntakeSpeed = -0.50;
+        public static final double IntakeSpeed = -0.70;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
