@@ -38,11 +38,14 @@ public class AnglerCmd extends Command{
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean apressed = xbox.getAButton();
+            boolean xpressed = xbox.getXButton();
             boolean lbPressed = xbox.getLeftBumperButtonPressed();
 
-            if (rtPressed){
+            if (rtPressed && !xpressed){
                 Angler.updateFromTrackedAprilTag();
                 //Angler.setAnglePosition(2.5);
+            } else if (rtPressed && xpressed){
+                Angler.setAnglePosition(Constants.Angler.Passing);
             } else {
                 Angler.setAnglePosition(0);
             }

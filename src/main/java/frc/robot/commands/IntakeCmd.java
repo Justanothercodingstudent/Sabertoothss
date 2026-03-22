@@ -62,6 +62,7 @@ public class IntakeCmd extends Command {
             boolean bPressed = xbox.getBButtonPressed();
             boolean lbPressed = xbox.getLeftBumperButton();
             boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
+            boolean apressed = xbox.getAButton();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
@@ -75,9 +76,14 @@ public class IntakeCmd extends Command {
             if (ltPressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(speed);
-            }else{
+            }else if(apressed){
+                speed = Constants.Intake.IntakeSpeed;
+                Intake.setIntakeSpeed(-speed);
+            } else {
                 Intake.setIntakeSpeed(0);
             }
+
+            
 
             if(bPressed){
                 IntakePos = Constants.Intake.maxExtend;
