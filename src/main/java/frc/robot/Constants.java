@@ -148,7 +148,7 @@ public final class Constants {
 
     public static final class Intake {
         public static final int IntakeID = 55;
-        public static final double IntakeSpeed = -0.55;
+        public static final double IntakeSpeed = -0.65;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
@@ -252,7 +252,6 @@ public final class Constants {
             {1.7, 33},
             {2.5, 34},
             {3.4, 35},
-            {4.3, 55}
             
         };
 
