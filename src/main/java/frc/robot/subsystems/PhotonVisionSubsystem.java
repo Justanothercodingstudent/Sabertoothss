@@ -172,7 +172,16 @@ public class PhotonVisionSubsystem extends SubsystemBase {
     }
 
     public Translation2d getAllianceAutoAimTarget() {
-        return Constants.FieldConstants.getAllianceAutoAimTarget();
+        return Constants.FieldConstants.getAllianceHubCenter();
+    }
+
+    public Rotation2d getFieldHeadingToAutoAimTarget(Pose2d robotPose) {
+        Translation2d targetOffset = getAllianceAutoAimTarget().minus(robotPose.getTranslation());
+        if (targetOffset.getNorm() <= 1e-6) {
+            return robotPose.getRotation();
+        }
+
+        return targetOffset.getAngle();
     }
 
     public double getDistanceToAutoAimTarget(Pose2d robotPose) {
@@ -197,8 +206,8 @@ public class PhotonVisionSubsystem extends SubsystemBase {
 
     private Translation2d getAutoAimTargetForTag(int tagId) {
         return containsTag(Constants.TeamDependentFactors.reefIDsRed, tagId)
-            ? Constants.FieldConstants.redAutoAimTarget
-            : Constants.FieldConstants.blueAutoAimTarget;
+            ? Constants.FieldConstants.redHubCenter
+            : Constants.FieldConstants.blueHubCenter;
     }
 
     private Optional<RobotRelativeTargetObservation> buildRobotRelativeTargetObservation(

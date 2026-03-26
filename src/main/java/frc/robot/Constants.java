@@ -99,6 +99,10 @@ public final class Constants {
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
         public static final double fieldLengthMeters = rebuiltLayout.getFieldLength();
         public static final double fieldWidthMeters = rebuiltLayout.getFieldWidth();
+        public static final Translation2d blueHubCenter =
+            new Translation2d(Units.inchesToMeters(182.105), Units.inchesToMeters(158.845));
+        public static final Translation2d redHubCenter =
+            new Translation2d(Units.inchesToMeters(469.115), Units.inchesToMeters(158.845));
         public static final Translation2d blueAutoAimTarget =
             averageTagTranslations(TeamDependentFactors.reefIDsBlue);
         public static final Translation2d redAutoAimTarget =
@@ -128,13 +132,17 @@ public final class Constants {
         }
 
         public static Translation2d getAllianceAutoAimTarget() {
+            return getAllianceHubCenter();
+        }
+
+        public static Translation2d getAllianceHubCenter() {
             boolean isRedAlliance = TeamDependentFactors.isRedAlliance();
 
             if (!isRedAlliance) {
-                return blueAutoAimTarget;
+                return blueHubCenter;
             }
 
-            return redAutoAimTarget;
+            return redHubCenter;
         }
     }
 

@@ -116,8 +116,7 @@ public class TeleopSwerve extends Command {
             autoAimTarget = latchedAutoAimTarget;
         }
 
-        Translation2d robotTranslation = aimPose.getTranslation();
-        Translation2d targetOffset = autoAimTarget.minus(robotTranslation);
+        Rotation2d fieldHeadingToHub = photonVision.getFieldHeadingToAutoAimTarget(aimPose);
         double distanceToTarget = photonVision.getDistanceToAutoAimTarget(fieldPose);
         Rotation2d gyroHeading = s_Swerve.getGyroYaw();
         AutoAimState autoAimState = new AutoAimState(
@@ -152,7 +151,7 @@ public class TeleopSwerve extends Command {
             autoAimState = calculateAutoAimState(
                 fieldPoseReady,
                 gyroHeading,
-                targetOffset,
+                fieldHeadingToHub,
                 distanceToTarget,
                 directAutoAimTarget
             );
@@ -200,7 +199,7 @@ public class TeleopSwerve extends Command {
     private AutoAimState calculateAutoAimState(
         boolean fieldPoseReady,
         Rotation2d gyroHeading,
-        Translation2d targetOffset,
+        Rotation2d fieldHeadingToHub,
         double distanceToTarget,
         Optional<PhotonVisionSubsystem.RobotRelativeTargetObservation> directAutoAimTarget
     ) {
@@ -209,7 +208,7 @@ public class TeleopSwerve extends Command {
         }
 
         if (fieldPoseReady) {
-            return calculateFieldTargetAutoAimState(targetOffset, distanceToTarget);
+            return calculateFieldTargetAutoAimState(fieldHeadingToHub, distanceToTarget);
         }
 
         if (hasLatchedAutoAimHeading) {
@@ -254,11 +253,11 @@ public class TeleopSwerve extends Command {
     }
 
     private AutoAimState calculateFieldTargetAutoAimState(
-        Translation2d targetOffset,
+        Rotation2d fieldHeadingToHub,
         double distanceToTarget
     ) {
         Rotation2d currentHeading = s_Swerve.getHeading();
-        Rotation2d rawDesiredHeading = targetOffset.getAngle().rotateBy(
+        Rotation2d rawDesiredHeading = fieldHeadingToHub.rotateBy(
             Rotation2d.fromDegrees(Constants.PhotonVisionConstants.cameraHeadingOffsetDegrees)
         );
         Rotation2d desiredHeading = rawDesiredHeading;
