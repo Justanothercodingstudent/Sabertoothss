@@ -71,21 +71,23 @@ public class Limelight extends SubsystemBase {
 
 
     public void updateValues() {
-        int[] validTagIds = Constants.TeamDependentFactors.getHubIDsAsInt();
+        int[] validTagIds = Constants.TeamDependentFactors.getLocalizationTagIds();
         if (!Arrays.equals(configuredValidTagIds, validTagIds)) {
             LimelightHelpers.SetFiducialIDFiltersOverride(name, validTagIds);
             configuredValidTagIds = Arrays.copyOf(validTagIds, validTagIds.length);
         }
 
         LimelightHelpers.RawFiducial[] rawFiducials = LimelightHelpers.getRawFiducials(name);
-        SmartDashboard.putString("Limelight Table Name", name);
-        SmartDashboard.putBoolean("Limelight Using Red Tags", Constants.TeamDependentFactors.isRedTeam());
         SmartDashboard.putBoolean("Limelight Has Target", LimelightHelpers.getTV(name));
-        SmartDashboard.putNumber("Limelight Heartbeat", LimelightHelpers.getHeartbeat(name));
         SmartDashboard.putNumber("Limelight Primary Tag ID", LimelightHelpers.getFiducialID(name));
         SmartDashboard.putNumber("Limelight Raw Fiducial Count", rawFiducials.length);
-        SmartDashboard.putNumberArray("Limelight Raw Tag IDs", getRawFiducialIds(rawFiducials));
-        SmartDashboard.putNumberArray("Limelight Expected Tag IDs", Constants.TeamDependentFactors.getHubIDs());
+
+        // Kept for bring-up or camera troubleshooting.
+        // SmartDashboard.putString("Limelight Table Name", name);
+        // SmartDashboard.putBoolean("Limelight Using Red Tags", Constants.TeamDependentFactors.isRedTeam());
+        // SmartDashboard.putNumber("Limelight Heartbeat", LimelightHelpers.getHeartbeat(name));
+        // SmartDashboard.putNumberArray("Limelight Raw Tag IDs", getRawFiducialIds(rawFiducials));
+        // SmartDashboard.putNumberArray("Limelight Localization Tag IDs", Constants.TeamDependentFactors.getLocalizationTagIds());
     }
 
 
@@ -212,10 +214,9 @@ public class Limelight extends SubsystemBase {
     public void periodic() {
         updateValues();
 
-        SmartDashboard.putNumber("Nearest Hub Tag", getClosestTag(Constants.TeamDependentFactors.getHubIDs()));
-
-        SmartDashboard.putNumber("BotPose x", getAdjustedRobotPose().getTranslation().getX());
-        SmartDashboard.putNumber("BotPose y", getAdjustedRobotPose().getTranslation().getY());
-        SmartDashboard.putNumber("BotPose yaw", getAdjustedRobotPose().getRotation().getDegrees());
+        SmartDashboard.putNumber("Nearest Hub Tag", getClosestTag(Constants.TeamDependentFactors.getHubTagIds()));
+        SmartDashboard.putNumber("Limelight BotPose X", getAdjustedRobotPose().getTranslation().getX());
+        SmartDashboard.putNumber("Limelight BotPose Y", getAdjustedRobotPose().getTranslation().getY());
+        SmartDashboard.putNumber("Limelight BotPose Yaw", getAdjustedRobotPose().getRotation().getDegrees());
     }
 }

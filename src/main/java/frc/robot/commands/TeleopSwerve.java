@@ -73,7 +73,7 @@ public class TeleopSwerve extends Command {
         boolean aimAtTag = aimAtTagSup.getAsBoolean();
         double targetTagId = limelight == null
             ? -1.0
-            : limelight.getClosestTag(Constants.TeamDependentFactors.getHubIDs());
+            : limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
         double[] tagData = targetTagId < 0.0
             ? null
             : limelight.getTarget((int) targetTagId);

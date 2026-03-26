@@ -42,6 +42,7 @@ public class Swerve extends SubsystemBase {
     private Rotation2d originalHeading;
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
+    private int currentLimelightImuMode;
 
     public Swerve(){
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
@@ -69,6 +70,8 @@ public class Swerve extends SubsystemBase {
         originalHeading = new Rotation2d();
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
+        currentLimelightImuMode = -1;
+        applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
         }
 
     private void configureAutoBuilder() {
@@ -259,14 +262,31 @@ public class Swerve extends SubsystemBase {
             0
         );
 
-        // boolean isRedAlliance =
-        //     DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-
-        // if (isRedAlliance) {
-        //     return LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(limelightName);
-        // }
-
+        // Limelight MegaTag2 + modern WPILib/FRC always uses the blue-origin pose for estimator fusion,
+        // even when the robot is on red alliance. Do not switch this to wpired unless the upstream
+        // WPILib/Limelight coordinate-system guidance changes.
         return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+    }
+
+    private void applyLimelightImuMode(int imuMode) {
+        if (currentLimelightImuMode == imuMode) {
+            return;
+        }
+
+        String limelightName = Constants.LimelightConstants.limelightName;
+        LimelightHelpers.SetIMUAssistAlpha(
+            limelightName,
+            Constants.LimelightConstants.limelightImuAssistAlpha
+        );
+        LimelightHelpers.SetIMUMode(limelightName, imuMode);
+        currentLimelightImuMode = imuMode;
+    }
+
+    private void updateLimelightImuMode() {
+        int targetImuMode = DriverStation.isDisabled()
+            ? Constants.LimelightConstants.limelightImuSeedMode
+            : Constants.LimelightConstants.limelightImuEnabledMode;
+        applyLimelightImuMode(targetImuMode);
     }
 
     private PoseEstimate getMegaTag2VisionMeasurement() {
@@ -342,6 +362,8 @@ public class Swerve extends SubsystemBase {
             return;
         }
 
+        SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
+
         double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
         poseEstimator.addVisionMeasurement(
             visionMeasurement.pose,
@@ -362,6 +384,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Vision Std Dev XY", translationStdDev);
         SmartDashboard.putNumber("Vision Pose X", visionMeasurement.pose.getX());
         SmartDashboard.putNumber("Vision Pose Y", visionMeasurement.pose.getY());
+        SmartDashboard.putNumber("Vision Pose Heading", visionMeasurement.pose.getRotation().getDegrees());
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
@@ -396,28 +419,57 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
+        updateLimelightImuMode();
         swerveOdometry.update(getGyroYaw(), getModulePositions());
         poseEstimator.update(getGyroYaw(), getModulePositions());
         addVisionMeasurementIfAvailable();
 
-        SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
-        SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
-        SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
-        SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
-        SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
+        Pose2d odometryPose = getOdometryPose();
+        Pose2d estimatedPose = getPose();
+
+        SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
+        SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
+        SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam());
+        SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
+
+        SmartDashboard.putNumber("Odometry X", odometryPose.getX());
+        SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
+        SmartDashboard.putNumber("Odometry Heading", odometryPose.getRotation().getDegrees());
+
+        SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
+        SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
+        SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
+
+        SmartDashboard.putNumber(
+            "Estimator/Odometry Translation Error",
+            estimatedPose.getTranslation().getDistance(odometryPose.getTranslation())
+        );
+        SmartDashboard.putNumber(
+            "Estimator/Odometry Heading Error",
+            estimatedPose.getRotation().minus(odometryPose.getRotation()).getDegrees()
+        );
+
         SmartDashboard.putNumber("Last Vision Pose X", lastAcceptedVisionPose.getX());
         SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
+        SmartDashboard.putNumber("Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
+        SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
 
-        for(SwerveModule mod : mSwerveMods){
-             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
-             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
-             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        // Older generic pose debug kept here in case we want to re-enable it later.
+        // SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
+        // SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
+        // SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
+        // SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
+        // SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
 
-            // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
-            SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());  
+        // Per-module dashboard
+        // for(SwerveModule mod : mSwerveMods){
+        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
+        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
+        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
+        // }
 
-                
-        }
+        // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
     }
 }       
 

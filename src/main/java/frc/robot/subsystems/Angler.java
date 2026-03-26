@@ -114,7 +114,7 @@ public class Angler extends SubsystemBase{
             return;
         }
 
-        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.getHubIDs());;
+        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());;
         double distanceMeters = limelight.getDistanceToTag(trackedTagId);
         boolean hasTrackedTag = distanceMeters >= 0.0;
         double nowSeconds = Timer.getFPGATimestamp();

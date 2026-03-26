@@ -15,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.lib.util.COTSTalonFXSwerveConstants;
 import frc.lib.util.SwerveModuleConstants;
 
@@ -41,16 +40,51 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
-        public enum TeamColorSelection {
-            DRIVER_STATION,
-            BLUE,
-            RED
-        }
+        // Previous manual override implementation kept for reference only.
+        // public enum TeamColorSelection {
+        //     DRIVER_STATION,
+        //     BLUE,
+        //     RED
+        // }
+        //
+        // private static final SendableChooser<TeamColorSelection> teamColorChooser = buildTeamColorChooser();
+        // public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        //
+        // private static SendableChooser<TeamColorSelection> buildTeamColorChooser() {
+        //     SendableChooser<TeamColorSelection> chooser = new SendableChooser<>();
+        //     chooser.setDefaultOption("Driver Station", TeamColorSelection.DRIVER_STATION);
+        //     chooser.addOption("Blue", TeamColorSelection.BLUE);
+        //     chooser.addOption("Red", TeamColorSelection.RED);
+        //     return chooser;
+        // }
+        //
+        // public static SendableChooser<TeamColorSelection> getTeamColorChooser() {
+        //     return teamColorChooser;
+        // }
+        //
+        // public static TeamColorSelection getSelectedTeamColor() {
+        //     TeamColorSelection selectedTeamColor = teamColorChooser.getSelected();
+        //     return selectedTeamColor != null ? selectedTeamColor : TeamColorSelection.DRIVER_STATION;
+        // }
+        //
+        // public static boolean isRedTeam() {
+        //     TeamColorSelection selectedTeamColor = getSelectedTeamColor();
+        //     if (selectedTeamColor == TeamColorSelection.RED) {
+        //         redTeam = true;
+        //         return true;
+        //     }
+        //
+        //     if (selectedTeamColor == TeamColorSelection.BLUE) {
+        //         redTeam = false;
+        //         return false;
+        //     }
+        //
+        //     redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        //     return redTeam;
+        // }
 
-        private static final SendableChooser<TeamColorSelection> teamColorChooser = buildTeamColorChooser();
-        public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-
-        public static final double[] validAprilTagIds = {
+        // Hub / aiming tags. These stay separate from localization filters.
+        public static final double[] redHubTagIds = {
             1,
             2,
             3,  
@@ -62,7 +96,7 @@ public final class Constants {
             11   
         };
 
-        public static final double[] BlueTags = {
+        public static final double[] blueHubTagIds = {
             18,
             19,
             20,
@@ -73,52 +107,36 @@ public final class Constants {
             27
         };
 
-        private static SendableChooser<TeamColorSelection> buildTeamColorChooser() {
-            SendableChooser<TeamColorSelection> chooser = new SendableChooser<>();
-            chooser.setDefaultOption("Driver Station", TeamColorSelection.DRIVER_STATION);
-            chooser.addOption("Blue", TeamColorSelection.BLUE);
-            chooser.addOption("Red", TeamColorSelection.RED);
-            return chooser;
-        }
-
-        public static SendableChooser<TeamColorSelection> getTeamColorChooser() {
-            return teamColorChooser;
-        }
-
-        public static TeamColorSelection getSelectedTeamColor() {
-            TeamColorSelection selectedTeamColor = teamColorChooser.getSelected();
-            return selectedTeamColor != null ? selectedTeamColor : TeamColorSelection.DRIVER_STATION;
-        }
+        // Full-field localization tags used by vision pose estimation on both alliances.
+        public static final int[] localizationTagIds = {
+            1, 2, 3, 4, 5, 6,
+            7, 8, 9, 10, 11, 12,
+            13, 14, 15, 16,
+            17, 18, 19, 20, 21, 22,
+            23, 24, 25, 26, 27, 28
+        };
 
         public static boolean isRedTeam() {
-            TeamColorSelection selectedTeamColor = getSelectedTeamColor();
-            if (selectedTeamColor == TeamColorSelection.RED) {
-                redTeam = true;
-                return true;
-            }
-
-            if (selectedTeamColor == TeamColorSelection.BLUE) {
-                redTeam = false;
-                return false;
-            }
-
-            redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-            return redTeam;
+            return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         }
 
-        public static double[] getHubIDs() {
-            return isRedTeam() ? validAprilTagIds : BlueTags;
+        public static double[] getHubTagIds() {
+            return isRedTeam() ? redHubTagIds : blueHubTagIds;
         }
 
-        public static int[] getHubIDsAsInt() {
-            double[] hubIds = getHubIDs();
-            int[] hubIdsAsInt = new int[hubIds.length];
+        public static int[] getHubTagIdsAsInt() {
+            double[] hubTagIds = getHubTagIds();
+            int[] hubTagIdsAsInt = new int[hubTagIds.length];
 
-            for (int i = 0; i < hubIds.length; i++) {
-                hubIdsAsInt[i] = (int) hubIds[i];
+            for (int i = 0; i < hubTagIds.length; i++) {
+                hubTagIdsAsInt[i] = (int) hubTagIds[i];
             }
 
-            return hubIdsAsInt;
+            return hubTagIdsAsInt;
+        }
+
+        public static int[] getLocalizationTagIds() {
+            return localizationTagIds.clone();
         }
     }
 
@@ -144,6 +162,9 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
+        public static final int limelightImuSeedMode = 1;
+        public static final int limelightImuEnabledMode = 4;
+        public static final double limelightImuAssistAlpha = 0.001;
     }
 
     public static final class Intake {
@@ -395,13 +416,13 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-      public static final String defaultAutoName = "Shoot";
+      public static final String defaultAutoName = "Backwards";
 
       public static final double translationKP = 2.12;
       public static final double translationKI = 0.01;
       public static final double translationKD = 0.0;
 
-      public static final double rotationKP = 0;
+      public static final double rotationKP = 2.0; // Originally 0
       public static final double rotationKI = 0;
       public static final double rotationKD = 0;
   }

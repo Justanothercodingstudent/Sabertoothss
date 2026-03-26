@@ -8,6 +8,7 @@ import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -33,6 +34,9 @@ import frc.robot.subsystems.Angler;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+  // Previous manual team-color override kept for reference only.
+  // private SendableChooser<Constants.TeamDependentFactors.TeamColorSelection> teamColorChooser;
+
   /* Controllers */
   private final XboxController driver = new XboxController(0);
   private final XboxController operator = new XboxController(1);
@@ -65,7 +69,6 @@ public class RobotContainer {
   private AutoController autoController;
 
   private SendableChooser<Command> chooser;
-  private SendableChooser<Constants.TeamDependentFactors.TeamColorSelection> teamColorChooser;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -105,7 +108,6 @@ public class RobotContainer {
 
     autoController = new AutoController(Intake, Spin, angler);
     Autos.registerNamedCommands(s_Swerve, autoController);
-    configureTeamColorChooser();
     configureAutoSelector();
     configureButtonBindings();
   }
@@ -118,11 +120,14 @@ public class RobotContainer {
 private void configureAutoSelector() {
   chooser = Autos.buildChooser();
   SmartDashboard.putData("Auto Mode", chooser);
-}
+  SmartDashboard.putString(
+      "Driver Station Alliance",
+      DriverStation.getAlliance().map(Enum::name).orElse("Unknown")
+  );
 
-private void configureTeamColorChooser() {
-  teamColorChooser = Constants.TeamDependentFactors.getTeamColorChooser();
-  SmartDashboard.putData("Team Color", teamColorChooser);
+  // Previous manual team-color override kept for reference only.
+  // teamColorChooser = Constants.TeamDependentFactors.getTeamColorChooser();
+  // SmartDashboard.putData("Team Color", teamColorChooser);
 }
 
 
