@@ -102,7 +102,9 @@ public class RobotContainer {
             () -> -driver.getRawAxis(rotationAxis), 
             () -> false,
             limelight,
-            () -> driver.getAButton()
+            () -> driver.getAButton(),
+            () -> operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD
+                && !operator.getXButton()
         )
     );
 
