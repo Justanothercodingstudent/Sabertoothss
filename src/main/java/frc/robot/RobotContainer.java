@@ -17,15 +17,14 @@ import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
-import frc.robot.commands.climberCmd;
+//import frc.robot.commands.climberCmd;
 import frc.robot.commands.AnglerCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
-import frc.robot.subsystems.climber;
+//import frc.robot.subsystems.climber;
 import frc.robot.subsystems.Angler;
-import frc.robot.commands.IntakeRoller;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -50,7 +49,7 @@ public class RobotContainer {
   private final Swerve s_Swerve = new Swerve();
   private final intake Intake;
   private final SpinnerAndShooter Spin;
-  private final climber climb;
+ // private final climber climb;
   private final Angler angler;
 
   private Limelight limelight;
@@ -60,9 +59,8 @@ public class RobotContainer {
 
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
-  private climberCmd climbCmd;
+ // private climberCmd climbCmd;
   private AnglerCmd anglerCmd;
-  private IntakeRoller intakeroller;
 
   private AutoController autoController;
 
@@ -82,19 +80,16 @@ public class RobotContainer {
     angler.setDefaultCommand(anglerCmd);
 
     Intake = new intake();
-    intakeCmd = new IntakeCmd(Intake, operator);
+    intakeCmd = new IntakeCmd(Intake, operator, driver);
     Intake.setDefaultCommand(intakeCmd);
-
-    intakeroller = new IntakeRoller(Intake, driver);
-    Intake.setDefaultCommand(intakeroller); 
 
     Spin = new SpinnerAndShooter();
     ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake);
     Spin.setDefaultCommand(ShootCmd);
 
-    climb = new climber();
-    climbCmd = new climberCmd(climb, driver);
-    climb.setDefaultCommand(climbCmd);
+    // climb = new climber();
+    // climbCmd = new climberCmd(climb, driver);
+    // climb.setDefaultCommand(climbCmd);
     
     s_Swerve.setDefaultCommand(
         new TeleopSwerve(

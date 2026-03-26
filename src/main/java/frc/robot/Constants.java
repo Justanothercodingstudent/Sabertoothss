@@ -163,17 +163,17 @@ public final class Constants {
         public static final double extendD = 0;
     }
 
-    public static final class climber{
-        public static final int climberID = 19;
-        public static final double ClimbSpeed = 0.5;
+    // public static final class climber{
+    //     //public static final int climberID = ;
+    //     public static final double ClimbSpeed = 0.5;
 
-        public static final double minClimb = 0;
-        public static final double maxClimb = 90; // was 96
+    //     public static final double minClimb = 0;
+    //     public static final double maxClimb = 90; // was 96
 
-        public static  final double climbP = 1;
-        public static final double climbI = 0;
-        public static final double climbD = 0;
-    }
+    //     public static  final double climbP = 1;
+    //     public static final double climbI = 0;
+    //     public static final double climbD = 0;
+    // }
 
     public static final class Angler{
         public static final int AnglerID = 18;
@@ -223,7 +223,7 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.2; 
+        public static final double Rollerspeed = 0.5; 
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;

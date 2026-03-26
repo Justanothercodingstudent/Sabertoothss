@@ -13,18 +13,20 @@ import frc.robot.Constants;
 
 public class IntakeCmd extends Command {
     private final intake Intake;
-    private final XboxController xbox;
+    private final XboxController Operator;
+    private final XboxController Driver;
 
     private double IntakePos;
     private double speed;
     private double Rollerspeed;
     private Command activeIntakeCycle;
 
-    public IntakeCmd(intake Intake, XboxController xbox){
+    public IntakeCmd(intake Intake, XboxController Operator, XboxController Driver){
         this.Intake = Intake;
         addRequirements(this.Intake);
 
-        this.xbox = xbox;
+        this.Operator = Operator;
+        this.Driver = Driver;
 
         IntakePos = Intake.getExtensionPos();
 
@@ -56,13 +58,11 @@ public class IntakeCmd extends Command {
     public void execute() {
         if (DriverStation.isTeleop()) {
 
-            boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean yPressed = xbox.getYButtonPressed();
-            boolean bPressed = xbox.getBButtonPressed();
-            boolean lbPressed = xbox.getLeftBumperButton();
-            boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
-            boolean apressed = xbox.getAButton();
+            boolean ltPressed = Driver.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean yPressed = Operator.getYButtonPressed();
+            boolean bPressed = Operator.getBButtonPressed();
+            boolean lbPressed = Operator.getLeftBumperButton();
+            boolean ypressed = Driver.getYButton();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
@@ -76,7 +76,7 @@ public class IntakeCmd extends Command {
             if (ltPressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(speed);
-            }else if(apressed){
+            }else if(ypressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(-speed);
             } else {
