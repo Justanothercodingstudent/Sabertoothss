@@ -246,51 +246,32 @@ public class Swerve extends SubsystemBase {
         lastVisionTimestampSeconds = -1.0;
     }
 
-    private PoseEstimate getAlliancePoseEstimate(boolean useMegaTag2) {
+    private PoseEstimate getMegaTag2PoseEstimate() {
         String limelightName = Constants.LimelightConstants.limelightName;
 
-        if (useMegaTag2) {
-            LimelightHelpers.SetRobotOrientation(
-                limelightName,
-                getGyroYaw().getDegrees(),
-                0,
-                0,
-                0,
-                0,
-                0
-            );
-        }
+        LimelightHelpers.SetRobotOrientation(
+            limelightName,
+            getGyroYaw().getDegrees(),
+            0,
+            0,
+            0,
+            0,
+            0
+        );
 
-        boolean isRedAlliance =
-            DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+        // boolean isRedAlliance =
+        //     DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
 
-        if (isRedAlliance) {
-            return useMegaTag2
-                ? LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(limelightName)
-                : LimelightHelpers.getBotPoseEstimate_wpiRed(limelightName);
-        }
+        // if (isRedAlliance) {
+        //     return LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(limelightName);
+        // }
 
-        return useMegaTag2
-            ? LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName)
-            : LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
+        return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
     }
 
-    private PoseEstimate getPreferredVisionMeasurement() {
-        PoseEstimate megaTag1Estimate = getAlliancePoseEstimate(false);
-        PoseEstimate megaTag2Estimate = getAlliancePoseEstimate(true);
-
-        PoseEstimate preferredEstimate = megaTag2Estimate.tagCount >= 2 ? megaTag2Estimate : megaTag1Estimate;
-        PoseEstimate fallbackEstimate = preferredEstimate == megaTag1Estimate ? megaTag2Estimate : megaTag1Estimate;
-
-        if (isVisionMeasurementValid(preferredEstimate)) {
-            return preferredEstimate;
-        }
-
-        if (isVisionMeasurementValid(fallbackEstimate)) {
-            return fallbackEstimate;
-        }
-
-        return null;
+    private PoseEstimate getMegaTag2VisionMeasurement() {
+        PoseEstimate megaTag2Estimate = getMegaTag2PoseEstimate();
+        return isVisionMeasurementValid(megaTag2Estimate) ? megaTag2Estimate : null;
     }
 
     private boolean isVisionMeasurementValid(PoseEstimate estimate) {
@@ -352,11 +333,12 @@ public class Swerve extends SubsystemBase {
     }
 
     private void addVisionMeasurementIfAvailable() {
-        PoseEstimate visionMeasurement = getPreferredVisionMeasurement();
+        PoseEstimate visionMeasurement = getMegaTag2VisionMeasurement();
 
         SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurement != null);
 
         if (visionMeasurement == null) {
+            SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", true);
             return;
         }
 
