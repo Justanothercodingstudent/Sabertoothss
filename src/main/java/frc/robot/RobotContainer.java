@@ -25,6 +25,7 @@ import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.climber;
 import frc.robot.subsystems.Angler;
+import frc.robot.commands.IntakeRoller;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -61,6 +62,7 @@ public class RobotContainer {
   private SpinnerAndShooterCmd ShootCmd;
   private climberCmd climbCmd;
   private AnglerCmd anglerCmd;
+  private IntakeRoller intakeroller;
 
   private AutoController autoController;
 
@@ -82,6 +84,9 @@ public class RobotContainer {
     Intake = new intake();
     intakeCmd = new IntakeCmd(Intake, operator);
     Intake.setDefaultCommand(intakeCmd);
+
+    intakeroller = new IntakeRoller(Intake, driver);
+    Intake.setDefaultCommand(intakeroller); 
 
     Spin = new SpinnerAndShooter();
     ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake);
