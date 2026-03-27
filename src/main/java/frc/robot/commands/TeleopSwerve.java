@@ -20,7 +20,7 @@ public class TeleopSwerve extends Command {
     private static final double TAG_AIM_KI = 0.0;
     private static final double TAG_AIM_KD = 0.0;
     private static final double TAG_AIM_TOLERANCE_DEGREES = 1.5;
-    private static final double TAG_AIM_MAX_ANGULAR_SPEED = 2.0;
+    private static final double TAG_AIM_MAX_ANGULAR_SPEED = 0.5;
     private static final double TAG_AIM_MAX_ANGULAR_ACCELERATION = 6.0;
     private static final double TAG_AIM_MANUAL_BLEND = 0.35;
 
@@ -31,7 +31,7 @@ public class TeleopSwerve extends Command {
     private final BooleanSupplier robotCentricSup;
     private final Limelight limelight;
     private final BooleanSupplier aimAtTagSup;
-    private final BooleanSupplier anglerHubAimActiveSup;
+    //private final BooleanSupplier anglerHubAimActiveSup;
     private final PIDController tagAimController = new PIDController(TAG_AIM_KP, TAG_AIM_KI, TAG_AIM_KD);
     private final SlewRateLimiter tagAimOutputLimiter =
         new SlewRateLimiter(TAG_AIM_MAX_ANGULAR_ACCELERATION);
@@ -43,8 +43,9 @@ public class TeleopSwerve extends Command {
             DoubleSupplier rotationSup,
             BooleanSupplier robotCentricSup,
             Limelight aprilTagDetection,
-            BooleanSupplier aimAtTagSup,
-            BooleanSupplier anglerHubAimActiveSup) {
+            BooleanSupplier aimAtTagSup//,
+            //BooleanSupplier anglerHubAimActiveSup
+            ) {
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
 
@@ -54,7 +55,7 @@ public class TeleopSwerve extends Command {
         this.robotCentricSup = robotCentricSup;
         this.limelight = aprilTagDetection;
         this.aimAtTagSup = aimAtTagSup;
-        this.anglerHubAimActiveSup = anglerHubAimActiveSup;
+        //this.anglerHubAimActiveSup = anglerHubAimActiveSup;
         tagAimController.setTolerance(TAG_AIM_TOLERANCE_DEGREES);
     }
 
@@ -75,8 +76,8 @@ public class TeleopSwerve extends Command {
         double manualRotationCommand = rotationVal * Constants.Swerve.maxAngularVelocity;
         double rotationCommand = manualRotationCommand;
 
-        boolean hubAimActive = anglerHubAimActiveSup.getAsBoolean();
-        boolean aimAtTag = aimAtTagSup.getAsBoolean() && hubAimActive;
+        //boolean hubAimActive = anglerHubAimActiveSup.getAsBoolean();
+        boolean aimAtTag = aimAtTagSup.getAsBoolean() ;//&& hubAimActive;
         double targetTagId = limelight == null
             ? -1.0
             : limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
@@ -86,7 +87,7 @@ public class TeleopSwerve extends Command {
         boolean tagVisible = tagData != null;
 
         SmartDashboard.putBoolean("Tag Aim Requested", aimAtTagSup.getAsBoolean());
-        SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
+        //SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
         SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag);
         SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
         SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
