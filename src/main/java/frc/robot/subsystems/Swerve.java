@@ -43,6 +43,8 @@ public class Swerve extends SubsystemBase {
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
     private int currentLimelightImuMode;
+    private Pose2d lastRawVisionPose;
+    private double lastRawVisionTimestampSeconds;
 
     public Swerve(){
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
@@ -71,6 +73,8 @@ public class Swerve extends SubsystemBase {
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         currentLimelightImuMode = -1;
+        lastRawVisionPose = new Pose2d();
+        lastRawVisionTimestampSeconds = -1.0;
         applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
         }
 
@@ -291,6 +295,10 @@ public class Swerve extends SubsystemBase {
 
     private PoseEstimate getMegaTag2VisionMeasurement() {
         PoseEstimate megaTag2Estimate = getMegaTag2PoseEstimate();
+        if (megaTag2Estimate != null) {
+            lastRawVisionPose = megaTag2Estimate.pose;
+            lastRawVisionTimestampSeconds = megaTag2Estimate.timestampSeconds;
+        }
         return isVisionMeasurementValid(megaTag2Estimate) ? megaTag2Estimate : null;
     }
 
@@ -439,6 +447,10 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
         SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
         SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
+        SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
+        SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("Raw MegaTag2 Timestamp", lastRawVisionTimestampSeconds);
 
         SmartDashboard.putNumber(
             "Estimator/Odometry Translation Error",
