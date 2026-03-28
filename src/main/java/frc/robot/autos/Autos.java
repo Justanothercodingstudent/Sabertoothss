@@ -32,7 +32,8 @@ public final class Autos {
         ));
 
         NamedCommands.registerCommands(Map.of(
-            "Shoot And Score", autoController.ShootAndScore()
+            "Shoot And Score", autoController.ShootAndScore(),
+            "flip heading", swerve.flipHeading()
         ));
     }
 

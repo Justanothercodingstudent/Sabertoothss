@@ -418,11 +418,11 @@ public final class Constants {
   public static final class AutoConstants {
       public static final String defaultAutoName = "Backwards";
 
-      public static final double translationKP = 2.12;
-      public static final double translationKI = 0.01;
+      public static final double translationKP = 4.5;
+      public static final double translationKI = 0.00;
       public static final double translationKD = 0.0;
 
-      public static final double rotationKP = 2.0; // Originally 0
+      public static final double rotationKP = 1.0; // Originally 0
       public static final double rotationKI = 0;
       public static final double rotationKD = 0;
   }
@@ -434,7 +434,7 @@ public final class Constants {
           return RobotConfig.fromGUISettings();
       } catch (Exception e) {
           DriverStation.reportError(
-              "Failed to load PathPlanner robot config from deploy/pathplanner/settings.json",
+              "Failed to load PathPlanner robot config from deploy/p%athplanner/settings.json",
               e.getStackTrace()
           );
           return null;
