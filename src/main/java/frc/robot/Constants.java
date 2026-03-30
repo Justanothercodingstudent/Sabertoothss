@@ -249,7 +249,8 @@ public final class Constants {
 
         public static final double Rollerspeed = 0.25; 
 
-        public static double ShootSpeed = 0.4;
+        public static double ShootSpeed = 25;
+        public static double ShootReq = 23;
         public static final double CoastSpeed = 0.05;
         public static final double SpinSpeed = -0.8;
 
@@ -275,8 +276,8 @@ public final class Constants {
             {0.5, 24*1.66},
             {0.8, 26*1.66},
             {1.0, 28*1.66},
-            {1.5, 30*1.66},
-            {2.05, 31*1.66},
+            {1.5, 29*1.66},
+            {1.7, 32*1.66},
             {2.5, 33*1.66},
             {3.4, 35*1.66},
             
@@ -292,9 +293,8 @@ public final class Constants {
             {0.5, 22.0},
             {0.8, 24.0},
             {1.0, 26.0},
-            {1.5, 28.0},
-            {1.6, 29.0},
-            {1.7, 29.0}, 
+            {1.5, 27.0},
+            {1.7, 30.0}, 
             {2.5, 31.0},
         };
     }

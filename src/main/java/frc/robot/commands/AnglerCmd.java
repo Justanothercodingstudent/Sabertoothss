@@ -37,34 +37,33 @@ public class AnglerCmd extends Command{
 
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean apressed = xbox.getAButton();
-            boolean xpressed = xbox.getXButton();
-            boolean lbPressed = xbox.getLeftBumperButtonPressed();
+            boolean apressed = xbox.getAButtonPressed();
+            boolean xpressed = xbox.getXButtonPressed();
 
-            if (rtPressed && !xpressed){
-                Angler.updateFromTrackedAprilTag();
-                //Angler.setAnglePosition(2.5);
-            } else if (rtPressed && xpressed){
-                Angler.setAnglePosition(Constants.Angler.Passing);
-            } else {
-                Angler.setAnglePosition(0);
-            }
+            // if (rtPressed && !xpressed){
+            //     Angler.updateFromTrackedAprilTag();
+            //     //Angler.setAnglePosition(2.5);
+            // } else if (rtPressed && xpressed){
+            //     Angler.setAnglePosition(Constants.Angler.Passing);
+            // } else {
+            //     Angler.setAnglePosition(0);
+            // }
 
-            /*if (ypressed){
-                if (AnglePos <= 4.5){
+            if (xpressed){
+                if (AnglePos <= 5.5){
                     Constants.Angler.TestAngle += 0.5;
                     AnglePos = Constants.Angler.TestAngle;
                     Angler.setAnglePosition(AnglePos);
                 }
             }
             
-            if (bpressed){
+            if (apressed){
                 if (AnglePos >= 0.5){
                     Constants.Angler.TestAngle -= 0.5;
                     AnglePos = Constants.Angler.TestAngle;
                     Angler.setAnglePosition(AnglePos);
                 }
-            }*/
+            }
 
             /*  if (ypressed){
                 AnglePos = Constants.Angler.MaxAngle;
