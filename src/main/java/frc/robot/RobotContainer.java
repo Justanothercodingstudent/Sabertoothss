@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -69,6 +70,7 @@ public class RobotContainer {
   private AutoController autoController;
 
   private SendableChooser<Command> chooser;
+  private Pose2d lastSeededAutoPose;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -132,6 +134,41 @@ private void configureAutoSelector() {
   // SmartDashboard.putData("Team Color", teamColorChooser);
 }
 
+  public void syncSelectedAutoHeadingSeed() {
+    Pose2d autoStartingPose = Autos.getStartingPose(getSelectedAutoCommand());
+
+    SmartDashboard.putString(
+        "Selected Auto",
+        chooser != null && chooser.getSelected() != null ? chooser.getSelected().getName() : "None"
+    );
+    SmartDashboard.putBoolean("Auto Start Pose Available", autoStartingPose != null);
+
+    if (autoStartingPose == null) {
+      lastSeededAutoPose = null;
+      return;
+    }
+
+    SmartDashboard.putNumber("Auto Start X", autoStartingPose.getX());
+    SmartDashboard.putNumber("Auto Start Y", autoStartingPose.getY());
+    SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
+
+    double gyroHeadingErrorDegrees = Math.abs(
+        s_Swerve.getGyroYaw().minus(autoStartingPose.getRotation()).getDegrees()
+    );
+
+    if (lastSeededAutoPose == null
+        || Math.abs(
+                lastSeededAutoPose.getRotation().minus(autoStartingPose.getRotation()).getDegrees())
+            > 1e-3
+        || gyroHeadingErrorDegrees > 0.5) {
+      s_Swerve.seedFieldHeading(autoStartingPose.getRotation());
+      lastSeededAutoPose = autoStartingPose;
+    }
+  }
+
+  private Command getSelectedAutoCommand() {
+    return chooser != null ? chooser.getSelected() : null;
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -139,8 +176,11 @@ private void configureAutoSelector() {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return chooser != null && chooser.getSelected() != null
-        ? chooser.getSelected()
+    syncSelectedAutoHeadingSeed();
+
+    Command selectedAuto = getSelectedAutoCommand();
+    return selectedAuto != null
+        ? selectedAuto
         : Commands.none();
 }
   

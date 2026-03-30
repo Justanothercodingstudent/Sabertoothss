@@ -164,8 +164,8 @@ public class SpinnerAndShooterCmd extends Command{
                 shoot.OpenShootSpeed(0);
                 shoot.roller(0);
             } 
+            
         }
-
         
     }
 

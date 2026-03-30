@@ -2,9 +2,11 @@ package frc.robot.autos;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -46,6 +48,21 @@ public final class Autos {
         SendableChooser<Command> chooser = new SendableChooser<>();
         chooser.setDefaultOption("Do Nothing", Commands.none());
         return chooser;
+    }
+
+    public static Pose2d getStartingPose(Command autoCommand) {
+        if (!(autoCommand instanceof PathPlannerAuto pathPlannerAuto)) {
+            return null;
+        }
+
+        Pose2d startingPose = pathPlannerAuto.getStartingPose();
+        if (startingPose == null) {
+            return null;
+        }
+
+        return Constants.TeamDependentFactors.isRedTeam
+            ? FlippingUtil.flipFieldPose(startingPose)
+            : startingPose;
     }
         // This is a lambda that will be called to register the named commands when the AutoBuilder is configured.
         // You can put any code here that you want to run when the AutoBuilder is ready, such as registering additional commands or performing setup tasks.)

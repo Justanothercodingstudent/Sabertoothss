@@ -227,6 +227,21 @@ public class Swerve extends SubsystemBase {
         resetPoseTrackers(new Pose2d(getPose().getTranslation(), new Rotation2d()));
     }
 
+    public void seedFieldHeading(Rotation2d fieldHeading) {
+        if (!Double.isFinite(fieldHeading.getRadians())) {
+            return;
+        }
+
+        gyro.setYaw(fieldHeading.getDegrees());
+        resetPoseTrackers(new Pose2d(getPose().getTranslation(), fieldHeading));
+
+        if (DriverStation.isDisabled()) {
+            applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
+        }
+
+        pushFieldHeadingToLimelight(fieldHeading);
+    }
+
     public Command flipHeading(){
         return new InstantCommand(() -> resetPoseTrackers(
             new Pose2d(getPose().getTranslation(), getHeading().rotateBy(Rotation2d.fromDegrees(180)))
@@ -256,15 +271,7 @@ public class Swerve extends SubsystemBase {
     private PoseEstimate getMegaTag2PoseEstimate() {
         String limelightName = Constants.LimelightConstants.limelightName;
 
-        LimelightHelpers.SetRobotOrientation(
-            limelightName,
-            getGyroYaw().getDegrees(),
-            0,
-            0,
-            0,
-            0,
-            0
-        );
+        pushFieldHeadingToLimelight(getGyroYaw());
 
         // Limelight MegaTag2 + modern WPILib/FRC always uses the blue-origin pose for estimator fusion,
         // even when the robot is on red alliance. Do not switch this to wpired unless the upstream
@@ -284,6 +291,22 @@ public class Swerve extends SubsystemBase {
         );
         LimelightHelpers.SetIMUMode(limelightName, imuMode);
         currentLimelightImuMode = imuMode;
+    }
+
+    private void pushFieldHeadingToLimelight(Rotation2d fieldHeading) {
+        if (!Double.isFinite(fieldHeading.getRadians())) {
+            return;
+        }
+
+        LimelightHelpers.SetRobotOrientation(
+            Constants.LimelightConstants.limelightName,
+            fieldHeading.getDegrees(),
+            0,
+            0,
+            0,
+            0,
+            0
+        );
     }
 
     private void updateLimelightImuMode() {
@@ -437,7 +460,7 @@ public class Swerve extends SubsystemBase {
 
         SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
         SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
-        SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam());
+        SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
         SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
 
         SmartDashboard.putNumber("Odometry X", odometryPose.getX());
@@ -475,11 +498,11 @@ public class Swerve extends SubsystemBase {
         // SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
 
         // Per-module dashboard
-        // for(SwerveModule mod : mSwerveMods){
-        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
-        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
-        //      SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
-        // }
+        for(SwerveModule mod : mSwerveMods){
+             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
+             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
+             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
+        }
 
         // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
     }

@@ -8,7 +8,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.config.RobotConfig;
-
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -28,7 +28,6 @@ import frc.lib.util.SwerveModuleConstants;
  */
 public final class Constants {
 
-
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int shooterController = 1;
@@ -40,16 +39,19 @@ public final class Constants {
   public static final double stickDeadband = 0.08;
 
     public static class TeamDependentFactors {
+
+        public static boolean isRedTeam;
+
         // Previous manual override implementation kept for reference only.
         // public enum TeamColorSelection {
         //     DRIVER_STATION,
         //     BLUE,
         //     RED
         // }
-        //
+        
         // private static final SendableChooser<TeamColorSelection> teamColorChooser = buildTeamColorChooser();
         // public static boolean redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-        //
+        
         // private static SendableChooser<TeamColorSelection> buildTeamColorChooser() {
         //     SendableChooser<TeamColorSelection> chooser = new SendableChooser<>();
         //     chooser.setDefaultOption("Driver Station", TeamColorSelection.DRIVER_STATION);
@@ -57,28 +59,28 @@ public final class Constants {
         //     chooser.addOption("Red", TeamColorSelection.RED);
         //     return chooser;
         // }
-        //
+        
         // public static SendableChooser<TeamColorSelection> getTeamColorChooser() {
         //     return teamColorChooser;
         // }
-        //
+        
         // public static TeamColorSelection getSelectedTeamColor() {
         //     TeamColorSelection selectedTeamColor = teamColorChooser.getSelected();
         //     return selectedTeamColor != null ? selectedTeamColor : TeamColorSelection.DRIVER_STATION;
         // }
-        //
+        
         // public static boolean isRedTeam() {
         //     TeamColorSelection selectedTeamColor = getSelectedTeamColor();
         //     if (selectedTeamColor == TeamColorSelection.RED) {
         //         redTeam = true;
         //         return true;
         //     }
-        //
+        
         //     if (selectedTeamColor == TeamColorSelection.BLUE) {
         //         redTeam = false;
         //         return false;
         //     }
-        //
+        
         //     redTeam = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
         //     return redTeam;
         // }
@@ -116,12 +118,13 @@ public final class Constants {
             23, 24, 25, 26, 27, 28
         };
 
-        public static boolean isRedTeam() {
-            return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-        }
+        // public static boolean isRedTeam() {
+        //     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+        // }
+        
 
         public static double[] getHubTagIds() {
-            return isRedTeam() ? redHubTagIds : blueHubTagIds;
+            return isRedTeam ? redHubTagIds : blueHubTagIds;
         }
 
         public static int[] getHubTagIdsAsInt() {
@@ -149,7 +152,7 @@ public final class Constants {
         //tilt 24 degrees
 
         //Offset if limelight from set robot heading
-        public static final double limelightHeadingOffset = 180;//180;
+        public static final double limelightHeadingOffset = 0;//180;
 
         public static final double minVisionTagArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;
@@ -162,20 +165,20 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
-        public static final int limelightImuSeedMode = 1;
-        public static final int limelightImuEnabledMode = 4;
+        public static final int limelightImuSeedMode = 3;
+        public static final int limelightImuEnabledMode = 3;
         public static final double limelightImuAssistAlpha = 0.001;
     }
 
     public static final class Intake {
         public static final int IntakeID = 55;
-        public static final double IntakeSpeed = -0.65;
+        public static final double IntakeSpeed = -0.55;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
         public static final int IntakeOutID = 13;
 
-        public static final double maxExtend = 12.25;
+        public static final double maxExtend = 13.8;
         public static final double JigExtend = 6.5;
         public static final double minExtend = 0.0;
 
@@ -202,8 +205,8 @@ public final class Constants {
 
         public static double TestAngle = 0.0;
 
-        public static final double MaxAngle = 5.0;
-        public static final double Passing = 4.5;
+        public static final double MaxAngle = 5.5;
+        public static final double Passing = 5.0;
         public static final double MinAngle = 0;
 
         public static final double AngleP = 0.5;
@@ -226,8 +229,8 @@ public final class Constants {
     }
 
     public static final class Spin{
-        public static final boolean RightInverted = false;
-        public static final boolean LeftInverted = true; 
+        public static final boolean RightInverted = true;
+        public static final boolean LeftInverted = false; 
 
         // IF TRUE USE NEW SHOOTER FUNCTIONALITY ELSE
         // IT USES OLD SHOOTER FUNCTIONALITY (SPEED BASED NOT RPS BASED)
@@ -244,7 +247,7 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.5; 
+        public static final double Rollerspeed = 0.25; 
 
         public static double ShootSpeed = 0.4;
         public static final double CoastSpeed = 0.05;
@@ -268,11 +271,14 @@ public final class Constants {
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
-            {0.0, 28},
-            {1.0, 30},
-            {1.7, 33},
-            {2.5, 34},
-            {3.4, 35},
+            {0.0, 22*1.66},
+            {0.5, 24*1.66},
+            {0.8, 26*1.66},
+            {1.0, 28*1.66},
+            {1.5, 30*1.66},
+            {2.05, 31*1.66},
+            {2.5, 33*1.66},
+            {3.4, 35*1.66},
             
         };
 
@@ -282,10 +288,14 @@ public final class Constants {
         
         public static final double[][] ShootReqTable = {                         
             //{AnglePos(Rotations), Roll Speed Requirement}
-            {0.0, 26.0},
-            {1.0, 28.0},
-            {1.7, 31.0},
-            {2.5, 33.0},
+            {0.0, 20.0},
+            {0.5, 22.0},
+            {0.8, 24.0},
+            {1.0, 26.0},
+            {1.5, 28.0},
+            {1.6, 29.0},
+            {1.7, 29.0}, 
+            {2.5, 31.0},
         };
     }
 
@@ -359,7 +369,7 @@ public final class Constants {
 
       /* Swerve Profiling Values */
       /** Meters per Second */
-      public static final double maxSpeed = 1.5; //done
+      public static final double maxSpeed = 4.5; //done
       /** Radians per Second */
       public static final double maxAngularVelocity = 2 * 2 * Math.PI; //done
 
