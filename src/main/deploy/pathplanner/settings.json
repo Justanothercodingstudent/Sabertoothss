@@ -3,10 +3,8 @@
   "robotLength": 0.6858,
   "holonomicMode": true,
   "pathFolders": [
-    "Feed & Score",
-    "Middle",
     "Half & Score",
-    "Pocket Balls"
+    "Middle"
   ],
   "autoFolders": [
     "Need Testing",

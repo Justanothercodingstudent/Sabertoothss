@@ -24,6 +24,7 @@ public final class Autos {
             "resetHeading", new InstantCommand(swerve::zeroHeading, swerve),
             // "Shoot", autoController.Shoot(),
             // "Shoot Stop", autoController.ShootStop(),
+            "Intake Up", autoController.IntakeUp(),
             "Intake Extend", autoController.IntakeExtend(),
             "Intake", autoController.Intake(),
             "Intake Stop", autoController.IntakeStop()

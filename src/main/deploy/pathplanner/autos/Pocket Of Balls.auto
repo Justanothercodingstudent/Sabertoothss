@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "New New New Path"
+            "pathName": "Pocket Balls"
           }
         },
         {
@@ -33,17 +33,11 @@
           "data": {
             "name": "Shoot And Score"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": null
-          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Need Testing",
   "choreoAuto": false
 }

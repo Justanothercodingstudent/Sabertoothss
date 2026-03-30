@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5,
-        "y": 6.0
+        "x": 7.7,
+        "y": 3.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0937501026441288,
-        "y": 6.071632817813884
+        "x": 7.686928571428572,
+        "y": 3.0956071428571432
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.5,
-        "y": 5.0
+        "x": 7.2442261904761915,
+        "y": 1.3895833333333336
       },
       "prevControl": {
-        "x": 1.5718411693238015,
-        "y": 4.676714738042893
+        "x": 7.9568690476190485,
+        "y": 2.3181785714285734
       },
       "nextControl": {
-        "x": 1.4224786324786327,
-        "y": 5.348846153846154
+        "x": 6.635407405337145,
+        "y": 0.5962740072430598
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 4.0
+        "x": 6.1,
+        "y": 0.6
       },
       "prevControl": {
-        "x": 2.25,
-        "y": 4.0
+        "x": 6.683071428571426,
+        "y": 0.7295714285714291
       },
       "nextControl": null,
       "isLocked": false,
@@ -58,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Pocket Balls",
+  "folder": "Middle",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

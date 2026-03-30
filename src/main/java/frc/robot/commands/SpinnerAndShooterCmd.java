@@ -9,6 +9,7 @@ import frc.robot.subsystems.Angler;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
 import frc.robot.subsystems.intake;
+import frc.robot.subsystems.Limelight;
 
 public class SpinnerAndShooterCmd extends Command{
     
@@ -16,17 +17,19 @@ public class SpinnerAndShooterCmd extends Command{
     private final intake Intake;
     private final Angler angler;
     private final XboxController xbox;
+    private final Limelight limelight;
 
-    // private double ShootSpeed;
+    private double ShootSpeed;
     private double ShootReq;
     private double SpinSpeed;
     private double Rollerspeed;
-    public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox, Angler angler, intake Intake){
+    public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox, Angler angler, intake Intake, Limelight limelight){
         this.shoot = shoot;
         addRequirements(this.shoot);
 
         this.angler = angler;
         this.Intake = Intake;
+        this.limelight = limelight;
         this.xbox = xbox;
     }
 
@@ -34,78 +37,77 @@ public class SpinnerAndShooterCmd extends Command{
     public void initialize() {
     }
 
-    // private double AnglerShoot(double AnglerPos) {
-    //     double[][] table = Constants.Spin.ShootSpeedTable;
-    //     if (table.length == 0) {
-    //         return ShootSpeed;
-    //     }
+    private double AnglerShoot(double AnglerPos) {
+        double[][] table = Constants.Spin.ShootSpeedTable;
+        if (table.length == 0) {
+            return ShootSpeed;
+        }
 
-    //     if (AnglerPos <= table[0][0]) {
-    //         return table[0][1];
-    //     }
+        if (AnglerPos <= table[0][0]) {
+            return table[0][1];
+        }
 
-    //     if (AnglerPos >= table[table.length - 1][0]) {
-    //         return table[table.length - 1][1];
-    //     }
+        if (AnglerPos >= table[table.length - 1][0]) {
+            return table[table.length - 1][1];
+        }
 
-    //     for (int i = 1; i < table.length; i++) {
-    //         double lowerDistance = table[i - 1][0];
-    //         double upperDistance = table[i][0];
-    //         if (AnglerPos <= upperDistance) {
-    //             double lowerRotations = table[i - 1][1];
-    //             double upperRotations = table[i][1];
-    //             double range = upperDistance - lowerDistance;
-    //             if (range <= 0.0) {
-    //                 return upperRotations;
-    //             }
+        for (int i = 1; i < table.length; i++) {
+            double lowerDistance = table[i - 1][0];
+            double upperDistance = table[i][0];
+            if (AnglerPos <= upperDistance) {
+                double lowerRotations = table[i - 1][1];
+                double upperRotations = table[i][1];
+                double range = upperDistance - lowerDistance;
+                if (range <= 0.0) {
+                    return upperRotations;
+                }
 
-    //             double fraction = (AnglerPos - lowerDistance) / range;
-    //             return lowerRotations + (fraction * (upperRotations - lowerRotations));
-    //         }
-    //     }
+                double fraction = (AnglerPos - lowerDistance) / range;
+                return lowerRotations + (fraction * (upperRotations - lowerRotations));
+            }
+        }
 
-    //     return table[table.length - 1][1];
-    // }
+        return table[table.length - 1][1];
+    }
 
-    // private double ShootReq(double Speed) {
-    //     double[][] table = Constants.Spin.ShootReqTable;
-    //     if (table.length == 0) {
-    //         return ShootReq;
-    //     }
+    private double ShootReq(double Speed) {
+        double[][] table = Constants.Spin.ShootReqTable;
+        if (table.length == 0) {
+            return ShootReq;
+        }
 
-    //     if (Speed <= table[0][0]) {
-    //         return table[0][1];
-    //     }
+        if (Speed <= table[0][0]) {
+            return table[0][1];
+        }
 
-    //     if (Speed >= table[table.length - 1][0]) {
-    //         return table[table.length - 1][1];
-    //     }
+        if (Speed >= table[table.length - 1][0]) {
+            return table[table.length - 1][1];
+        }
 
-    //     for (int i = 1; i < table.length; i++) {
-    //         double lowerDistance = table[i - 1][0];
-    //         double upperDistance = table[i][0];
-    //         if (Speed <= upperDistance) {
-    //             double lowerRotations = table[i - 1][1];
-    //             double upperRotations = table[i][1];
-    //             double range = upperDistance - lowerDistance;
-    //             if (range <= 0.0) {
-    //                 return upperRotations;
-    //             }
+        for (int i = 1; i < table.length; i++) {
+            double lowerDistance = table[i - 1][0];
+            double upperDistance = table[i][0];
+            if (Speed <= upperDistance) {
+                double lowerRotations = table[i - 1][1];
+                double upperRotations = table[i][1];
+                double range = upperDistance - lowerDistance;
+                if (range <= 0.0) {
+                    return upperRotations;
+                }
 
-    //             double fraction = (Speed - lowerDistance) / range;
-    //             return lowerRotations + (fraction * (upperRotations - lowerRotations));
-    //         }
-    //     }
+                double fraction = (Speed - lowerDistance) / range;
+                return lowerRotations + (fraction * (upperRotations - lowerRotations));
+            }
+        }
 
-    //     return table[table.length - 1][1];
-    // }
+        return table[table.length - 1][1];
+    }
 
      @Override 
     public void execute() {
         if (DriverStation.isTeleop()) {
 
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean ltPressed = xbox.getLeftTriggerAxis()  > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean lbPressed = xbox.getLeftBumperButtonPressed();
             boolean rbPressed = xbox.getRightBumperButtonPressed();
             boolean apressed = xbox.getAButtonPressed();
@@ -118,41 +120,34 @@ public class SpinnerAndShooterCmd extends Command{
 
             
 
-            if (rbPressed){
-                Constants.Spin.ShootSpeed -= 1;
-                Constants.Spin.ShootReq -= 1;
-            } else if (lbPressed){
-                Constants.Spin.ShootSpeed += 1;
-                Constants.Spin.ShootReq += 1;
-            }
+            // if (rbPressed){
+            //     Constants.Spin.ShootSpeed -= 1;
+            //     Constants.Spin.ShootReq -= 1;
+            // } else if (lbPressed){
+            //     Constants.Spin.ShootSpeed += 1;
+            //     Constants.Spin.ShootReq += 1;
+            // }
 
-            double ShootSpeed = Constants.Spin.ShootSpeed;
-            ShootReq = Constants.Spin.ShootReq;
-            SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
+            // double ShootSpeed = Constants.Spin.ShootSpeed;
+            // ShootReq = Constants.Spin.ShootReq;
+            // SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
 
             if (rtPressed){
-                /*if (angler.getAnglePos() <= 2.0){
-                    ShootSpeed = 0.25;
-                } else if (angler.getAnglePos() <= 3.7 && angler.getAnglePos() >= 2.0) {
-                    ShootSpeed = 0.35;
-                }else if (angler.getAnglePos() >= 3.7){
-                    ShootSpeed = 0.5;
-                }*/
 
-                //double TableShootSpeed = AnglerShoot(angler.getAnglePos());
-                //double ShootReq = ShootReq(angler.getAnglePos());
+                double TableShootSpeed = AnglerShoot(limelight.getDistanceToTag(limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds())));
+                double ShootReq = ShootReq(limelight.getDistanceToTag(limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds())));
 
                 
                 SpinSpeed = Constants.Spin.SpinSpeed;
                 Rollerspeed = Constants.Spin.Rollerspeed;
 
-                // if (Constants.Spin.ClosedLoopShooter) {
-                //     shoot.setShooterRPS(TableShootSpeed, TableShootSpeed);
-                // } else {
-                //     shoot.OpenShootSpeed(ShootSpeed);
-                // }
+                if (Constants.Spin.ClosedLoopShooter) {
+                    shoot.setShooterRPS(TableShootSpeed, TableShootSpeed);
+                } else {
+                    shoot.OpenShootSpeed(ShootSpeed);
+                }
 
-                shoot.setShooterRPS(ShootSpeed, ShootSpeed);
+                // shoot.setShooterRPS(ShootSpeed, ShootSpeed);
 
                 if(shoot.getLeftRPS() >= ShootReq){
                     shoot.roller(Rollerspeed);
@@ -161,14 +156,27 @@ public class SpinnerAndShooterCmd extends Command{
                     shoot.SpinSpeed(0);
                     shoot.roller(0);
                 }
-            } else if (joyLeftPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                shoot.roller(-Rollerspeed);
-            } else if (!rtPressed && !ltPressed){
+            } else if (rtPressed && xpressed){
+                shoot.setShooterRPS(Constants.Spin.PassingShootSpeed, Constants.Spin.PassingShootSpeed);
+                if (shoot.getLeftRPS() >= Constants.Spin.PassingShootReq){
+                    shoot.roller(Constants.Spin.Rollerspeed);
+                    shoot.SpinSpeed(Constants.Spin.SpinSpeed);
+                } else {
+                    shoot.SpinSpeed(0);
+                    shoot.roller(0);
+                }
+            } else if (!rtPressed && !xpressed){
                 shoot.SpinSpeed(0);
                 shoot.OpenShootSpeed(0);
                 shoot.roller(0);
             } 
+            
+            if (joyLeftPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                shoot.roller(-Rollerspeed);
+            }
+            
+            
             
         }
         

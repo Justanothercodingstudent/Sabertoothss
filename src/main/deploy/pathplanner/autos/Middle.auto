@@ -5,27 +5,27 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "Backwards"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Shoot And Score"
+            "name": "Intake Extend"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Curve(Balls)"
+            "pathName": "Enter Middle"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "cONTINUE"
           }
         },
         {
@@ -37,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Get Balls"
+            "pathName": "Consume"
           }
         },
         {
@@ -49,19 +49,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "After Get Balls"
+            "pathName": "Return P1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return(Balls)"
+            "pathName": "Return P2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return P3"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot And Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Up"
           }
         }
       ]

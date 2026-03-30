@@ -93,6 +93,12 @@ public class AutoController {
         );
     }
 
+    public Command IntakeUp(){
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.minExtend), Intake)
+        );
+    }
+
     // public Command Rollers(){
     //     return new ParallelCommandGroup(
     //         new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)

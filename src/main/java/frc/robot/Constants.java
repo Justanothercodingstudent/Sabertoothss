@@ -206,7 +206,7 @@ public final class Constants {
         public static double TestAngle = 0.0;
 
         public static final double MaxAngle = 5.5;
-        public static final double Passing = 5.0;
+        public static final double Passing = 4.5;
         public static final double MinAngle = 0;
 
         public static final double AngleP = 0.5;
@@ -221,10 +221,10 @@ public final class Constants {
         // Tune these values for your shooter.
         public static final double[][] distanceToRotationTable = {
             {0.0, 0.0},
-            {1.5, 1.0},
-            {2.8, 2.0},
-            {4.0, 3.7},
-            
+            {1.0, 0.5},
+            {2.16, 2.5},
+            {3.14, 3.0},
+            {4.42, 3.0},
         };
     }
 
@@ -249,6 +249,9 @@ public final class Constants {
 
         public static final double Rollerspeed = 0.25; 
 
+        public static double PassingShootSpeed = 60;
+        public static double PassingShootReq = 58;
+
         public static double ShootSpeed = 25;
         public static double ShootReq = 23;
         public static final double CoastSpeed = 0.05;
@@ -272,15 +275,11 @@ public final class Constants {
 
         public static final double[][] ShootSpeedTable = {
             //{AnglePos(Rotations), Shoot Speed}
-            {0.0, 22*1.66},
-            {0.5, 24*1.66},
-            {0.8, 26*1.66},
-            {1.0, 28*1.66},
-            {1.5, 29*1.66},
-            {1.7, 32*1.66},
-            {2.5, 33*1.66},
-            {3.4, 35*1.66},
-            
+            {0.0, 45},
+            {1.0, 40},
+            {2.16, 45},
+            {3.14, 52},
+            {4.42, 59},
         };
 
 
@@ -289,13 +288,11 @@ public final class Constants {
         
         public static final double[][] ShootReqTable = {                         
             //{AnglePos(Rotations), Roll Speed Requirement}
-            {0.0, 20.0},
-            {0.5, 22.0},
-            {0.8, 24.0},
-            {1.0, 26.0},
-            {1.5, 27.0},
-            {1.7, 30.0}, 
-            {2.5, 31.0},
+            {0.0, 43},
+            {1.0, 38},
+            {2.16, 43},
+            {3.14, 50},
+            {4.42, 57},
         };
     }
 
@@ -432,7 +429,7 @@ public final class Constants {
       public static final double translationKI = 0.00;
       public static final double translationKD = 0.0;
 
-      public static final double rotationKP = 1.0; // Originally 0
+      public static final double rotationKP = 1.5; // Originally 0
       public static final double rotationKI = 0;
       public static final double rotationKD = 0;
   }

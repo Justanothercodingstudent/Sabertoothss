@@ -89,7 +89,7 @@ public class RobotContainer {
     Intake.setDefaultCommand(intakeCmd);
 
     Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake);
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake, limelight);
     Spin.setDefaultCommand(ShootCmd);
 
     // climb = new climber();

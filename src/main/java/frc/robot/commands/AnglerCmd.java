@@ -40,30 +40,30 @@ public class AnglerCmd extends Command{
             boolean apressed = xbox.getAButtonPressed();
             boolean xpressed = xbox.getXButtonPressed();
 
-            // if (rtPressed && !xpressed){
-            //     Angler.updateFromTrackedAprilTag();
-            //     //Angler.setAnglePosition(2.5);
-            // } else if (rtPressed && xpressed){
-            //     Angler.setAnglePosition(Constants.Angler.Passing);
-            // } else {
-            //     Angler.setAnglePosition(0);
-            // }
+            if (rtPressed && !xpressed){
+                Angler.updateFromTrackedAprilTag();
+                //Angler.setAnglePosition(2.5);
+            } else if (rtPressed && xpressed){
+                Angler.setAnglePosition(Constants.Angler.Passing);
+            } else {
+                Angler.setAnglePosition(0);
+            }
 
-            if (xpressed){
-                if (AnglePos <= 5.5){
-                    Constants.Angler.TestAngle += 0.5;
-                    AnglePos = Constants.Angler.TestAngle;
-                    Angler.setAnglePosition(AnglePos);
-                }
-            }
+            // if (xpressed){
+            //     if (AnglePos <= 5.5){
+            //         Constants.Angler.TestAngle += 0.5;
+            //         AnglePos = Constants.Angler.TestAngle;
+            //         Angler.setAnglePosition(AnglePos);
+            //     }
+            // }
             
-            if (apressed){
-                if (AnglePos >= 0.5){
-                    Constants.Angler.TestAngle -= 0.5;
-                    AnglePos = Constants.Angler.TestAngle;
-                    Angler.setAnglePosition(AnglePos);
-                }
-            }
+            // if (apressed){
+            //     if (AnglePos >= 0.5){
+            //         Constants.Angler.TestAngle -= 0.5;
+            //         AnglePos = Constants.Angler.TestAngle;
+            //         Angler.setAnglePosition(AnglePos);
+            //     }
+            // }
 
             /*  if (ypressed){
                 AnglePos = Constants.Angler.MaxAngle;
