@@ -13,61 +13,31 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 1.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Enter Middle"
+            "pathName": "Left Side to Mid"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "cONTINUE"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake"
+            "pathName": "Middle Sweep"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Consume"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake Stop"
+            "pathName": "Right to Trench line"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Return P2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Return P3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot And Score"
+            "pathName": "Right To Mid Shoot"
           }
         },
         {
@@ -75,11 +45,17 @@
           "data": {
             "name": "Intake Up"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Need Testing",
+  "folder": "Needs Testing",
   "choreoAuto": false
 }

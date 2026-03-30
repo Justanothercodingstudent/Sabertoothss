@@ -13,31 +13,55 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Side to Mid"
+            "pathName": "Enter Middle"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Middle Sweep"
+            "pathName": "cONTINUE"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Right to Trench line"
+            "pathName": "Consume"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Right To Mid Shoot"
+            "pathName": "Return P1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return P2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return P3"
           }
         },
         {
@@ -45,11 +69,17 @@
           "data": {
             "name": "Shoot And Score"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Up"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Johns Dont Touch",
+  "folder": "Needs Testing",
   "choreoAuto": false
 }
