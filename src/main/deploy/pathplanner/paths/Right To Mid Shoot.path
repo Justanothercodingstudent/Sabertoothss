@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.589232142857143,
+        "y": 0.6175535714285718
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.487875,
+        "y": 1.006267857142857
+      },
+      "isLocked": false,
+      "linkedName": "Blud"
+    },
+    {
+      "anchor": {
+        "x": 3.05475,
+        "y": 3.9864107142857144
+      },
+      "prevControl": {
+        "x": 2.228732142857143,
+        "y": 3.1118035714285717
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Johns Touch Dont Touch",
+  "idealStartingState": {
+    "velocity": 4.0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

@@ -4,12 +4,14 @@
   "holonomicMode": true,
   "pathFolders": [
     "Feed & Score",
-    "Middle",
     "Half & Score",
+    "Middle",
+    "Johns Touch Dont Touch",
     "Pocket Balls"
   ],
   "autoFolders": [
     "Need Testing",
+    "Johns Dont Touch",
     "Work"
   ],
   "defaultMaxVel": 4.5,
