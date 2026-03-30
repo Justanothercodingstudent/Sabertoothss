@@ -3,11 +3,20 @@
   "robotLength": 0.6858,
   "holonomicMode": true,
   "pathFolders": [
+<<<<<<< HEAD
     "Half & Score",
     "Middle"
+=======
+    "Feed & Score",
+    "Half & Score",
+    "Middle",
+    "Johns Touch Dont Touch",
+    "Pocket Balls"
+>>>>>>> f521be3712f4f47e72460d1a3760074db1a43287
   ],
   "autoFolders": [
     "Need Testing",
+    "Johns Dont Touch",
     "Work"
   ],
   "defaultMaxVel": 4.5,

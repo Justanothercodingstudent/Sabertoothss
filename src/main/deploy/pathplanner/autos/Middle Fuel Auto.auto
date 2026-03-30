@@ -11,25 +11,33 @@
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "Intake"
+            "waitTime": 1.0
           }
         },
         {
           "type": "path",
           "data": {
-<<<<<<< HEAD
-            "pathName": "Pocket Balls"
-=======
-            "pathName": "Pocket of Balls Path"
->>>>>>> f521be3712f4f47e72460d1a3760074db1a43287
+            "pathName": "Left Side to Mid"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Intake Stop"
+            "pathName": "Middle Sweep"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right to Trench line"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right To Mid Shoot"
           }
         },
         {
@@ -42,6 +50,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Need Testing",
+  "folder": "Johns Dont Touch",
   "choreoAuto": false
 }
