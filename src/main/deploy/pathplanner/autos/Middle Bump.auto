@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Extend"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Side to Mid"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MS Bump"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Over Bump"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Line Up To balls"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Up"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Needs Testing",
+  "choreoAuto": false
+}
