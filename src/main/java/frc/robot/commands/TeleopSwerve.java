@@ -16,11 +16,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 
 public class TeleopSwerve extends Command {    
-    private static final double TAG_AIM_KP = 0.15;   //Armando set to 0.025
+    private static final double TAG_AIM_KP = 0.1;   //Armando set to 0.025
     private static final double TAG_AIM_KI = 0.0;
     private static final double TAG_AIM_KD = 0.0;
     private static final double TAG_AIM_TOLERANCE_DEGREES = 1.5;
-    private static final double TAG_AIM_MAX_ANGULAR_SPEED = 1;
+    private static final double TAG_AIM_MAX_ANGULAR_SPEED = 3;
     private static final double TAG_AIM_MAX_ANGULAR_ACCELERATION = 6.0;
     private static final double TAG_AIM_MANUAL_BLEND = 0.35;
 
