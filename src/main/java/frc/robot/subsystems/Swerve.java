@@ -4,9 +4,11 @@ import frc.robot.SwerveModule;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -106,6 +108,20 @@ public class Swerve extends SubsystemBase {
             () -> DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red,
             this
         );
+    }
+
+    public void AutoAim(double[] tagData, SlewRateLimiter tagAimOutputLimiter, PIDController tagAimController, double speed){
+        double yawErrorDegrees = tagData[1];
+            double autoRotationCommand = tagAimOutputLimiter.calculate(MathUtil.clamp(
+                tagAimController.calculate(yawErrorDegrees, 0.0),
+                -speed,
+                speed
+            ));
+
+            if (tagAimController.atSetpoint()) {
+                autoRotationCommand = 0.0;
+                tagAimOutputLimiter.reset(0.0);
+            }
     }
                     
     public ChassisSpeeds getChassisSpeeds() {

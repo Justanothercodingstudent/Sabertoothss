@@ -73,6 +73,12 @@
         {
           "type": "named",
           "data": {
+            "name": "Intake Jig"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Intake Up"
           }
         }

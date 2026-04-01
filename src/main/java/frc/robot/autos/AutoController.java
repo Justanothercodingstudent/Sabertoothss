@@ -99,6 +99,20 @@ public class AutoController {
         );
     }
 
+    public Command IntakeJig(){
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+            new WaitCommand(0.25)
+        );
+    }
+
     // public Command Rollers(){
     //     return new ParallelCommandGroup(
     //         new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)
