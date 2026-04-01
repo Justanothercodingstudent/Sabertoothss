@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.8,
-        "y": 0.7471249999999998
+        "x": 7.800303571428572,
+        "y": 0.5851607142857143
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.967883804061293,
-        "y": 0.7471249999999996
+        "x": 5.968187375489864,
+        "y": 0.585160714285714
       },
       "isLocked": false,
       "linkedName": "Bruv"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 3.05475,
-        "y": 0.7661823361823361
+        "y": 0.5851607142857143
       },
       "prevControl": {
         "x": 3.30475,
-        "y": 0.7661823361823361
+        "y": 0.5851607142857143
       },
       "nextControl": null,
       "isLocked": false,
@@ -41,7 +41,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 4.0,
+    "velocity": 2.0,
     "rotation": 180.0
   },
   "reversed": false,

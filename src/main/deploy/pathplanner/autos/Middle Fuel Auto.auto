@@ -23,9 +23,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Middle Sweep"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
           }
         },
         {
@@ -41,15 +59,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Intake Up"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot And Score"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot And Score"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake Jig"
+                }
+              }
+            ]
           }
         }
       ]
