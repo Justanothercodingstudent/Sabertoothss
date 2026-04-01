@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.05475,
-        "y": 0.5851607142857143
+        "y": 0.7661823361823361
       },
       "prevControl": null,
       "nextControl": {
         "x": 1.9533928571428567,
-        "y": 0.9738749999999994
+        "y": 1.1548966218966212
       },
       "isLocked": false,
       "linkedName": "Blud"
@@ -68,7 +68,7 @@
   "reversed": false,
   "folder": "Middle Fuel Auto",
   "idealStartingState": {
-    "velocity": 2.0,
+    "velocity": 4.0,
     "rotation": 180.0
   },
   "useDefaultConstraints": true
