@@ -35,6 +35,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Line Up To balls"
@@ -44,12 +50,6 @@
           "type": "named",
           "data": {
             "name": "Intake Up"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot And Score"
           }
         }
       ]
