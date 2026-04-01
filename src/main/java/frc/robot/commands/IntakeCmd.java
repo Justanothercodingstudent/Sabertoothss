@@ -58,12 +58,12 @@ public class IntakeCmd extends Command {
     public void execute() {
         if (DriverStation.isTeleop()) {
 
-            boolean ltPressed = Driver.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean lbPressed = Operator.getLeftBumperButton();
             boolean yPressed = Operator.getYButtonPressed();
             boolean bPressed = Operator.getBButtonPressed();
             boolean ltpressed = Operator.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean ypressed = Driver.getYButton();
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", ltPressed); // Debugging
+            SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed); // Debugging
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
                 if (shoot.FrontLeftRPM() <= -20){
@@ -73,7 +73,7 @@ public class IntakeCmd extends Command {
                 }
             }*/
 
-            if (ltPressed){
+            if (ltpressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(speed);
             }else if(ypressed){
@@ -95,7 +95,7 @@ public class IntakeCmd extends Command {
                 Intake.setIntakePosition(IntakePos);
             }
 
-            if (ltpressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {
+            if (lbPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {
                 activeIntakeCycle = new IntakeCycle(Intake)
                     .finallyDo(interrupted -> Intake.setExtendSpeed(Constants.Intake.ExtendSpeed));
                 CommandScheduler.getInstance().schedule(activeIntakeCycle);

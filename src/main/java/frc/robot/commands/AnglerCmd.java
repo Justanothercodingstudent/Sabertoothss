@@ -38,7 +38,7 @@ public class AnglerCmd extends Command{
             boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean apressed = xbox.getAButtonPressed();
-            boolean xpressed = xbox.getXButtonPressed();
+            boolean xpressed = xbox.getXButton();
 
             if (rtPressed && !xpressed){
                 Angler.updateFromTrackedAprilTag();

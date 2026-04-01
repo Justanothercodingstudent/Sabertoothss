@@ -59,6 +59,12 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.254
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Return P3"
@@ -68,12 +74,6 @@
           "type": "named",
           "data": {
             "name": "Shoot And Score"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake Jig"
           }
         },
         {

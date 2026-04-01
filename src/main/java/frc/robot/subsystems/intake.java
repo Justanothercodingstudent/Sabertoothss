@@ -50,7 +50,7 @@ public class intake extends SubsystemBase {
         extensionConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Intake.minExtend;
         intakeOutMotor.getConfigurator().apply(extensionConfig);
         intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
-        intakeOutMotor.setPosition(0.0);
+        //intakeOutMotor.setPosition(0.0);
 
         intakePos = Constants.Intake.minExtend;
     }
