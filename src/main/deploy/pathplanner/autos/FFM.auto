@@ -1,0 +1,50 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FFM "
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot And Score"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake Jig"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FFMTM"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Needs Testing",
+  "choreoAuto": false
+}
