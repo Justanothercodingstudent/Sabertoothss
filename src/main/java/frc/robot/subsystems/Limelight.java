@@ -98,7 +98,7 @@ public class Limelight extends SubsystemBase {
             case 2:  return new Translation2d(-0.6033770, 0.0001016 );
             case 3:  return new Translation2d(-0.6036564, 0.3555746);
             case 4:  return new Translation2d(0.6036564, 0.0000254);
-            case 5:  return new Translation2d( 0.6034278,-0.0001016);
+            case 5:  return new Translation2d( -0.6034278,-0.0001016);
             case 8:  return new Translation2d(-0.3554984, -0.2034278);
             case 9:  return new Translation2d(-0.6036564, 0.3056254);
             case 10: return new Translation2d(-0.6036564, 0.0000254);

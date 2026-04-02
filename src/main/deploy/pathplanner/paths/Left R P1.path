@@ -3,47 +3,56 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.8,
-        "y": 7.5
+        "x": 7.9,
+        "y": 4.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.8,
-        "y": 6.5
+        "x": 8.205214285714288,
+        "y": 5.946178571428573
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.8,
-        "y": 2.706892857142857
+        "x": 7.71932142857143,
+        "y": 6.766797619047619
       },
       "prevControl": {
-        "x": 7.8,
-        "y": 1.706892857142857
+        "x": 7.9028809523809525,
+        "y": 6.507654761904762
+      },
+      "nextControl": {
+        "x": 7.422473469023925,
+        "y": 7.185877091349981
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.3,
+        "y": 7.5
+      },
+      "prevControl": {
+        "x": 6.798559523809524,
+        "y": 7.5
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "MB"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 0.683918669131232,
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "Intake Stop",
-      "waypointRelativePos": 0.75,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 6.0,
@@ -57,9 +66,9 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Middle Fuel Auto",
+  "folder": "Half Middle(Left)",
   "idealStartingState": {
-    "velocity": 0.0,
+    "velocity": 0,
     "rotation": 90.0
   },
   "useDefaultConstraints": true

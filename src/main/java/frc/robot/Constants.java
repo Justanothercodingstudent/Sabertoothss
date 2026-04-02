@@ -41,6 +41,8 @@ public final class Constants {
     public static class TeamDependentFactors {
 
         public static boolean isRedTeam;
+        public static boolean wonAuto;
+        public static boolean hubActive;
 
         // Previous manual override implementation kept for reference only.
         // public enum TeamColorSelection {
@@ -125,6 +127,27 @@ public final class Constants {
 
         public static double[] getHubTagIds() {
             return isRedTeam ? redHubTagIds : blueHubTagIds;
+        }
+
+        public static boolean isHubActive(boolean wonAuto, double matchTime) {
+            if (matchTime < 0.0) {
+                return false;
+            }
+
+            if (matchTime > 130.0 || matchTime <= 30.0) {
+                return true;
+            }
+
+            boolean shift1 = matchTime <= 130.0 && matchTime > 105.0;
+            boolean shift2 = matchTime <= 105.0 && matchTime > 80.0;
+            boolean shift3 = matchTime <= 80.0 && matchTime > 55.0;
+            boolean shift4 = matchTime <= 55.0 && matchTime > 30.0;
+
+            return wonAuto ? (shift2 || shift4) : (shift1 || shift3);
+        }
+
+        public static boolean isHubActive(boolean wonAuto) {
+            return isHubActive(wonAuto, DriverStation.getMatchTime());
         }
 
         public static int[] getHubTagIdsAsInt() {
@@ -222,8 +245,8 @@ public final class Constants {
         public static final double[][] distanceToRotationTable = {
             {0.0, 0.0},
             {1.0, 0.5},
-            {2.16, 2.5},
-            {3.14, 3.0},
+            {2.06, 2.5},
+            {2.84, 3.0},
             {4.42, 3.0},
         };
     }
@@ -425,11 +448,11 @@ public final class Constants {
   public static final class AutoConstants {
       public static final String defaultAutoName = "Backwards";
 
-      public static final double translationKP = 4.5;
+      public static final double translationKP = 8.5;
       public static final double translationKI = 0.00;
       public static final double translationKD = 0.0;
 
-      public static final double rotationKP = 1.5; // Originally 0
+      public static final double rotationKP = 3.5; // Originally 0
       public static final double rotationKI = 0;
       public static final double rotationKD = 0;
   }

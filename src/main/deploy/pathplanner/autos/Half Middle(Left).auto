@@ -13,37 +13,55 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Side to Mid"
+            "pathName": "Left Enter"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Middle Sweep"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right to Trench line"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right To Mid Shoot"
+            "pathName": "Left Cont."
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake Up"
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Half Sweep Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left R P1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left R P2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left R P3"
           }
         },
         {
@@ -56,6 +74,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Needs Testing",
+  "folder": "Works",
   "choreoAuto": false
 }

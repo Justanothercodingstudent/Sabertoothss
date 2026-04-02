@@ -4,14 +4,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-import frc.robot.Constants;
-
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -22,6 +22,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+  private BooleanSubscriber wonAutoSub;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -33,6 +34,20 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
   }
 
+  @Override
+  public void robotInit() {
+    // Seed the dashboard entry so Elastic can toggle it before a match.
+    SmartDashboard.putBoolean("WonAuto", false);
+
+    BooleanTopic wonAutoTopic = NetworkTableInstance.getDefault()
+        .getBooleanTopic("/SmartDashboard/WonAuto");
+    wonAutoSub = wonAutoTopic.subscribe(false);
+  }
+
+  public static boolean isHubActive(boolean wonAuto, double matchTime) {
+    return Constants.TeamDependentFactors.isHubActive(wonAuto, matchTime);
+  }
+
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -42,6 +57,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    boolean wonAuto = wonAutoSub != null && wonAutoSub.get();
+    double matchTime = DriverStation.getMatchTime();
+    boolean hubActive = isHubActive(wonAuto, matchTime);
+
+    Constants.TeamDependentFactors.wonAuto = wonAuto;
+    Constants.TeamDependentFactors.hubActive = hubActive;
+
+    SmartDashboard.putBoolean("HubActive", hubActive);
+    SmartDashboard.putNumber("MatchTime", matchTime);
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic

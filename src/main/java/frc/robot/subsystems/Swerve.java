@@ -13,6 +13,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -28,7 +30,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     private final SwerveDrivePoseEstimator poseEstimator;
+    private final Field2d field = new Field2d();
     public SwerveModule[] mSwerveMods;
     public Pigeon2 gyro;
     public boolean autonMovingEnabled;
@@ -67,6 +69,8 @@ public class Swerve extends SubsystemBase {
             getModulePositions(),
             new Pose2d()
         );
+        SmartDashboard.putData("Field", field);
+        field.setRobotPose(poseEstimator.getEstimatedPosition());
         autonMovingEnabled = true;
         configureAutoBuilder();
 
@@ -473,6 +477,7 @@ public class Swerve extends SubsystemBase {
 
         Pose2d odometryPose = getOdometryPose();
         Pose2d estimatedPose = getPose();
+        field.setRobotPose(estimatedPose);
 
         SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
         SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);

@@ -71,21 +71,53 @@
           }
         },
         {
-          "type": "named",
+          "type": "sequential",
           "data": {
-            "name": "Shoot And Score"
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Shoot And Score"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Intake Jig"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake Up"
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P3E to MS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Needs Testing",
+  "folder": "Works",
   "choreoAuto": false
 }
