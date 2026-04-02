@@ -3,9 +3,11 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
+    "Half Middle(Left)",
     "Half Middle(Right)",
     "Middle Fuel Auto",
-    "Half Middle(Left)"
+    "Middle to Depot",
+    "Just Depot"
   ],
   "autoFolders": [
     "Needs Testing",

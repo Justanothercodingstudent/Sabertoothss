@@ -99,19 +99,19 @@ public class AutoController {
         );
     }
 
-    public Command IntakeJig(){
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
-            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
-            new WaitCommand(0.25),
-            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
-            new WaitCommand(0.25),
-            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
-            new WaitCommand(0.25),
-            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
-            new WaitCommand(0.25)
-        );
-    }
+    // public Command IntakeJig(){
+    //     return new SequentialCommandGroup(
+    //         new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
+    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+    //         new WaitCommand(0.25),
+    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+    //         new WaitCommand(0.25),
+    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+    //         new WaitCommand(0.25),
+    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+    //         new WaitCommand(0.25)
+    //     );
+    // }
 
     // public Command Rollers(){
     //     return new ParallelCommandGroup(
@@ -145,7 +145,15 @@ public class AutoController {
             new WaitCommand(0.5),
             new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
-            new WaitCommand(4),
+            new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
+            new WaitCommand(0.25),
+            new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
+            new WaitCommand(2),
             new InstantCommand(() -> angler.setAnglePosition(0), angler),
             new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot),
             new InstantCommand(() -> Shoot.roller(0), Shoot),
