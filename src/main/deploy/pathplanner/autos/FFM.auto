@@ -29,28 +29,9 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot And Score"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake Jig"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 5.0
+            "name": "Shoot And Score"
           }
         },
         {
