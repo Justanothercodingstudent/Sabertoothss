@@ -5,15 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Intake Extend"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "pathName": "OLBtM"
           }
         },
         {
@@ -25,7 +19,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FFM "
+            "pathName": "B Sweep"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MtH"
           }
         },
         {
@@ -33,17 +39,11 @@
           "data": {
             "name": "Shoot And Score"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "FFMTM"
-          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Needs Testing",
   "choreoAuto": false
 }

@@ -107,11 +107,11 @@ public class Limelight extends SubsystemBase {
             case 18: return new Translation2d(-0.0001524, 0.6034278);
             case 19: return new Translation2d(-0.6037072, 0.3556254);
             case 20: return new Translation2d(-0.6037072, 0.0000254);
-            case 21: return new Translation2d(-0.0001524, -0.6033770);
-            case 24: return new Translation2d(0.3554476, -0.6033770);
-            case 25: return new Translation2d(0.6036056, -0.3555746);
-            case 26: return new Translation2d(0.6036056, 0.0000254);
-            case 27: return new Translation2d(0.3554476, 0.6034278);
+            case 21: return new Translation2d(0.6033770, -0.0001524);
+            case 24: return new Translation2d(-0.6033770, -0.3554476);
+            case 25: return new Translation2d(-0.6036056, 0.3555746);
+            case 26: return new Translation2d(-0.6036056, 0.0000254);
+            case 27: return new Translation2d(-0.6034278, 0.3554476);
             default:
                 throw new IllegalArgumentException("Tag " + tagId + " is not a hub tag");
         }

@@ -79,7 +79,7 @@ public class IntakeCmd extends Command {
             }else if(ypressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(-speed);
-            } else {
+            } else if (!ltpressed && !ypressed && !lbPressed) {
                 Intake.setIntakeSpeed(0);
             }
 
@@ -99,6 +99,9 @@ public class IntakeCmd extends Command {
                 activeIntakeCycle = new IntakeCycle(Intake)
                     .finallyDo(interrupted -> Intake.setExtendSpeed(Constants.Intake.ExtendSpeed));
                 CommandScheduler.getInstance().schedule(activeIntakeCycle);
+
+                speed = Constants.Intake.IntakeSpeed;
+                Intake.setIntakeSpeed(speed);
             }
 
         }

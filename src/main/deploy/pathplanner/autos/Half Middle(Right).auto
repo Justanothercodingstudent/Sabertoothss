@@ -23,12 +23,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "cONTINUE"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Intake"
