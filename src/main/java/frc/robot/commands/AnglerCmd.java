@@ -35,9 +35,8 @@ public class AnglerCmd extends Command{
         public void execute() {
          if (DriverStation.isTeleop()) {
 
-            boolean ltPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean apressed = xbox.getAButtonPressed();
+            //boolean apressed = xbox.getAButtonPressed();
             boolean xpressed = xbox.getXButton();
 
             if (rtPressed && !xpressed){

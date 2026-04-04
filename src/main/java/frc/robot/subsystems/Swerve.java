@@ -126,7 +126,7 @@ public class Swerve extends SubsystemBase {
                 autoRotationCommand = 0.0;
                 tagAimOutputLimiter.reset(0.0);
             }
-    }
+    } //I dont know if this'll work cuz im a chud
                     
     public ChassisSpeeds getChassisSpeeds() {
         return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
@@ -146,6 +146,13 @@ public class Swerve extends SubsystemBase {
 
     public void driveRobotRelative(ChassisSpeeds speeds, DriveFeedforwards feedforwards) {
         driveRobotRelative(speeds);
+    }
+
+    private void SetX(){
+        mSwerveMods[0].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)), true);
+        mSwerveMods[1].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
+        mSwerveMods[2].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
+        mSwerveMods[3].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)), true);
     }
 
     private void setChassisSpeeds(ChassisSpeeds speeds, boolean isOpenLoop) {
@@ -173,6 +180,11 @@ public class Swerve extends SubsystemBase {
 
         if (!autonMovingEnabled && !isOpenLoop) {
             chassisSpeeds = new ChassisSpeeds();
+        }
+
+        if (chassisSpeeds.vxMetersPerSecond == 0.0 && chassisSpeeds.vyMetersPerSecond == 0.0 && chassisSpeeds.omegaRadiansPerSecond == 0.0) {
+            SetX();
+            return;
         }
 
         setChassisSpeeds(chassisSpeeds, isOpenLoop);
