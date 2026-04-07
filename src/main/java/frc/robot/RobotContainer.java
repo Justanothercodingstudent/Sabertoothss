@@ -152,18 +152,17 @@ private void configureAutoSelector() {
     SmartDashboard.putNumber("Auto Start Y", autoStartingPose.getY());
     SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
 
-    double gyroHeadingErrorDegrees = Math.abs(
-        s_Swerve.getGyroYaw().minus(autoStartingPose.getRotation()).getDegrees()
-    );
-
     if (lastSeededAutoPose == null
         || Math.abs(
                 lastSeededAutoPose.getRotation().minus(autoStartingPose.getRotation()).getDegrees())
-            > 1e-3
-        || gyroHeadingErrorDegrees > 0.5) {
+            > 1e-3) {
       s_Swerve.seedFieldHeading(autoStartingPose.getRotation());
       lastSeededAutoPose = autoStartingPose;
     }
+  }
+
+  public void captureDriverForwardHeading() {
+    s_Swerve.captureDriverForwardHeadingFromCurrentFieldHeading();
   }
 
   private Command getSelectedAutoCommand() {

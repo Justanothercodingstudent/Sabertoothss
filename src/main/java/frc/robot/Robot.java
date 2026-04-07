@@ -80,16 +80,19 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    m_robotContainer.syncSelectedAutoHeadingSeed();
+    boolean isRedAlliance =
+        DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
+            == DriverStation.Alliance.Red;
+    Constants.TeamDependentFactors.isRedTeam = isRedAlliance;
 
-    boolean Alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-    Constants.TeamDependentFactors.isRedTeam = Alliance;
+    m_robotContainer.syncSelectedAutoHeadingSeed();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_robotContainer.captureDriverForwardHeading();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {

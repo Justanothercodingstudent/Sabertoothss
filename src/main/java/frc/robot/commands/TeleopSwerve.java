@@ -75,6 +75,7 @@ public class TeleopSwerve extends Command {
         double rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.stickDeadband);
         double manualRotationCommand = rotationVal * Constants.Swerve.maxAngularVelocity;
         double rotationCommand = manualRotationCommand;
+        boolean fieldRelative = !robotCentricSup.getAsBoolean();
 
         //boolean hubAimActive = anglerHubAimActiveSup.getAsBoolean();
         boolean aimAtTag = aimAtTagSup.getAsBoolean() ;//&& hubAimActive;
@@ -125,11 +126,15 @@ public class TeleopSwerve extends Command {
         }
 
         double speedLimit = Constants.Swerve.maxSpeed;
+        Translation2d requestedTranslation = new Translation2d(translationVal, strafeVal);
+        if (fieldRelative) {
+            requestedTranslation = requestedTranslation.rotateBy(s_Swerve.getDriverForwardHeading());
+        }
 
         s_Swerve.drive(
-            new Translation2d(translationVal, strafeVal).times(speedLimit), 
+            requestedTranslation.times(speedLimit), 
             rotationCommand, 
-            !robotCentricSup.getAsBoolean(), 
+            fieldRelative, 
             true
         );
     }

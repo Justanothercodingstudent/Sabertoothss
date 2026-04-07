@@ -44,6 +44,7 @@ public class Swerve extends SubsystemBase {
     public boolean autonMovingEnabled;
     private Rotation2d lastKnownTagHeading;
     private Rotation2d originalHeading;
+    private Rotation2d driverForwardHeading;
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
     private int currentLimelightImuMode;
@@ -76,6 +77,7 @@ public class Swerve extends SubsystemBase {
 
         lastKnownTagHeading = new Rotation2d(); 
         originalHeading = new Rotation2d();
+        driverForwardHeading = new Rotation2d();
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         currentLimelightImuMode = -1;
@@ -296,6 +298,14 @@ public class Swerve extends SubsystemBase {
         originalHeading = heading;
     }
 
+    public void captureDriverForwardHeadingFromCurrentFieldHeading() {
+        driverForwardHeading = getGyroYaw().rotateBy(Rotation2d.fromDegrees(180));
+    }
+
+    public Rotation2d getDriverForwardHeading() {
+        return driverForwardHeading;
+    }
+
     private void resetPoseTrackers(Pose2d pose) {
         swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
         poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
@@ -505,6 +515,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
         SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
         SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
+        SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
         SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
         SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
         SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());
