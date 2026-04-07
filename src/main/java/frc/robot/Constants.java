@@ -197,7 +197,7 @@ public final class Constants {
         public static final int IntakeLeftID = 55;
         public static final int IntakeRightID = 123;
 
-        public static final double IntakeSpeed = -0.8;
+        public static final double IntakeSpeed = -0.4;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 

@@ -67,7 +67,7 @@ public class intake extends SubsystemBase {
 
     public void setIntakeSpeed(double speed) {
         intakeLeftMotor.set(speed);
-        intakeRightMotor.set(speed);
+        intakeRightMotor.set(-speed);
     }
 
     public void roller(double speed){
