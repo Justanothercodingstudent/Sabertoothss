@@ -274,8 +274,8 @@ public final class Constants {
 
         public static final double Rollerspeed = 0.35; 
 
-        public static double PassingShootSpeed = 60;
-        public static double PassingShootReq = 58;
+        public static double PassingShootSpeed = 85;
+        public static double PassingShootReq = 82;
 
         public static double ShootSpeed = 25;
         public static double ShootReq = 23;
