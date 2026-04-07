@@ -182,13 +182,15 @@ public class Swerve extends SubsystemBase {
             chassisSpeeds = new ChassisSpeeds();
         }
 
-        if (chassisSpeeds.vxMetersPerSecond == 0.0 && chassisSpeeds.vyMetersPerSecond == 0.0 && chassisSpeeds.omegaRadiansPerSecond == 0.0) {
-            SetX();
-            return;
-        }
+        // if (chassisSpeeds.vxMetersPerSecond == 0.0 && chassisSpeeds.vyMetersPerSecond == 0.0 && chassisSpeeds.omegaRadiansPerSecond == 0.0) {
+        //     SetX();
+        //     return;
+        // }
+
+
 
         setChassisSpeeds(chassisSpeeds, isOpenLoop);
-    }    
+    }
 
     public TalonFX[] getTalons() {
         TalonFX[] talons = new TalonFX[8];

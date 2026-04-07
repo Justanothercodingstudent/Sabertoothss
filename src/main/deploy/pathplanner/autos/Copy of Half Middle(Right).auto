@@ -77,6 +77,30 @@
               }
             ]
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P3E to MS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MSTS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
+          }
         }
       ]
     }

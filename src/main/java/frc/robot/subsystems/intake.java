@@ -13,7 +13,9 @@ import frc.robot.Constants;
 
 public class intake extends SubsystemBase {
 
-    private final TalonFX intakeMotor;
+    private final TalonFX intakeLeftMotor;
+    private final TalonFX intakeRightMotor;
+
     private final TalonFX intakeOutMotor;
      private TalonFX BackRoll;
     private TalonFX FrontRoll;
@@ -27,8 +29,11 @@ public class intake extends SubsystemBase {
 
         extendSpeed = Math.abs(Constants.Intake.ExtendSpeed);
 
-        intakeMotor = new TalonFX(Constants.Intake.IntakeID);
-        intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+        intakeLeftMotor = new TalonFX(Constants.Intake.IntakeLeftID);
+        intakeLeftMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        intakeRightMotor = new TalonFX(Constants.Intake.IntakeRightID);
+        intakeRightMotor.setNeutralMode(NeutralModeValue.Brake);
 
         BackRoll = new TalonFX(Constants.Spin.BackRollID );
         BackRoll.setNeutralMode( NeutralModeValue.Brake); 
@@ -56,12 +61,13 @@ public class intake extends SubsystemBase {
     }
 
     public double getIntakeSpeed() {
-        return intakeMotor.getVelocity().getValueAsDouble();
+        return intakeLeftMotor.getVelocity().getValueAsDouble();
     }
     
 
     public void setIntakeSpeed(double speed) {
-        intakeMotor.set(speed);
+        intakeLeftMotor.set(speed);
+        intakeRightMotor.set(speed);
     }
 
     public void roller(double speed){

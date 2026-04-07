@@ -14,7 +14,7 @@
     "Needs Testing",
     "Works"
   ],
-  "defaultMaxVel": 3.0,
+  "defaultMaxVel": 3.5,
   "defaultMaxAccel": 6.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,

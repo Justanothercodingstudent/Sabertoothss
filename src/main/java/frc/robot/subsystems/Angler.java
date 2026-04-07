@@ -36,8 +36,8 @@ public class Angler extends SubsystemBase{
         AngleConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Angler.MinAngle;
         Angler.getConfigurator().apply(AngleConfig);
         Angler.setNeutralMode(NeutralModeValue.Brake);
-        //Angler.setPosition(0.0);
-
+       
+        Angler.setPosition(0.0);
         AnglerPos = Constants.Angler.MinAngle;
         lastTagSeenTimestampSeconds = Timer.getFPGATimestamp();
     }

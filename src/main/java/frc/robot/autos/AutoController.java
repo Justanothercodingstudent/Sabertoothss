@@ -140,9 +140,9 @@ public class AutoController {
     public Command ShootAndScore(){
         return new SequentialCommandGroup(
             new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
-            new WaitCommand(1),
+            new WaitCommand(0.05),
             new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot),
-            new WaitCommand(0.5),
+            new WaitCommand(0.1),
             new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
             new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),

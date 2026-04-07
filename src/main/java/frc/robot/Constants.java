@@ -188,14 +188,16 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
-        public static final int limelightImuSeedMode = 3;
-        public static final int limelightImuEnabledMode = 3;
+        public static final int limelightImuSeedMode = 1;
+        public static final int limelightImuEnabledMode = 4;
         public static final double limelightImuAssistAlpha = 0.001;
     }
 
     public static final class Intake {
-        public static final int IntakeID = 55;
-        public static final double IntakeSpeed = -0.55;
+        public static final int IntakeLeftID = 55;
+        public static final int IntakeRightID = 123;
+
+        public static final double IntakeSpeed = -0.8;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
@@ -270,7 +272,7 @@ public final class Constants {
         public static final int BackRollID = 60;
         public static final int FrontRollID = 56;
 
-        public static final double Rollerspeed = 0.25; 
+        public static final double Rollerspeed = 0.35; 
 
         public static double PassingShootSpeed = 60;
         public static double PassingShootReq = 58;
@@ -377,9 +379,9 @@ public final class Constants {
       public static final double angleKD = chosenModule.angleKD;
 
       /* Drive Motor PID Values */
-      public static final double driveKP = 0.5; //TODO: modifi later
+      public static final double driveKP = 2.25; //TODO: modifi later
       public static final double driveKI = 0.0;
-      public static final double driveKD = 0.1;
+      public static final double driveKD = 0.0;
       public static final double driveKF = 0.0;
 
       /* Drive Motor Characterization Values */
