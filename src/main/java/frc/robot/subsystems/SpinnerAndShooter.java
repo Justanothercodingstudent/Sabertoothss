@@ -40,25 +40,25 @@ public class SpinnerAndShooter extends SubsystemBase{
 
 
     public SpinnerAndShooter() {
-        UptakeMotor = new TalonFX(Constants.Spin.UptakeID);
+        UptakeMotor = new TalonFX(Constants.Spin.UptakeID, Constants.CTRE.CANIVORE_NAME);
         UptakeMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        LeftFront = new TalonFX(Constants.Spin.LeftFrontID);
+        LeftFront = new TalonFX(Constants.Spin.LeftFrontID, Constants.CTRE.CANIVORE_NAME);
         LeftFront.setNeutralMode(NeutralModeValue.Coast);
 
-        LeftBack = new TalonFX(Constants.Spin.LeftBackID);
+        LeftBack = new TalonFX(Constants.Spin.LeftBackID, Constants.CTRE.CANIVORE_NAME);
         LeftBack.setNeutralMode(NeutralModeValue.Coast);
 
-        RightFront = new TalonFX(Constants.Spin.RightFrontID);
+        RightFront = new TalonFX(Constants.Spin.RightFrontID, Constants.CTRE.CANIVORE_NAME);
         RightFront.setNeutralMode(NeutralModeValue.Coast);
 
-        RightBack = new TalonFX(Constants.Spin.RightBackID);
+        RightBack = new TalonFX(Constants.Spin.RightBackID, Constants.CTRE.CANIVORE_NAME);
         RightBack.setNeutralMode(NeutralModeValue.Coast);
 
-        BackRoll = new TalonFX(Constants.Spin.BackRollID );
+        BackRoll = new TalonFX(Constants.Spin.BackRollID, Constants.CTRE.CANIVORE_NAME);
         BackRoll.setNeutralMode( NeutralModeValue.Brake); 
 
-        FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
+        FrontRoll = new TalonFX(Constants.Spin.FrontRollID, Constants.CTRE.CANIVORE_NAME);
         FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
 
         TalonFXConfiguration leftConfig = new TalonFXConfiguration();

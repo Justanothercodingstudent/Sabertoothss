@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.LimelightCmd;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
@@ -23,6 +22,7 @@ import frc.robot.commands.SpinnerAndShooterCmd;
 import frc.robot.commands.AnglerCmd;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
 //import frc.robot.subsystems.climber;
@@ -51,17 +51,16 @@ public class RobotContainer {
   private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kX.value);
 
   /* Subsystems */
-  private final Swerve s_Swerve = new Swerve();
+  private final Swerve s_Swerve;
+  private final Limelight frontLimelight;
+  private final Limelight rearLimelight;
+  private final Vision vision;
   private final intake Intake;
   private final SpinnerAndShooter Spin;
  // private final climber climb;
   private final Angler angler;
 
-  private Limelight limelight;
-
   /* Commands */
-  private LimelightCmd limelightCmd;
-
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
  // private climberCmd climbCmd;
@@ -74,13 +73,12 @@ public class RobotContainer {
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    frontLimelight = new Limelight(Constants.LimelightConstants.frontCamera);
+    rearLimelight = new Limelight(Constants.LimelightConstants.rearCamera);
+    vision = new Vision(frontLimelight, rearLimelight);
+    s_Swerve = new Swerve(vision);
 
-
-    limelight = new Limelight();
-    limelightCmd = new LimelightCmd(limelight);
-    limelight.setDefaultCommand(limelightCmd);
-
-    angler = new Angler(limelight);
+    angler = new Angler(vision);
     anglerCmd = new AnglerCmd(angler, operator);
     angler.setDefaultCommand(anglerCmd);
 
@@ -89,7 +87,7 @@ public class RobotContainer {
     Intake.setDefaultCommand(intakeCmd);
 
     Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake, limelight);
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake, vision);
     Spin.setDefaultCommand(ShootCmd);
 
     // climb = new climber();
@@ -103,7 +101,7 @@ public class RobotContainer {
             () -> -driver.getRawAxis(strafeAxis), 
             () -> -driver.getRawAxis(rotationAxis), 
             () -> false,
-            limelight,
+            vision,
              () -> driver.getAButton()//,
             // () -> operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD
             //     && !operator.getXButton()

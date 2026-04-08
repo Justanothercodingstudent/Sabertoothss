@@ -1,8 +1,13 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import frc.robot.SwerveModule;
 import frc.robot.Constants;
-import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -36,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
 public class Swerve extends SubsystemBase {
+    private final Vision vision;
     public SwerveDriveOdometry swerveOdometry;
     private final SwerveDrivePoseEstimator poseEstimator;
     private final Field2d field = new Field2d();
@@ -50,9 +56,14 @@ public class Swerve extends SubsystemBase {
     private int currentLimelightImuMode;
     private Pose2d lastRawVisionPose;
     private double lastRawVisionTimestampSeconds;
+    private final Map<String, Double> lastVisionTimestampsByCamera = new HashMap<>();
+    private final Map<String, Pose2d> lastAcceptedVisionPosesByCamera = new HashMap<>();
+    private final Map<String, Pose2d> lastRawVisionPosesByCamera = new HashMap<>();
+    private final Map<String, Double> lastRawVisionTimestampsByCamera = new HashMap<>();
 
-    public Swerve(){
-        gyro = new Pigeon2(Constants.Swerve.pigeonID);
+    public Swerve(Vision vision){
+        this.vision = vision == null ? new Vision() : vision;
+        gyro = new Pigeon2(Constants.Swerve.pigeonID, Constants.CTRE.CANIVORE_NAME);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(Constants.Swerve.SwerveStartHeading);
     
@@ -83,8 +94,19 @@ public class Swerve extends SubsystemBase {
         currentLimelightImuMode = -1;
         lastRawVisionPose = new Pose2d();
         lastRawVisionTimestampSeconds = -1.0;
+        initializeVisionState();
         applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
         }
+
+    private void initializeVisionState() {
+        for (Limelight limelight : vision.getLimelights()) {
+            String cameraName = limelight.getName();
+            lastVisionTimestampsByCamera.put(cameraName, -1.0);
+            lastAcceptedVisionPosesByCamera.put(cameraName, new Pose2d());
+            lastRawVisionPosesByCamera.put(cameraName, new Pose2d());
+            lastRawVisionTimestampsByCamera.put(cameraName, -1.0);
+        }
+    }
 
     private void configureAutoBuilder() {
         RobotConfig robotConfig = Constants.PATHPLANNER_ROBOT_CONFIG;
@@ -310,17 +332,14 @@ public class Swerve extends SubsystemBase {
         swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
         poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
         lastVisionTimestampSeconds = -1.0;
+        for (String cameraName : lastVisionTimestampsByCamera.keySet()) {
+            lastVisionTimestampsByCamera.put(cameraName, -1.0);
+        }
     }
 
-    private PoseEstimate getMegaTag2PoseEstimate() {
-        String limelightName = Constants.LimelightConstants.limelightName;
-
+    private Vision.CameraPoseEstimate[] getMegaTag2PoseEstimates() {
         pushFieldHeadingToLimelight(getGyroYaw());
-
-        // Limelight MegaTag2 + modern WPILib/FRC always uses the blue-origin pose for estimator fusion,
-        // even when the robot is on red alliance. Do not switch this to wpired unless the upstream
-        // WPILib/Limelight coordinate-system guidance changes.
-        return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+        return vision.getMegaTag2PoseEstimates();
     }
 
     private void applyLimelightImuMode(int imuMode) {
@@ -328,12 +347,7 @@ public class Swerve extends SubsystemBase {
             return;
         }
 
-        String limelightName = Constants.LimelightConstants.limelightName;
-        LimelightHelpers.SetIMUAssistAlpha(
-            limelightName,
-            Constants.LimelightConstants.limelightImuAssistAlpha
-        );
-        LimelightHelpers.SetIMUMode(limelightName, imuMode);
+        vision.setIMUMode(imuMode);
         currentLimelightImuMode = imuMode;
     }
 
@@ -342,15 +356,7 @@ public class Swerve extends SubsystemBase {
             return;
         }
 
-        LimelightHelpers.SetRobotOrientation(
-            Constants.LimelightConstants.limelightName,
-            fieldHeading.getDegrees(),
-            0,
-            0,
-            0,
-            0,
-            0
-        );
+        vision.pushFieldHeadingToLimelights(fieldHeading);
     }
 
     private void updateLimelightImuMode() {
@@ -360,21 +366,43 @@ public class Swerve extends SubsystemBase {
         applyLimelightImuMode(targetImuMode);
     }
 
-    private PoseEstimate getMegaTag2VisionMeasurement() {
-        PoseEstimate megaTag2Estimate = getMegaTag2PoseEstimate();
-        if (megaTag2Estimate != null) {
-            lastRawVisionPose = megaTag2Estimate.pose;
-            lastRawVisionTimestampSeconds = megaTag2Estimate.timestampSeconds;
+    private List<Vision.CameraPoseEstimate> getMegaTag2VisionMeasurements() {
+        List<Vision.CameraPoseEstimate> validMeasurements = new ArrayList<>();
+
+        for (Vision.CameraPoseEstimate cameraEstimate : getMegaTag2PoseEstimates()) {
+            PoseEstimate poseEstimate = cameraEstimate.poseEstimate;
+            if (poseEstimate != null) {
+                String cameraName = cameraEstimate.limelight.getName();
+                lastRawVisionPose = poseEstimate.pose;
+                lastRawVisionTimestampSeconds = poseEstimate.timestampSeconds;
+                lastRawVisionPosesByCamera.put(cameraName, poseEstimate.pose);
+                lastRawVisionTimestampsByCamera.put(cameraName, poseEstimate.timestampSeconds);
+            }
+
+            if (isVisionMeasurementValid(cameraEstimate)) {
+                validMeasurements.add(cameraEstimate);
+            }
         }
-        return isVisionMeasurementValid(megaTag2Estimate) ? megaTag2Estimate : null;
+
+        validMeasurements.sort(
+            Comparator.comparingDouble((Vision.CameraPoseEstimate estimate) -> estimate.poseEstimate.timestampSeconds)
+                .thenComparingDouble(estimate -> getVisionTranslationStdDev(estimate.poseEstimate))
+        );
+
+        return validMeasurements;
     }
 
-    private boolean isVisionMeasurementValid(PoseEstimate estimate) {
+    private boolean isVisionMeasurementValid(Vision.CameraPoseEstimate cameraEstimate) {
+        PoseEstimate estimate = cameraEstimate.poseEstimate;
         if (estimate == null || estimate.tagCount <= 0 || estimate.timestampSeconds <= 0.0) {
             return false;
         }
 
-        if (estimate.timestampSeconds <= lastVisionTimestampSeconds) {
+        double lastCameraTimestamp = lastVisionTimestampsByCamera.getOrDefault(
+            cameraEstimate.limelight.getName(),
+            -1.0
+        );
+        if (estimate.timestampSeconds <= lastCameraTimestamp) {
             return false;
         }
 
@@ -428,38 +456,56 @@ public class Swerve extends SubsystemBase {
     }
 
     private void addVisionMeasurementIfAvailable() {
-        PoseEstimate visionMeasurement = getMegaTag2VisionMeasurement();
+        List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
 
-        SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurement != null);
+        SmartDashboard.putBoolean("Vision Measurement Accepted", !visionMeasurements.isEmpty());
+        SmartDashboard.putNumber("Vision Accepted Measurement Count", visionMeasurements.size());
 
-        if (visionMeasurement == null) {
+        if (visionMeasurements.isEmpty()) {
             SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", true);
             return;
         }
 
         SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
 
-        double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
-        poseEstimator.addVisionMeasurement(
-            visionMeasurement.pose,
-            visionMeasurement.timestampSeconds,
-            VecBuilder.fill(
-                translationStdDev,
-                translationStdDev,
-                Constants.LimelightConstants.visionRotationStdDev
-            )
-        );
+        Vision.CameraPoseEstimate latestMeasurement = null;
+        double latestTranslationStdDev = 0.0;
 
-        lastVisionTimestampSeconds = visionMeasurement.timestampSeconds;
-        lastAcceptedVisionPose = visionMeasurement.pose;
+        for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
+            PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
+            double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
+            poseEstimator.addVisionMeasurement(
+                visionMeasurement.pose,
+                visionMeasurement.timestampSeconds,
+                VecBuilder.fill(
+                    translationStdDev,
+                    translationStdDev,
+                    Constants.LimelightConstants.visionRotationStdDev
+                )
+            );
 
-        SmartDashboard.putNumber("Vision Tag Count", visionMeasurement.tagCount);
-        SmartDashboard.putNumber("Vision Avg Tag Dist", visionMeasurement.avgTagDist);
-        SmartDashboard.putNumber("Vision Avg Tag Area", visionMeasurement.avgTagArea);
-        SmartDashboard.putNumber("Vision Std Dev XY", translationStdDev);
-        SmartDashboard.putNumber("Vision Pose X", visionMeasurement.pose.getX());
-        SmartDashboard.putNumber("Vision Pose Y", visionMeasurement.pose.getY());
-        SmartDashboard.putNumber("Vision Pose Heading", visionMeasurement.pose.getRotation().getDegrees());
+            String cameraName = cameraMeasurement.limelight.getName();
+            lastVisionTimestampsByCamera.put(cameraName, visionMeasurement.timestampSeconds);
+            lastAcceptedVisionPosesByCamera.put(cameraName, visionMeasurement.pose);
+            lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
+            lastAcceptedVisionPose = visionMeasurement.pose;
+            latestMeasurement = cameraMeasurement;
+            latestTranslationStdDev = translationStdDev;
+        }
+
+        if (latestMeasurement == null) {
+            return;
+        }
+
+        PoseEstimate latestPoseEstimate = latestMeasurement.poseEstimate;
+        SmartDashboard.putString("Vision Selected Camera", latestMeasurement.limelight.getName());
+        SmartDashboard.putNumber("Vision Tag Count", latestPoseEstimate.tagCount);
+        SmartDashboard.putNumber("Vision Avg Tag Dist", latestPoseEstimate.avgTagDist);
+        SmartDashboard.putNumber("Vision Avg Tag Area", latestPoseEstimate.avgTagArea);
+        SmartDashboard.putNumber("Vision Std Dev XY", latestTranslationStdDev);
+        SmartDashboard.putNumber("Vision Pose X", latestPoseEstimate.pose.getX());
+        SmartDashboard.putNumber("Vision Pose Y", latestPoseEstimate.pose.getY());
+        SmartDashboard.putNumber("Vision Pose Heading", latestPoseEstimate.pose.getRotation().getDegrees());
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
@@ -535,6 +581,29 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
         SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
         SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
+
+        for (Limelight limelight : vision.getLimelights()) {
+            String cameraName = limelight.getName();
+            Pose2d rawPose = lastRawVisionPosesByCamera.getOrDefault(cameraName, new Pose2d());
+            Pose2d acceptedPose = lastAcceptedVisionPosesByCamera.getOrDefault(cameraName, new Pose2d());
+            double rawTimestamp = lastRawVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
+            double acceptedTimestamp = lastVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
+
+            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " X", rawPose.getX());
+            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Y", rawPose.getY());
+            SmartDashboard.putNumber(
+                "Raw MegaTag2 " + cameraName + " Heading",
+                rawPose.getRotation().getDegrees()
+            );
+            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Timestamp", rawTimestamp);
+            SmartDashboard.putNumber("Last Vision " + cameraName + " X", acceptedPose.getX());
+            SmartDashboard.putNumber("Last Vision " + cameraName + " Y", acceptedPose.getY());
+            SmartDashboard.putNumber(
+                "Last Vision " + cameraName + " Heading",
+                acceptedPose.getRotation().getDegrees()
+            );
+            SmartDashboard.putNumber("Last Vision " + cameraName + " Timestamp", acceptedTimestamp);
+        }
 
         // Older generic pose debug kept here in case we want to re-enable it later.
         // SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());

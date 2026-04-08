@@ -9,7 +9,7 @@ import frc.robot.subsystems.Angler;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
 import frc.robot.subsystems.intake;
-import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Vision;
 
 public class SpinnerAndShooterCmd extends Command{
     
@@ -17,19 +17,25 @@ public class SpinnerAndShooterCmd extends Command{
     private final intake Intake;
     private final Angler angler;
     private final XboxController xbox;
-    private final Limelight limelight;
+    private final Vision vision;
 
     private double ShootSpeed;
     private double ShootReq;
     private double SpinSpeed;
     private double Rollerspeed;
-    public SpinnerAndShooterCmd(SpinnerAndShooter shoot, XboxController xbox, Angler angler, intake Intake, Limelight limelight){
+    public SpinnerAndShooterCmd(
+        SpinnerAndShooter shoot,
+        XboxController xbox,
+        Angler angler,
+        intake Intake,
+        Vision vision
+    ){
         this.shoot = shoot;
         addRequirements(this.shoot);
 
         this.angler = angler;
         this.Intake = Intake;
-        this.limelight = limelight;
+        this.vision = vision;
         this.xbox = xbox;
     }
 
@@ -111,7 +117,7 @@ public class SpinnerAndShooterCmd extends Command{
             boolean lbPressed = xbox.getLeftBumperButtonPressed();
             boolean rbPressed = xbox.getRightBumperButtonPressed();
             boolean apressed = xbox.getAButtonPressed();
-            boolean xpressed = xbox.getXButtonPressed();
+            boolean xpressed = xbox.getXButton();
             boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
@@ -132,24 +138,36 @@ public class SpinnerAndShooterCmd extends Command{
             // ShootReq = Constants.Spin.ShootReq;
             // SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
 
-            if (rtPressed){
+            if (rtPressed && !xpressed){
+                Vision.TrackedTag trackedTag = vision == null
+                    ? null
+                    : vision.getBestTarget(
+                        Constants.TeamDependentFactors.getHubTagIds(),
+                        Constants.LimelightConstants.frontCamera.name
+                    );
+                double trackedDistanceMeters = trackedTag == null ? -1.0 : trackedTag.distanceMeters;
+                double tableShootSpeed = AnglerShoot(trackedDistanceMeters);
+                double shootRequirement = ShootReq(trackedDistanceMeters);
 
-                double TableShootSpeed = AnglerShoot(limelight.getDistanceToTag(limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds())));
-                double ShootReq = ShootReq(limelight.getDistanceToTag(limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds())));
+                SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
+                SmartDashboard.putString(
+                    "Shooter Hub Tag Camera",
+                    trackedTag == null ? "None" : trackedTag.limelight.getName()
+                );
 
                 
                 SpinSpeed = Constants.Spin.SpinSpeed;
                 Rollerspeed = Constants.Spin.Rollerspeed;
 
                 if (Constants.Spin.ClosedLoopShooter) {
-                    shoot.setShooterRPS(TableShootSpeed, TableShootSpeed);
+                    shoot.setShooterRPS(tableShootSpeed, tableShootSpeed);
                 } else {
                     shoot.OpenShootSpeed(ShootSpeed);
                 }
 
                 // shoot.setShooterRPS(ShootSpeed, ShootSpeed);
 
-                if(shoot.getLeftRPS() >= ShootReq){
+                if(shoot.getLeftRPS() >= shootRequirement){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
                 } else {

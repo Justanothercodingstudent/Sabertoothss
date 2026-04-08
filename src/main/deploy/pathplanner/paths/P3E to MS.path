@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.46332142857142955,
-        "y": 1.7351071428571432
+        "x": 0.9313105413105416,
+        "y": 1.5284757834757838
       },
       "isLocked": false,
       "linkedName": "P3E"
@@ -20,8 +20,8 @@
         "y": 2.706892857142858
       },
       "prevControl": {
-        "x": 5.980443325193328,
-        "y": 2.484664936914937
+        "x": 5.375868945868945,
+        "y": 2.626695156695157
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.2,
+      "waypointRelativePos": 0.4480151228733436,
       "rotationDegrees": -135.57830581220907
     }
   ],
@@ -38,7 +38,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
+    "maxVelocity": 2.5,
     "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -46,7 +46,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 1.0,
     "rotation": -148.68128517663104
   },
   "reversed": false,
@@ -55,5 +55,5 @@
     "velocity": 0,
     "rotation": 37.998732442504654
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

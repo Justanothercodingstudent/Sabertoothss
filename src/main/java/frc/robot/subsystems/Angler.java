@@ -14,15 +14,15 @@ import frc.robot.Constants;
 public class Angler extends SubsystemBase{
     private final TalonFX Angler;
     private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
-    private final Limelight limelight;
+    private final Vision vision;
 
     private double AnglerPos;
     private double lastTagSeenTimestampSeconds;
 
-    public Angler(Limelight limelight) {
-        this.limelight = limelight;
+    public Angler(Vision vision) {
+        this.vision = vision;
         
-        Angler = new TalonFX(Constants.Angler.AnglerID);
+        Angler = new TalonFX(Constants.Angler.AnglerID, Constants.CTRE.CANIVORE_NAME);
         Angler.setNeutralMode(NeutralModeValue.Brake);
         TalonFXConfiguration AngleConfig = new TalonFXConfiguration();
         AngleConfig.Slot0.kP = Constants.Angler.AngleP;
@@ -110,17 +110,22 @@ public class Angler extends SubsystemBase{
     }
 
     public void updateFromTrackedAprilTag() {
-        if (limelight == null) {
+        Vision.TrackedTag trackedTag = getTrackedHubTag();
+        if (trackedTag == null) {
             return;
         }
 
-        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
-        double distanceMeters = limelight.getDistanceToTag(trackedTagId);
+        double trackedTagId = trackedTag.tagId;
+        double distanceMeters = trackedTag.distanceMeters;
         boolean hasTrackedTag = distanceMeters >= 0.0;
         double nowSeconds = Timer.getFPGATimestamp();
 
         SmartDashboard.putNumber("AprilTag " + trackedTagId + " Distance", distanceMeters);
         SmartDashboard.putBoolean("AprilTag " + trackedTagId + " Seen", hasTrackedTag);
+        SmartDashboard.putString(
+            "Tracked AprilTag Camera",
+            trackedTag.limelight.getName()
+        );
 
         if (hasTrackedTag) {
             lastTagSeenTimestampSeconds = nowSeconds;
@@ -135,13 +140,35 @@ public class Angler extends SubsystemBase{
         }
     }
 
+    private Vision.TrackedTag getTrackedHubTag() {
+        if (vision == null) {
+            return null;
+        }
+
+        return vision.getBestTarget(
+            Constants.TeamDependentFactors.getHubTagIds(),
+            Constants.LimelightConstants.frontCamera.name
+        );
+    }
+
     @Override
     public void periodic(){
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
-        double trackedTagId = limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
-        SmartDashboard.putNumber("Nearest Hub AprilTag Distance", limelight.getDistanceToTag(trackedTagId));
+        Vision.TrackedTag trackedTag = getTrackedHubTag();
+        SmartDashboard.putNumber(
+            "Nearest Hub AprilTag Distance",
+            trackedTag == null ? -1.0 : trackedTag.distanceMeters
+        );
+        SmartDashboard.putNumber(
+            "Nearest Hub AprilTag ID",
+            trackedTag == null ? -1.0 : trackedTag.tagId
+        );
+        SmartDashboard.putString(
+            "Nearest Hub AprilTag Camera",
+            trackedTag == null ? "None" : trackedTag.limelight.getName()
+        );
     }
 //helllloooooo
 }

@@ -35,6 +35,12 @@ public final class Constants {
     public static final double TRIGGER_THRESHOLD = 0.25;
   }
 
+  public static final class CTRE {
+    public static final String CANIVORE_NAME = "canivore";
+
+}
+
+
 
   public static final double stickDeadband = 0.08;
 
@@ -167,15 +173,48 @@ public final class Constants {
     }
 
     public static class LimelightConstants {
-        public static final String limelightName = "limelight-front";
+        public static final class CameraConfig {
+            public final String name;
+            public final String dashboardPrefix;
+            public final double xOffset;
+            public final double yOffset;
+            public final double zOffset;
+            public final double headingOffsetDegrees;
 
-        public static final double XOffset = 0.3175;
-        public static final double YOffset = 0.0635;
-        public static final double ZOffset = 0.3048; 
-        //tilt 24 degrees
+            public CameraConfig(
+                String name,
+                String dashboardPrefix,
+                double xOffset,
+                double yOffset,
+                double zOffset,
+                double headingOffsetDegrees
+            ) {
+                this.name = name;
+                this.dashboardPrefix = dashboardPrefix;
+                this.xOffset = xOffset;
+                this.yOffset = yOffset;
+                this.zOffset = zOffset;
+                this.headingOffsetDegrees = headingOffsetDegrees;
+            }
+        }
 
-        //Offset if limelight from set robot heading
-        public static final double limelightHeadingOffset = 0;//180;
+        public static final CameraConfig frontCamera = new CameraConfig(
+            "limelight-front",
+            "Front Limelight",
+            0.3175,
+            0.0635,
+            0.3048,
+            0.0
+        );
+
+        public static final CameraConfig rearCamera = new CameraConfig(
+            "limelight-left",
+            "left Limelight",
+            0,
+            0,
+            0,
+            0.0
+        );
 
         public static final double minVisionTagArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;
@@ -189,13 +228,13 @@ public final class Constants {
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
         public static final int limelightImuSeedMode = 1;
-        public static final int limelightImuEnabledMode = 4;
+        public static final int limelightImuEnabledMode = 2;
         public static final double limelightImuAssistAlpha = 0.001;
     }
 
     public static final class Intake {
         public static final int IntakeLeftID = 55;
-        public static final int IntakeRightID = 123;
+        public static final int IntakeRightID = 61;
 
         public static final double IntakeSpeed = -0.4;
         public static final double ExtendSpeed = 0.25;
@@ -231,7 +270,7 @@ public final class Constants {
         public static double TestAngle = 0.0;
 
         public static final double MaxAngle = 5.5;
-        public static final double Passing = 4.5;
+        public static final double Passing = 5.0;
         public static final double MinAngle = 0;
 
         public static final double AngleP = 0.5;
@@ -274,8 +313,8 @@ public final class Constants {
 
         public static final double Rollerspeed = 0.35; 
 
-        public static double PassingShootSpeed = 85;
-        public static double PassingShootReq = 82;
+        public static double PassingShootSpeed = 80;
+        public static double PassingShootReq = 75;
 
         public static double ShootSpeed = 25;
         public static double ShootReq = 23;
@@ -316,8 +355,8 @@ public final class Constants {
             {0.0, 43},
             {1.0, 38},
             {2.16, 43},
-            {3.14, 50},
-            {4.42, 57},
+            {3.14, 49},
+            {4.42, 56},
         };
     }
 

@@ -19,13 +19,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Enter Middle"
+            "pathName": "Left Enter"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "cONTINUE"
+            "pathName": "Left Cont."
           }
         },
         {
@@ -37,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Consume"
+            "pathName": "Half Sweep Left"
           }
         },
         {
@@ -49,51 +49,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Return P1"
+            "pathName": "Left R P1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P2"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.254
+            "pathName": "Left R P2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P3"
+            "pathName": "Left R P3"
           }
         },
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Shoot And Score"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Intake Jig"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
+            "name": "Shoot And Score"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L Next Cycle"
           }
         },
         {
@@ -105,13 +85,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "P3E to MS"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake Stop"
+            "pathName": "L2R"
           }
         }
       ]

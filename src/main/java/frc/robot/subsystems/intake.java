@@ -35,13 +35,13 @@ public class intake extends SubsystemBase {
         intakeRightMotor = new TalonFX(Constants.Intake.IntakeRightID);
         intakeRightMotor.setNeutralMode(NeutralModeValue.Brake);
 
-        BackRoll = new TalonFX(Constants.Spin.BackRollID );
+        BackRoll = new TalonFX(Constants.Spin.BackRollID, Constants.CTRE.CANIVORE_NAME);
         BackRoll.setNeutralMode( NeutralModeValue.Brake); 
 
-        FrontRoll = new TalonFX(Constants.Spin.FrontRollID );
+        FrontRoll = new TalonFX(Constants.Spin.FrontRollID, Constants.CTRE.CANIVORE_NAME);
         FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
 
-        intakeOutMotor = new TalonFX(Constants.Intake.IntakeOutID);
+        intakeOutMotor = new TalonFX(Constants.Intake.IntakeOutID, Constants.CTRE.CANIVORE_NAME);
         intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
         TalonFXConfiguration extensionConfig = new TalonFXConfiguration();
         extensionConfig.Slot0.kP = Constants.Intake.extendP;

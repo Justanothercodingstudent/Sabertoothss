@@ -1,8 +1,8 @@
 package frc.robot.commands;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Vision;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -29,7 +29,7 @@ public class TeleopSwerve extends Command {
     private final DoubleSupplier strafeSup;
     private final DoubleSupplier rotationSup;
     private final BooleanSupplier robotCentricSup;
-    private final Limelight limelight;
+    private final Vision vision;
     private final BooleanSupplier aimAtTagSup;
     //private final BooleanSupplier anglerHubAimActiveSup;
     private final PIDController tagAimController = new PIDController(TAG_AIM_KP, TAG_AIM_KI, TAG_AIM_KD);
@@ -42,7 +42,7 @@ public class TeleopSwerve extends Command {
             DoubleSupplier strafeSup,
             DoubleSupplier rotationSup,
             BooleanSupplier robotCentricSup,
-            Limelight aprilTagDetection,
+            Vision vision,
             BooleanSupplier aimAtTagSup//,
             //BooleanSupplier anglerHubAimActiveSup
             ) {
@@ -53,7 +53,7 @@ public class TeleopSwerve extends Command {
         this.strafeSup = strafeSup;
         this.rotationSup = rotationSup;
         this.robotCentricSup = robotCentricSup;
-        this.limelight = aprilTagDetection;
+        this.vision = vision;
         this.aimAtTagSup = aimAtTagSup;
         //this.anglerHubAimActiveSup = anglerHubAimActiveSup;
         tagAimController.setTolerance(TAG_AIM_TOLERANCE_DEGREES);
@@ -79,13 +79,12 @@ public class TeleopSwerve extends Command {
 
         //boolean hubAimActive = anglerHubAimActiveSup.getAsBoolean();
         boolean aimAtTag = aimAtTagSup.getAsBoolean() ;//&& hubAimActive;
-        double targetTagId = limelight == null
-            ? -1.0
-            : limelight.getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
-        double[] tagData = targetTagId < 0.0
+        Vision.TrackedTag trackedTag = vision == null
             ? null
-            : limelight.getTarget((int) targetTagId);
-        boolean tagVisible = tagData != null;
+            : vision.getBestTarget(Constants.TeamDependentFactors.getHubTagIds());
+        double targetTagId = trackedTag == null ? -1.0 : trackedTag.tagId;
+        double[] tagData = trackedTag == null ? null : trackedTag.targetData;
+        boolean tagVisible = trackedTag != null;
 
         SmartDashboard.putBoolean("Tag Aim Requested", aimAtTagSup.getAsBoolean());
         //SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
@@ -93,6 +92,10 @@ public class TeleopSwerve extends Command {
         SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
         SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
         SmartDashboard.putNumber("Tag Aim Manual Rotation", manualRotationCommand);
+        SmartDashboard.putString(
+            "Tag Aim Camera",
+            trackedTag == null ? "None" : trackedTag.limelight.getName()
+        );
 
         if (aimAtTag && tagVisible) {
             double yawErrorDegrees = tagData[1];
