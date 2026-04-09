@@ -7,22 +7,26 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
 import frc.robot.subsystems.Angler;
+import frc.robot.subsystems.Swerve;
 
 public class AnglerCmd extends Command{
 
     private final Angler Angler;
-    private final XboxController xbox;
+    private final XboxController Operator;
+    private final XboxController Driver;
+    private final Swerve swerve;
 
     private double AnglePos;
 
     private double speed;
 
-    public AnglerCmd(Angler Angler, XboxController xbox){
+    public AnglerCmd(Angler Angler, XboxController Operator, XboxController Driver, Swerve swerve) {
         this.Angler = Angler;
         addRequirements(this.Angler);
 
-        this.xbox = xbox;
-
+        this.Operator = Operator;
+        this.Driver = Driver;
+        this.swerve = swerve;
         AnglePos = Angler.getAnglePos(); 
 
     }
@@ -35,15 +39,16 @@ public class AnglerCmd extends Command{
         public void execute() {
          if (DriverStation.isTeleop()) {
 
-            boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            //boolean apressed = xbox.getAButtonPressed();
-            boolean xpressed = xbox.getXButton();
+            boolean rtPressed = Operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            //boolean apressed = Operator.getAButtonPressed();
+            boolean rtpressed = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean clear = !(swerve.getPose().getX() < 5.5 && swerve.getPose().getX() > 4) && !(swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
+            boolean trench = (swerve.getPose().getX() < 5.5 && swerve.getPose().getX() > 4) || (swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
 
-            if (rtPressed && !xpressed){
-                Angler.updateFromTrackedAprilTag();
-                //Angler.setAnglePosition(2.5);
-            } else if (rtPressed && xpressed){
-                Angler.setAnglePosition(Constants.Angler.Passing);
+            if (rtPressed && !rtpressed){
+                    Angler.updateFromTrackedAprilTag();
+            } else if (rtPressed && rtpressed){
+                    Angler.setAnglePosition(Constants.Angler.Passing);
             } else {
                 Angler.setAnglePosition(0);
             }

@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.4,
-        "y": 5.1
+        "x": 3.179430199430199,
+        "y": 3.9962393162393166
       },
       "prevControl": {
-        "x": 2.520498575498576,
-        "y": 6.011794871794873
+        "x": 2.299928774928775,
+        "y": 4.90803418803419
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.755
+    "rotation": -0.0
   },
   "reversed": false,
   "folder": "Just Depot",

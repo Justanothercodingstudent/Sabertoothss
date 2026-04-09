@@ -270,7 +270,7 @@ public final class Constants {
         public static double TestAngle = 0.0;
 
         public static final double MaxAngle = 5.5;
-        public static final double Passing = 5.0;
+        public static final double Passing = 5.25;
         public static final double MinAngle = 0;
 
         public static final double AngleP = 0.5;

@@ -11,27 +11,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.2
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Side to Mid"
+            "pathName": "RB"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "MS Bump"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Over Bump"
+            "name": "Intake Stop"
           }
         },
         {
@@ -41,21 +41,21 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 5.0
+            "name": "Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Line Up To balls"
+            "pathName": "RB2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake Up"
+            "name": "Shoot And Score"
           }
         }
       ]

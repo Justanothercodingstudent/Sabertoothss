@@ -78,8 +78,8 @@ public class RobotContainer {
     vision = new Vision(frontLimelight, rearLimelight);
     s_Swerve = new Swerve(vision);
 
-    angler = new Angler(vision);
-    anglerCmd = new AnglerCmd(angler, operator);
+    angler = new Angler(vision, s_Swerve);
+    anglerCmd = new AnglerCmd(angler, operator, driver, s_Swerve);
     angler.setDefaultCommand(anglerCmd);
 
     Intake = new intake();
