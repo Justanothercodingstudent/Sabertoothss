@@ -43,19 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Return P1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Return P2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Return P3"
+            "pathName": "Bum"
           }
         },
         {
@@ -101,17 +89,11 @@
           "data": {
             "name": "Intake Stop"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot And Score"
-          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Works",
+  "folder": null,
   "choreoAuto": false
 }

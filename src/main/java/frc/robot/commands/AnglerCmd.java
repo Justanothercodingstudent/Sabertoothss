@@ -41,14 +41,16 @@ public class AnglerCmd extends Command{
 
             boolean rtPressed = Operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             //boolean apressed = Operator.getAButtonPressed();
-            boolean rtpressed = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean clear = !(swerve.getPose().getX() < 5.5 && swerve.getPose().getX() > 4) && !(swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
-            boolean trench = (swerve.getPose().getX() < 5.5 && swerve.getPose().getX() > 4) || (swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
+            boolean xPressed = Operator.getXButton();
 
-            if (rtPressed && !rtpressed){
-                    Angler.updateFromTrackedAprilTag();
-            } else if (rtPressed && rtpressed){
-                    Angler.setAnglePosition(Constants.Angler.Passing);
+            boolean rtpressed = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean clear = !(swerve.getPose().getX() <= 5.5 && swerve.getPose().getX() >= 4) && !(swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
+            boolean trench = (swerve.getPose().getX() <= 5.5 && swerve.getPose().getX() >= 4) || (swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
+
+            if (rtPressed && !rtpressed /*&& clear*/){
+                Angler.updateFromTrackedAprilTag();
+            } else if (xPressed && rtpressed  /*&& clear*/){
+                Angler.setAnglePosition(Constants.Angler.Passing);
             } else {
                 Angler.setAnglePosition(0);
             }

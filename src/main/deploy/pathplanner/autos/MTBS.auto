@@ -5,21 +5,27 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "BeginBack"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Intake Extend"
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Left Enter"
+            "pathName": "MiddleL"
           }
         },
         {
@@ -31,31 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Half Sweep Left"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake Stop"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left R P1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left R P2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left R P3"
+            "pathName": "MRM"
           }
         },
         {
@@ -68,6 +50,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Works",
+  "folder": "Needs Testing",
   "choreoAuto": false
 }

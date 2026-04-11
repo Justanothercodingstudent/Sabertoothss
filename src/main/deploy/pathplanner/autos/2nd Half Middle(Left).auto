@@ -13,19 +13,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 0.3
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Left Enter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left Cont."
           }
         },
         {
@@ -86,6 +80,18 @@
           "type": "path",
           "data": {
             "pathName": "L2R"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot And Score"
           }
         }
       ]

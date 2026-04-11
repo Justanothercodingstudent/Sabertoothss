@@ -16,7 +16,8 @@ public class SpinnerAndShooterCmd extends Command{
     private final SpinnerAndShooter shoot;
     private final intake Intake;
     private final Angler angler;
-    private final XboxController xbox;
+    private final XboxController Operator;
+    private final XboxController Driver;
     private final Vision vision;
 
     private double ShootSpeed;
@@ -25,10 +26,11 @@ public class SpinnerAndShooterCmd extends Command{
     private double Rollerspeed;
     public SpinnerAndShooterCmd(
         SpinnerAndShooter shoot,
-        XboxController xbox,
+        XboxController Operator,
         Angler angler,
         intake Intake,
-        Vision vision
+        Vision vision,
+        XboxController Driver
     ){
         this.shoot = shoot;
         addRequirements(this.shoot);
@@ -36,7 +38,8 @@ public class SpinnerAndShooterCmd extends Command{
         this.angler = angler;
         this.Intake = Intake;
         this.vision = vision;
-        this.xbox = xbox;
+        this.Operator = Operator;
+        this.Driver = Driver;
     }
 
      @Override
@@ -113,12 +116,16 @@ public class SpinnerAndShooterCmd extends Command{
     public void execute() {
         if (DriverStation.isTeleop()) {
 
-            boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean lbPressed = xbox.getLeftBumperButtonPressed();
-            boolean rbPressed = xbox.getRightBumperButtonPressed();
-            boolean apressed = xbox.getAButtonPressed();
-            boolean xpressed = xbox.getXButton();
-            boolean joyLeftPressed = xbox.getLeftStickButtonPressed();
+            boolean rtPressed = Operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean lbPressed = Operator.getLeftBumperButtonPressed();
+            boolean rbPressed = Operator.getRightBumperButton();
+            boolean apressed = Operator.getAButtonPressed();
+            boolean xpressed = Operator.getXButton();
+            boolean joyLeftPressed = Operator.getLeftStickButtonPressed();
+
+            boolean DriverRT = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+            boolean DriverRB = Driver.getRightBumperButton();
+
 
             SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
 
@@ -174,7 +181,7 @@ public class SpinnerAndShooterCmd extends Command{
                     shoot.SpinSpeed(0);
                     shoot.roller(0);
                 }
-            } else if (rtPressed && xpressed){
+            } else if (DriverRT && xpressed){
                 shoot.setShooterRPS(Constants.Spin.PassingShootSpeed, Constants.Spin.PassingShootSpeed);
                 if (shoot.getLeftRPS() >= Constants.Spin.PassingShootReq){
                     shoot.roller(Constants.Spin.Rollerspeed);
@@ -183,16 +190,16 @@ public class SpinnerAndShooterCmd extends Command{
                     shoot.SpinSpeed(0);
                     shoot.roller(0);
                 }
-            } else if (!rtPressed && !xpressed){
+            } else if (rbPressed){
+                Rollerspeed = Constants.Spin.Rollerspeed;
+                shoot.roller(-Rollerspeed);
+            } else {
                 shoot.SpinSpeed(0);
                 shoot.OpenShootSpeed(0);
                 shoot.roller(0);
             } 
             
-            if (joyLeftPressed){
-                Rollerspeed = Constants.Spin.Rollerspeed;
-                shoot.roller(-Rollerspeed);
-            }
+            
             
             
             

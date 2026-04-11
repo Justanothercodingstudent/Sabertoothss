@@ -91,15 +91,15 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "MSTS"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Intake Stop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Copy of MSTS"
           }
         },
         {
@@ -112,6 +112,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Works",
+  "folder": null,
   "choreoAuto": false
 }

@@ -10,20 +10,17 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.Swerve;
 
 public class Angler extends SubsystemBase{
     private final TalonFX Angler;
     private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
     private final Vision vision;
-    private final Swerve swerve;
 
     private double AnglerPos;
     private double lastTagSeenTimestampSeconds;
 
-    public Angler(Vision vision, Swerve swerve) {
+    public Angler(Vision vision) {
         this.vision = vision;
-        this.swerve = swerve;
         
         Angler = new TalonFX(Constants.Angler.AnglerID, Constants.CTRE.CANIVORE_NAME);
         Angler.setNeutralMode(NeutralModeValue.Brake);
@@ -46,7 +43,7 @@ public class Angler extends SubsystemBase{
     }
 
     public Angler() {
-        this(null, null);
+        this(null);
     }
 
     public void AngleSpeed(double speed){
@@ -131,13 +128,11 @@ public class Angler extends SubsystemBase{
             trackedTag.limelight.getName()
         );
 
-        if (hasTrackedTag /*&& swerve.getPose().getX() > 5.5 && swerve.getPose().getX() < 4 && swerve.getPose().getX() > 12.5 && swerve.getPose().getX() < 11.25*/) {
+        if (hasTrackedTag) {
             lastTagSeenTimestampSeconds = nowSeconds;
             setAnglePosition(distanceToMotorRotations(distanceMeters));
             return;
-         } // else if (!(hasTrackedTag && swerve.getPose().getX() > 5.5 && swerve.getPose().getX() < 4 && swerve.getPose().getX() > 12.5 && swerve.getPose().getX() < 11.25)){
-        //     setAnglePosition(Constants.Angler.noTagFallbackAngle);
-        // }
+         } 
 
         double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
         SmartDashboard.putNumber("AprilTag " + trackedTagId + " Time Since Seen", timeSinceLastSeen);

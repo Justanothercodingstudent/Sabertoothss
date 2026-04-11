@@ -3,43 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.4,
-        "y": 7.5
+        "x": 5.879757834757835,
+        "y": 2.5620940170940174
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.572179487179487,
-        "y": 7.355498575498576
+        "x": 2.738441481723283,
+        "y": 2.562094017094018
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RB1E"
     },
     {
       "anchor": {
-        "x": 3.0243874643874644,
-        "y": 4.745612535612536
+        "x": 2.7272222222222218,
+        "y": 2.3553703703703706
       },
       "prevControl": {
-        "x": 2.313774928774929,
-        "y": 5.146139601139602
+        "x": 3.7272222222222218,
+        "y": 2.3553703703703706
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LNC"
+      "linkedName": "RBE"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.882797731568996,
-      "rotationDegrees": -37.755
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 3.5,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -47,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -23.654213350910226
+    "rotation": 36.8057366653698
   },
   "reversed": false,
-  "folder": "Half Middle(Left)",
+  "folder": "John Auto",
   "idealStartingState": {
-    "velocity": 3.5,
-    "rotation": 180.0
+    "velocity": 2.5,
+    "rotation": 36.8057366653698
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

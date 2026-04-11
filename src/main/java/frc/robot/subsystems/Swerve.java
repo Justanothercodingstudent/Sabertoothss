@@ -6,9 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.wpi.first.networktables.BooleanSubscriber;
+
 import frc.robot.SwerveModule;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.Robot;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -19,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
@@ -34,8 +38,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -48,6 +56,9 @@ public class Swerve extends SubsystemBase {
     public SwerveModule[] mSwerveMods;
     public Pigeon2 gyro;
     public boolean autonMovingEnabled;
+
+    private boolean Hello;
+    
     private Rotation2d lastKnownTagHeading;
     private Rotation2d originalHeading;
     private Rotation2d driverForwardHeading;
@@ -206,12 +217,15 @@ public class Swerve extends SubsystemBase {
             chassisSpeeds = new ChassisSpeeds();
         }
 
-        // if (chassisSpeeds.vxMetersPerSecond == 0.0 && chassisSpeeds.vyMetersPerSecond == 0.0 && chassisSpeeds.omegaRadiansPerSecond == 0.0) {
-        //     SetX();
-        //     return;
-        // }
+        boolean SoManyVariables = Robot.XToggle;
 
-
+        if (chassisSpeeds.vxMetersPerSecond == 0.0 && chassisSpeeds.vyMetersPerSecond == 0.0 && chassisSpeeds.omegaRadiansPerSecond == 0.0 && SoManyVariables) {
+            Hello = true;
+            SetX();
+            return;
+        } else {
+            Hello = false;
+        }
 
         setChassisSpeeds(chassisSpeeds, isOpenLoop);
     }
@@ -548,6 +562,8 @@ public class Swerve extends SubsystemBase {
         Pose2d odometryPose = getOdometryPose();
         Pose2d estimatedPose = getPose();
         field.setRobotPose(estimatedPose);
+
+        SmartDashboard.putBoolean("X Enabled", Hello);
 
         SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
         SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);

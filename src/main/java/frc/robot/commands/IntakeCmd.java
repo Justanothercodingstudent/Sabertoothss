@@ -62,7 +62,7 @@ public class IntakeCmd extends Command {
             boolean yPressed = Operator.getYButtonPressed();
             boolean bPressed = Operator.getBButtonPressed();
             boolean ltpressed = Operator.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean ypressed = Driver.getYButton();
+            boolean rbPressed = Operator.getRightBumperButton();
             SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed); // Debugging
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
@@ -76,10 +76,10 @@ public class IntakeCmd extends Command {
             if (ltpressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(speed);
-            }else if(ypressed){
+            }else if(rbPressed){
                 speed = Constants.Intake.IntakeSpeed;
                 Intake.setIntakeSpeed(-speed);
-            } else if (!ltpressed && !ypressed && !lbPressed) {
+            } else if (!ltpressed && !rbPressed && !lbPressed) {
                 Intake.setIntakeSpeed(0);
             }
 

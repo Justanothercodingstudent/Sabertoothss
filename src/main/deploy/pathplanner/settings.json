@@ -3,9 +3,14 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
+    "Clean Sweep",
     "Half Middle(Left)",
     "Half Middle(Right)",
-    "Just Depot"
+    "John Auto",
+    "Just Depot",
+    "TTBB",
+    "SMLB",
+    "SMRB"
   ],
   "autoFolders": [
     "Needs Testing",

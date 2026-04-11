@@ -156,6 +156,34 @@ public final class Constants {
             return isHubActive(wonAuto, DriverStation.getMatchTime());
         }
 
+        public static double getSecondsUntilNextHubShiftChange(double matchTime) {
+            if (matchTime < 0.0) {
+                return -1.0;
+            }
+
+            if (matchTime > 130.0) {
+                return matchTime - 130.0;
+            }
+
+            if (matchTime > 105.0) {
+                return matchTime - 105.0;
+            }
+
+            if (matchTime > 80.0) {
+                return matchTime - 80.0;
+            }
+
+            if (matchTime > 55.0) {
+                return matchTime - 55.0;
+            }
+
+            if (matchTime > 30.0) {
+                return matchTime - 30.0;
+            }
+
+            return 0.0;
+        }
+
         public static int[] getHubTagIdsAsInt() {
             double[] hubTagIds = getHubTagIds();
             int[] hubTagIdsAsInt = new int[hubTagIds.length];
@@ -173,6 +201,9 @@ public final class Constants {
     }
 
     public static class LimelightConstants {
+
+        public static int mode;
+
         public static final class CameraConfig {
             public final String name;
             public final String dashboardPrefix;
@@ -216,6 +247,49 @@ public final class Constants {
             0.0
         );
 
+        public enum IMUmode {
+            Mode_1,
+            Mode_2,
+            Mode_3,
+            Mode_4
+        }
+
+        private static final SendableChooser<IMUmode> ImuMode = buildTeamColorChooser();
+
+        private static SendableChooser<IMUmode> buildTeamColorChooser() {
+            SendableChooser<IMUmode> chooser = new SendableChooser<>();
+            chooser.setDefaultOption("1", IMUmode.Mode_1);
+            chooser.addOption("2", IMUmode.Mode_2);
+            chooser.addOption("3", IMUmode.Mode_3);
+            chooser.addOption("4", IMUmode.Mode_4);
+            return chooser;
+        }
+
+        public static SendableChooser<IMUmode> getImuMode() {
+            return ImuMode;
+        }
+
+        public static int Mode(){
+            IMUmode SelectedMode = ImuMode.getSelected();
+            if (SelectedMode == IMUmode.Mode_1) {
+               mode = 1;
+            }
+
+            if (SelectedMode == IMUmode.Mode_2) {
+               mode = 2;
+            }
+
+            if (SelectedMode == IMUmode.Mode_3) {
+               mode = 3;
+            }
+
+            if (SelectedMode == IMUmode.Mode_4) {
+               mode = 4; 
+            }
+
+            return mode;
+        }
+
         public static final double minVisionTagArea = 0.05;
         public static final double maxSingleTagAmbiguity = 0.70;
         public static final double maxSingleTagDistanceMeters = 4.0;
@@ -227,8 +301,8 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
-        public static final int limelightImuSeedMode = 1;
-        public static final int limelightImuEnabledMode = 2;
+        public static final int limelightImuSeedMode = Mode();
+        public static final int limelightImuEnabledMode = 4;
         public static final double limelightImuAssistAlpha = 0.001;
     }
 

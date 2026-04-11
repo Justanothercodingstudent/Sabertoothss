@@ -11,21 +11,33 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.3
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "STOTO"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Intake"
           }
         },
         {
-          "type": "wait",
+          "type": "path",
           "data": {
-            "waitTime": 0.2
+            "pathName": "RB"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "RB"
+            "pathName": "Hi"
           }
         },
         {

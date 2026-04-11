@@ -3,37 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.1,
-        "y": 7.35
+        "x": 3.6,
+        "y": 0.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.157845238095239,
-        "y": 7.198702380952382
+        "x": 4.6,
+        "y": 0.5999999999999996
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.9,
-        "y": 7.0
+        "x": 5.7,
+        "y": 0.6
       },
       "prevControl": {
-        "x": 7.435702380952378,
-        "y": 7.064785714285715
+        "x": 4.7,
+        "y": 0.5999999999999996
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "STOTO"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.42476894639556484,
-      "rotationDegrees": 90.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -46,13 +41,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.5,
-    "rotation": 90.0
+    "velocity": 3.5,
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Half Middle(Left)",
+  "folder": "John Auto",
   "idealStartingState": {
-    "velocity": 1.5,
+    "velocity": 0,
     "rotation": 180.0
   },
   "useDefaultConstraints": true

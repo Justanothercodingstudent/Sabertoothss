@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.LimelightConstants.IMUmode;
 import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -69,6 +70,7 @@ public class RobotContainer {
   private AutoController autoController;
 
   private SendableChooser<Command> chooser;
+  private SendableChooser<IMUmode> ImuMode;
   private Pose2d lastSeededAutoPose;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -78,7 +80,7 @@ public class RobotContainer {
     vision = new Vision(frontLimelight, rearLimelight);
     s_Swerve = new Swerve(vision);
 
-    angler = new Angler(vision, s_Swerve);
+    angler = new Angler(vision);
     anglerCmd = new AnglerCmd(angler, operator, driver, s_Swerve);
     angler.setDefaultCommand(anglerCmd);
 
@@ -87,7 +89,7 @@ public class RobotContainer {
     Intake.setDefaultCommand(intakeCmd);
 
     Spin = new SpinnerAndShooter();
-    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake, vision);
+    ShootCmd = new SpinnerAndShooterCmd(Spin, operator, angler, Intake, vision, driver);
     Spin.setDefaultCommand(ShootCmd);
 
     // climb = new climber();
@@ -128,8 +130,8 @@ private void configureAutoSelector() {
   );
 
   // Previous manual team-color override kept for reference only.
-  // teamColorChooser = Constants.TeamDependentFactors.getTeamColorChooser();
-  // SmartDashboard.putData("Team Color", teamColorChooser);
+  ImuMode = Constants.LimelightConstants.getImuMode();
+  SmartDashboard.putData("IMU Mode", ImuMode);
 }
 
   public void syncSelectedAutoHeadingSeed() {
