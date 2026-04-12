@@ -3,71 +3,71 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.7,
+        "x": 5.5,
         "y": 0.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.699999999999999,
-        "y": 0.6
+        "x": 6.3785754985755005,
+        "y": 0.7033618233618245
       },
       "isLocked": false,
-      "linkedName": "STOTO"
+      "linkedName": "Hello Erick R"
     },
     {
       "anchor": {
-        "x": 7.708523809523809,
-        "y": 0.8820952380952383
+        "x": 7.676130952380953,
+        "y": 1.173630952380953
       },
       "prevControl": {
-        "x": 7.262256382775083,
-        "y": 0.3660985259170233
+        "x": 7.346193603889202,
+        "y": 0.3134371509560283
       },
       "nextControl": {
-        "x": 8.05404761904762,
-        "y": 1.2816071428571434
+        "x": 8.037897334147335,
+        "y": 2.1168075905575927
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.941892857142858,
-        "y": 3.24677380952381
+        "x": 6.769130952380952,
+        "y": 3.35475
       },
       "prevControl": {
-        "x": 7.82729761904762,
-        "y": 3.7974523809523815
+        "x": 7.821295183925681,
+        "y": 3.4148736703739835
       },
       "nextControl": {
-        "x": 6.010814641553951,
-        "y": 2.6676885778770507
+        "x": 6.391214285714286,
+        "y": 3.3331547619047623
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.879757834757835,
-        "y": 2.5620940170940174
+        "x": 5.86,
+        "y": 2.49
       },
       "prevControl": {
-        "x": 6.344886039886039,
-        "y": 2.652535612535613
+        "x": 6.335095238095238,
+        "y": 3.0514761904761905
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RB1E"
+      "linkedName": "ERICK R"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.4622356495468454,
-      "rotationDegrees": -50.0
+      "waypointRelativePos": 1.1513725490195932,
+      "rotationDegrees": -70.0
     },
     {
-      "waypointRelativePos": 2.1,
-      "rotationDegrees": 35.0
+      "waypointRelativePos": 1.759999999999999,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -86,7 +86,7 @@
     "rotation": 36.8057366653698
   },
   "reversed": false,
-  "folder": "Autoto Right",
+  "folder": "ERICK CHOOSE RIGHT",
   "idealStartingState": {
     "velocity": 3.5,
     "rotation": 180.0

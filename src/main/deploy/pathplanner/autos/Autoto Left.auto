@@ -13,13 +13,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 0.3
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Enter Middle"
+            "pathName": "BeginTo L"
           }
         },
         {
@@ -31,7 +31,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Consume"
+            "pathName": "Continto L"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hi L"
           }
         },
         {
@@ -41,53 +47,39 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Return P1"
+            "name": "Shoot And Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P2"
+            "pathName": "Continto 2 L"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Return P3"
+            "name": "Intake Stop"
           }
         },
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Shoot And Score"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Bump 1"
+            "name": "Shoot And Score"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Works",
   "choreoAuto": false
 }

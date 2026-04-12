@@ -3,12 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Clean Sweep",
+    "Autoto Left",
+    "Autoto Right",
+    "ERICK CHOOSE RIGHT",
     "Half Middle(Left)",
     "Half Middle(Right)",
-    "John Auto",
     "Just Depot",
-    "TTBB",
     "SMLB",
     "SMRB"
   ],

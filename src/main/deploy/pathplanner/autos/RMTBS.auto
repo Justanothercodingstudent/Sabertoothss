@@ -5,45 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "Intake Extend"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.3
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "STOTO"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "RB"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Hi"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake Stop"
+            "pathName": "BWR"
           }
         },
         {
@@ -55,13 +19,31 @@
         {
           "type": "named",
           "data": {
+            "name": "Intake Extend"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FLoop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "RB2"
+            "pathName": "Opposite Yay"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Stop"
           }
         },
         {

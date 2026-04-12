@@ -13,13 +13,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 0.3
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Enter Middle"
+            "pathName": "STOTO"
           }
         },
         {
@@ -31,7 +31,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Consume"
+            "pathName": "RB"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hi"
           }
         },
         {
@@ -41,47 +47,21 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Return P1"
+            "name": "Shoot And Score"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P2"
+            "pathName": "Irk Enter"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return P3"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Shoot And Score"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "P3E to MS"
+            "pathName": "Hey Erick"
           }
         },
         {
@@ -91,6 +71,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Ercik Pickup"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Intake Stop"
@@ -99,7 +85,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of MSTS"
+            "pathName": "What fo Dinner"
           }
         },
         {

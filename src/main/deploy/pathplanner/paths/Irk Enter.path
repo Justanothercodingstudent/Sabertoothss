@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6,
-        "y": 0.6
+        "x": 2.7272222222222218,
+        "y": 2.3553703703703706
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.6,
-        "y": 0.5999999999999996
+        "x": 2.590452380952382,
+        "y": 1.08725
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.7,
+        "x": 3.6,
         "y": 0.6
       },
       "prevControl": {
-        "x": 4.7,
-        "y": 0.5999999999999999
+        "x": 2.76327160591353,
+        "y": 0.6
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "STOTO"
+      "linkedName": "Irk Ent"
     }
   ],
   "rotationTargets": [],
@@ -45,10 +45,10 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Autoto Right",
+  "folder": "ERICK CHOOSE RIGHT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 36.8057366653698
   },
   "useDefaultConstraints": true
 }

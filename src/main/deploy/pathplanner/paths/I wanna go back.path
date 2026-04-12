@@ -3,48 +3,53 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.778903133903134,
-        "y": 4.0866809116809115
+        "x": 0.7633475783475787,
+        "y": 6.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.778903133903134,
-        "y": 2.533617921606396
+        "x": 1.8228062678062678,
+        "y": 5.998874643874644
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Johnny Dep"
     },
     {
       "anchor": {
-        "x": 2.67,
-        "y": 3.0918233618233626
+        "x": 2.2491737891737893,
+        "y": 5.805071225071226
       },
       "prevControl": {
-        "x": 2.67,
-        "y": 4.091823361823362
+        "x": 2.077237627196092,
+        "y": 5.986559396047685
       },
       "nextControl": {
-        "x": 2.67,
-        "y": 2.091823361823363
+        "x": 2.714301994301995,
+        "y": 5.314102564102564
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.014102564102563,
-        "y": 2.4716524216524216
+        "x": 2.7401424501424496,
+        "y": 5.27534188034188
       },
       "prevControl": {
-        "x": 3.4507549857549833,
-        "y": 2.2907692307692313
+        "x": 2.520498575498576,
+        "y": 5.443304843304843
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -57,14 +62,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 90.0
+    "velocity": 0,
+    "rotation": -32.67527256586261
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -0.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

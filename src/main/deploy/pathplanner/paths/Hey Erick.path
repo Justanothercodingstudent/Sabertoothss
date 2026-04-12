@@ -3,37 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4171367521367517,
-        "y": 2.600854700854701
+        "x": 3.6,
+        "y": 0.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2284757834757833,
-        "y": 2.2003276353276364
+        "x": 4.6,
+        "y": 0.5999999999999996
       },
       "isLocked": false,
-      "linkedName": "P3E"
+      "linkedName": "Irk Ent"
     },
     {
       "anchor": {
-        "x": 5.77639601139601,
-        "y": 2.600854700854701
+        "x": 5.5,
+        "y": 0.6
       },
       "prevControl": {
-        "x": 4.755698005698005,
-        "y": 2.3682905982905993
+        "x": 4.5,
+        "y": 0.5999999999999996
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "B1"
+      "linkedName": "Hello Erick R"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5669687814702885,
-      "rotationDegrees": -135.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -46,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -135.0
+    "velocity": 3.5,
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "TTBB",
+  "folder": "ERICK CHOOSE RIGHT",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 38.08109430915397
+    "velocity": 3.5,
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

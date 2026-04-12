@@ -14,16 +14,20 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Limelight;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
+
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private Swerve swerve;
+
+  private Limelight lime;
 
   private final RobotContainer m_robotContainer;
   private BooleanSubscriber wonAutoSub;
@@ -44,6 +48,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+
+    LimelightHelpers.setRewindEnabled("limelight-front", true);
+    LimelightHelpers.setRewindEnabled("limelight-left", true);
+
     // Seed the dashboard entry so Elastic can toggle it before a match.
     SmartDashboard.putBoolean("WonAuto", false);
 
@@ -80,6 +88,8 @@ public class Robot extends TimedRobot {
     Constants.TeamDependentFactors.wonAuto = wonAuto;
     Constants.TeamDependentFactors.hubActive = hubActive;
 
+    // lime.getRecording(matchTime);
+
     SmartDashboard.putBoolean("HubActive", hubActive);
     SmartDashboard.putNumber("Hub Shift Change In", secondsUntilHubShiftChange);
     SmartDashboard.putNumber("MatchTime", matchTime);
@@ -91,6 +101,8 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

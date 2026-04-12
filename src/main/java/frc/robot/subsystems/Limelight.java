@@ -132,6 +132,13 @@ public class Limelight extends SubsystemBase {
         return config.dashboardPrefix + " " + key;
     }
 
+    public void getRecording(double MatchEnd){
+        if (MatchEnd <= 140){
+            LimelightHelpers.triggerRewindCapture("limelight-front", 20.0);
+            LimelightHelpers.triggerRewindCapture("limelight-left", 20.0);
+        }
+    }
+
     private boolean isValidTagId(int tagId, double[] validTagIds) {
         for (double validTagId : validTagIds) {
             if (tagId == (int) validTagId) {

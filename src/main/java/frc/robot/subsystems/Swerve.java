@@ -15,6 +15,7 @@ import frc.robot.Robot;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -40,7 +41,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -72,6 +75,12 @@ public class Swerve extends SubsystemBase {
     private final Map<String, Pose2d> lastRawVisionPosesByCamera = new HashMap<>();
     private final Map<String, Double> lastRawVisionTimestampsByCamera = new HashMap<>();
 
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTable driveStateTable = inst.getTable("DriveState");
+    private final StructPublisher<Pose2d> drivePose = driveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> visionLog = driveStateTable.getStructTopic("latestPoseEstimate", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> lastVisionLog = driveStateTable.getStructTopic("lastAcceptedVisionPosesByCamera", Pose2d.struct).publish();
+
     public Swerve(Vision vision){
         this.vision = vision == null ? new Vision() : vision;
         gyro = new Pigeon2(Constants.Swerve.pigeonID, Constants.CTRE.CANIVORE_NAME);
@@ -92,6 +101,7 @@ public class Swerve extends SubsystemBase {
             getModulePositions(),
             new Pose2d()
         );
+    
         SmartDashboard.putData("Field", field);
         field.setRobotPose(poseEstimator.getEstimatedPosition());
         autonMovingEnabled = true;
@@ -520,6 +530,43 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Vision Pose X", latestPoseEstimate.pose.getX());
         SmartDashboard.putNumber("Vision Pose Y", latestPoseEstimate.pose.getY());
         SmartDashboard.putNumber("Vision Pose Heading", latestPoseEstimate.pose.getRotation().getDegrees());
+        
+    }
+
+    public Pose2d visionPose(){
+        List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
+
+        Vision.CameraPoseEstimate latestMeasurement = null;
+        double latestTranslationStdDev = 0.0;
+
+        for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
+            PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
+            double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
+            poseEstimator.addVisionMeasurement(
+                visionMeasurement.pose,
+                visionMeasurement.timestampSeconds,
+                VecBuilder.fill(
+                    translationStdDev,
+                    translationStdDev,
+                    Constants.LimelightConstants.visionRotationStdDev
+                )
+            );
+
+            String cameraName = cameraMeasurement.limelight.getName();
+            lastVisionTimestampsByCamera.put(cameraName, visionMeasurement.timestampSeconds);
+            lastAcceptedVisionPosesByCamera.put(cameraName, visionMeasurement.pose);
+            lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
+            lastAcceptedVisionPose = visionMeasurement.pose;
+            latestMeasurement = cameraMeasurement;
+            latestTranslationStdDev = translationStdDev;
+        }
+
+        if (latestMeasurement == null) {
+            return new Pose2d();
+        }
+
+        Pose2d latestPoseEstimate = latestMeasurement.poseEstimate.pose;
+        return latestPoseEstimate;
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
@@ -622,11 +669,11 @@ public class Swerve extends SubsystemBase {
         }
 
         // Older generic pose debug kept here in case we want to re-enable it later.
-        // SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
-        // SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
-        // SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
-        // SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
-        // SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
+        SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
+        SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
+        SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
+        SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
+        SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
 
         // Per-module dashboard
         for(SwerveModule mod : mSwerveMods){
@@ -636,6 +683,10 @@ public class Swerve extends SubsystemBase {
         }
 
         // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
+
+        drivePose.set(poseEstimator.getEstimatedPosition());
+        //visionLog.set(acceptedPose);
+        //visionLog.set(lastAcceptedVisionPosesByCamera.getOrDefault("limelight", new Pose2d()));
     }
 }       
 

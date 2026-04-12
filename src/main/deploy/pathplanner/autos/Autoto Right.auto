@@ -13,13 +13,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 0.3
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Enter Middle"
+            "pathName": "STOTO"
           }
         },
         {
@@ -31,7 +31,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Consume"
+            "pathName": "RB"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hi"
           }
         },
         {
@@ -41,35 +47,9 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Bum"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Shoot And Score"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "P3E to MS"
+            "name": "Shoot And Score"
           }
         },
         {
@@ -81,19 +61,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MSTS"
+            "pathName": "RB2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake Stop"
+            "name": "Shoot And Score"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Works",
   "choreoAuto": false
 }

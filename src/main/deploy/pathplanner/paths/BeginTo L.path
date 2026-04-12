@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.6,
-        "y": 0.6
+        "y": 7.5
       },
       "prevControl": null,
       "nextControl": {
         "x": 4.6,
-        "y": 0.5999999999999996
+        "y": 7.5
       },
       "isLocked": false,
       "linkedName": null
@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 5.7,
-        "y": 0.6
+        "y": 7.5
       },
       "prevControl": {
         "x": 4.7,
-        "y": 0.5999999999999999
+        "y": 7.5
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "STOTO"
+      "linkedName": "BeginTo L"
     }
   ],
   "rotationTargets": [],
@@ -45,7 +45,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Autoto Right",
+  "folder": "Autoto Left",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

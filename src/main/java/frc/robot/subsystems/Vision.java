@@ -6,6 +6,10 @@ import java.util.List;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+
 public class Vision {
     public static class TrackedTag {
         public final Limelight limelight;
