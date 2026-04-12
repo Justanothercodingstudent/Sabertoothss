@@ -3,32 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6,
-        "y": 0.6
+        "x": 2.6884615384615382,
+        "y": 1.140868945868947
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.6,
-        "y": 0.5999999999999996
+        "x": 2.7272222222222218,
+        "y": 0.7403418803418822
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "P3E"
     },
     {
       "anchor": {
-        "x": 5.7,
-        "y": 0.6
+        "x": 3.7220797720797716,
+        "y": 0.6499002849002864
       },
       "prevControl": {
-        "x": 4.7,
-        "y": 0.5999999999999999
+        "x": 3.2569515669515665,
+        "y": 0.6757407407407425
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "STOTO"
+      "linkedName": "Trench Return"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.45417925478348053,
+      "rotationDegrees": 180.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -41,14 +46,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 3.5,
+    "velocity": 3.0,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Autoto Right",
+  "folder": "Half Middle(Right)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 56.30993247402021
   },
   "useDefaultConstraints": true
 }
