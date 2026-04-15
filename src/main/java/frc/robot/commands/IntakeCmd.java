@@ -35,7 +35,6 @@ public class IntakeCmd extends Command {
     public class IntakeCycle extends SequentialCommandGroup {
                  public IntakeCycle(intake intake) {
                     addCommands(
-                        new InstantCommand(() -> intake.setExtendSpeed(Constants.Intake.JigSpeed)),
                         new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
                         new WaitCommand(0.25),
                         new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.maxExtend)),

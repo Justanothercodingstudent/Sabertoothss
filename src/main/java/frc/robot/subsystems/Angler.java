@@ -18,6 +18,9 @@ public class Angler extends SubsystemBase{
 
     private double AnglerPos;
     private double lastTagSeenTimestampSeconds;
+    private double lastTrackedHubDistanceMeters = -1.0;
+    private double lastTrackedHubTagId = -1.0;
+    private String lastTrackedHubCameraName = "None";
 
     public Angler(Vision vision) {
         this.vision = vision;
@@ -112,14 +115,18 @@ public class Angler extends SubsystemBase{
 
     public void updateFromTrackedAprilTag() {
         Vision.TrackedTag trackedTag = getTrackedHubTag();
+        updateTrackedHubDashboardCache(trackedTag);
+
+        double nowSeconds = Timer.getFPGATimestamp();
+
         if (trackedTag == null) {
+            handleLostTrackedTag(nowSeconds);
             return;
         }
 
-        double trackedTagId = trackedTag.tagId;
+        int trackedTagId = trackedTag.tagId;
         double distanceMeters = trackedTag.distanceMeters;
         boolean hasTrackedTag = distanceMeters >= 0.0;
-        double nowSeconds = Timer.getFPGATimestamp();
 
         SmartDashboard.putNumber("AprilTag " + trackedTagId + " Distance", distanceMeters);
         SmartDashboard.putBoolean("AprilTag " + trackedTagId + " Seen", hasTrackedTag);
@@ -134,11 +141,7 @@ public class Angler extends SubsystemBase{
             return;
          } 
 
-        double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
-        SmartDashboard.putNumber("AprilTag " + trackedTagId + " Time Since Seen", timeSinceLastSeen);
-        if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
-            setAnglePosition(Constants.Angler.noTagFallbackAngle);
-        }
+        handleLostTrackedTag(nowSeconds);
     }
 
     private Vision.TrackedTag getTrackedHubTag() {
@@ -152,24 +155,35 @@ public class Angler extends SubsystemBase{
         );
     }
 
+    private void updateTrackedHubDashboardCache(Vision.TrackedTag trackedTag) {
+        if (trackedTag == null) {
+            lastTrackedHubDistanceMeters = -1.0;
+            lastTrackedHubTagId = -1.0;
+            lastTrackedHubCameraName = "None";
+            return;
+        }
+
+        lastTrackedHubDistanceMeters = trackedTag.distanceMeters;
+        lastTrackedHubTagId = trackedTag.tagId;
+        lastTrackedHubCameraName = trackedTag.limelight.getName();
+    }
+
+    private void handleLostTrackedTag(double nowSeconds) {
+        double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
+        SmartDashboard.putNumber("Tracked AprilTag Time Since Seen", timeSinceLastSeen);
+        if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
+            setAnglePosition(Constants.Angler.noTagFallbackAngle);
+        }
+    }
+
     @Override
     public void periodic(){
         nextArmPID();
         SmartDashboard.putNumber("Angle value", getAnglePos());
         SmartDashboard.putNumber("Angle target", AnglerPos);
-        Vision.TrackedTag trackedTag = getTrackedHubTag();
-        SmartDashboard.putNumber(
-            "Nearest Hub AprilTag Distance",
-            trackedTag == null ? -1.0 : trackedTag.distanceMeters
-        );
-        SmartDashboard.putNumber(
-            "Nearest Hub AprilTag ID",
-            trackedTag == null ? -1.0 : trackedTag.tagId
-        );
-        SmartDashboard.putString(
-            "Nearest Hub AprilTag Camera",
-            trackedTag == null ? "None" : trackedTag.limelight.getName()
-        );
+        SmartDashboard.putNumber("Nearest Hub AprilTag Distance", lastTrackedHubDistanceMeters);
+        SmartDashboard.putNumber("Nearest Hub AprilTag ID", lastTrackedHubTagId);
+        SmartDashboard.putString("Nearest Hub AprilTag Camera", lastTrackedHubCameraName);
     }
 //helllloooooo
 }

@@ -99,7 +99,12 @@ public class intake extends SubsystemBase {
     }
 
     public void setExtendSpeed(double speed) {
-        extendSpeed = Math.abs(speed);
+        double requestedSpeed = Math.abs(speed);
+        if (Math.abs(requestedSpeed - extendSpeed) < 1e-6) {
+            return;
+        }
+
+        extendSpeed = requestedSpeed;
         intakeOutMotor.getConfigurator().refresh(extensionOutputConfig);
         extensionOutputConfig.PeakForwardDutyCycle = extendSpeed;
         extensionOutputConfig.PeakReverseDutyCycle = -extendSpeed;
