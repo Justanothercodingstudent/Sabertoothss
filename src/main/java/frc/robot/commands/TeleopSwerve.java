@@ -130,9 +130,14 @@ public class TeleopSwerve extends Command {
 
         double speedLimit = Constants.Swerve.maxSpeed;
         Translation2d requestedTranslation = new Translation2d(translationVal, strafeVal);
-        // if (fieldRelative) {
-        //     requestedTranslation = requestedTranslation.rotateBy(s_Swerve.getDriverForwardHeading());
-        // }
+        if (fieldRelative) {
+            requestedTranslation = requestedTranslation.rotateBy(s_Swerve.getDriverForwardHeading());
+        }
+
+        SmartDashboard.putNumber(
+            "Driver Forward Applied Heading",
+            s_Swerve.getDriverForwardHeading().getDegrees()
+        );
 
         s_Swerve.drive(
             requestedTranslation.times(speedLimit), 

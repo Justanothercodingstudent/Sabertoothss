@@ -65,9 +65,12 @@ public class Swerve extends SubsystemBase {
     private Rotation2d lastKnownTagHeading;
     private Rotation2d originalHeading;
     private Rotation2d driverForwardHeading;
+    private boolean driverForwardHeadingCaptured;
+    private String driverForwardHeadingSource;
     private double lastVisionTimestampSeconds;
     private Pose2d lastAcceptedVisionPose;
     private int currentLimelightImuMode;
+    private boolean limelightImuSeedingEnabled;
     private Pose2d lastRawVisionPose;
     private double lastRawVisionTimestampSeconds;
     private final Map<String, Double> lastVisionTimestampsByCamera = new HashMap<>();
@@ -110,13 +113,16 @@ public class Swerve extends SubsystemBase {
         lastKnownTagHeading = new Rotation2d(); 
         originalHeading = new Rotation2d();
         driverForwardHeading = new Rotation2d();
+        driverForwardHeadingCaptured = false;
+        driverForwardHeadingSource = "None";
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         currentLimelightImuMode = -1;
+        limelightImuSeedingEnabled = true;
         lastRawVisionPose = new Pose2d();
         lastRawVisionTimestampSeconds = -1.0;
         initializeVisionState();
-        applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
+        applyLimelightImuMode(Constants.LimelightConstants.getLimelightImuSeedMode());
         }
 
     private void initializeVisionState() {
@@ -317,8 +323,8 @@ public class Swerve extends SubsystemBase {
         gyro.setYaw(fieldHeading.getDegrees());
         resetPoseTrackers(new Pose2d(getPose().getTranslation(), fieldHeading));
 
-        if (DriverStation.isDisabled()) {
-            applyLimelightImuMode(Constants.LimelightConstants.limelightImuSeedMode);
+        if (DriverStation.isDisabled() && limelightImuSeedingEnabled) {
+            applyLimelightImuMode(Constants.LimelightConstants.getLimelightImuSeedMode());
         }
 
         pushFieldHeadingToLimelight(fieldHeading);
@@ -345,11 +351,38 @@ public class Swerve extends SubsystemBase {
     }
 
     public void captureDriverForwardHeadingFromCurrentFieldHeading() {
-        driverForwardHeading = getGyroYaw().rotateBy(Rotation2d.fromDegrees(180));
+        driverForwardHeading = getGyroYaw();
+        driverForwardHeadingCaptured = true;
+        driverForwardHeadingSource = "Gyro";
+    }
+
+    public void captureDriverForwardHeadingFromLimelightForward(Limelight limelight) {
+        Rotation2d robotRelativeForward = limelight == null
+            ? new Rotation2d()
+            : limelight.getRobotRelativeForwardHeading();
+
+        driverForwardHeading = getGyroYaw().rotateBy(robotRelativeForward);
+        driverForwardHeadingCaptured = true;
+        driverForwardHeadingSource = limelight == null
+            ? "Gyro"
+            : limelight.getName() + " configured forward";
     }
 
     public Rotation2d getDriverForwardHeading() {
         return driverForwardHeading;
+    }
+
+    public void setLimelightImuSeedingEnabled(boolean enabled) {
+        if (limelightImuSeedingEnabled == enabled) {
+            return;
+        }
+
+        limelightImuSeedingEnabled = enabled;
+        updateLimelightImuMode();
+    }
+
+    public boolean isLimelightImuSeedingEnabled() {
+        return limelightImuSeedingEnabled;
     }
 
     private void resetPoseTrackers(Pose2d pose) {
@@ -384,8 +417,8 @@ public class Swerve extends SubsystemBase {
     }
 
     private void updateLimelightImuMode() {
-        int targetImuMode = DriverStation.isDisabled()
-            ? Constants.LimelightConstants.limelightImuSeedMode
+        int targetImuMode = DriverStation.isDisabled() && limelightImuSeedingEnabled
+            ? Constants.LimelightConstants.getLimelightImuSeedMode()
             : Constants.LimelightConstants.limelightImuEnabledMode;
         applyLimelightImuMode(targetImuMode);
     }
@@ -616,6 +649,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
         SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
         SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
+        SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
 
         SmartDashboard.putNumber("Odometry X", odometryPose.getX());
         SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
@@ -625,6 +659,8 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
         SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
         SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
+        SmartDashboard.putBoolean("Driver Forward Heading Captured", driverForwardHeadingCaptured);
+        SmartDashboard.putString("Driver Forward Heading Source", driverForwardHeadingSource);
         SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
         SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
         SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());

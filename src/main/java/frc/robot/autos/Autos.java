@@ -56,7 +56,7 @@ public final class Autos {
             return null;
         }
 
-        return !Constants.TeamDependentFactors.isRedTeam
+        return Constants.TeamDependentFactors.isRedTeam
             ? FlippingUtil.flipFieldPose(startingPose)
             : startingPose;
     }

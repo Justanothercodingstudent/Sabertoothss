@@ -72,6 +72,7 @@ public class RobotContainer {
   private SendableChooser<Command> chooser;
   private SendableChooser<IMUmode> ImuMode;
   private Pose2d lastSeededAutoPose;
+  private boolean autoHeadingSeedLocked;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -135,6 +136,10 @@ private void configureAutoSelector() {
 }
 
   public void syncSelectedAutoHeadingSeed() {
+    syncSelectedAutoHeadingSeed(false);
+  }
+
+  private void syncSelectedAutoHeadingSeed(boolean force) {
     Pose2d autoStartingPose = Autos.getStartingPose(getSelectedAutoCommand());
 
     SmartDashboard.putString(
@@ -142,6 +147,11 @@ private void configureAutoSelector() {
         chooser != null && chooser.getSelected() != null ? chooser.getSelected().getName() : "None"
     );
     SmartDashboard.putBoolean("Auto Start Pose Available", autoStartingPose != null);
+    SmartDashboard.putBoolean("Auto Heading Seed Locked", autoHeadingSeedLocked);
+
+    if (autoHeadingSeedLocked && !force) {
+      return;
+    }
 
     if (autoStartingPose == null) {
       lastSeededAutoPose = null;
@@ -152,7 +162,8 @@ private void configureAutoSelector() {
     SmartDashboard.putNumber("Auto Start Y", autoStartingPose.getY());
     SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
 
-    if (lastSeededAutoPose == null
+    if (force
+        || lastSeededAutoPose == null
         || Math.abs(
                 lastSeededAutoPose.getRotation().minus(autoStartingPose.getRotation()).getDegrees())
             > 1e-3) {
@@ -161,8 +172,14 @@ private void configureAutoSelector() {
     }
   }
 
+  public void lockAutoHeadingSeed() {
+    autoHeadingSeedLocked = true;
+    s_Swerve.setLimelightImuSeedingEnabled(false);
+    SmartDashboard.putBoolean("Auto Heading Seed Locked", autoHeadingSeedLocked);
+  }
+
   public void captureDriverForwardHeading() {
-    s_Swerve.captureDriverForwardHeadingFromCurrentFieldHeading();
+    s_Swerve.captureDriverForwardHeadingFromLimelightForward(frontLimelight);
   }
 
   private Command getSelectedAutoCommand() {
@@ -175,7 +192,8 @@ private void configureAutoSelector() {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    syncSelectedAutoHeadingSeed();
+    syncSelectedAutoHeadingSeed(true);
+    lockAutoHeadingSeed();
 
     Command selectedAuto = getSelectedAutoCommand();
     return selectedAuto != null

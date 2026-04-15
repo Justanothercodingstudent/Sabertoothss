@@ -273,6 +273,10 @@ public final class Constants {
 
         public static int Mode(){
             IMUmode SelectedMode = ImuMode.getSelected();
+            if (SelectedMode == null) {
+                SelectedMode = IMUmode.Mode_1;
+            }
+
             if (SelectedMode == IMUmode.Mode_1) {
                mode = 1;
             }
@@ -303,7 +307,9 @@ public final class Constants {
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
-        public static final int limelightImuSeedMode = Mode();
+        public static int getLimelightImuSeedMode() {
+            return Mode();
+        }
         public static final int limelightImuEnabledMode = 4;
         public static final double limelightImuAssistAlpha = 0.001;
     }

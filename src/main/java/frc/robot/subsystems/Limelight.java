@@ -90,6 +90,10 @@ public class Limelight extends SubsystemBase {
         return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
     }
 
+    public Rotation2d getRobotRelativeForwardHeading() {
+        return Rotation2d.fromDegrees(config.headingOffsetDegrees);
+    }
+
     public void updateValues() {
         applyHubCenterOffset();
 
@@ -103,6 +107,10 @@ public class Limelight extends SubsystemBase {
         SmartDashboard.putBoolean(dashboardKey("Has Target"), LimelightHelpers.getTV(name));
         SmartDashboard.putNumber(dashboardKey("Primary Tag ID"), LimelightHelpers.getFiducialID(name));
         SmartDashboard.putNumber(dashboardKey("Raw Fiducial Count"), rawFiducials.length);
+        SmartDashboard.putNumber(
+            dashboardKey("Robot Relative Forward Heading"),
+            getRobotRelativeForwardHeading().getDegrees()
+        );
     }
 
     public static Translation2d getHubCenterOffset(int tagId) {
