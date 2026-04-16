@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Swerve extends SubsystemBase {
-  private static final double VISION_UPDATE_INTERVAL_SECONDS = 0.05;
   private static final double ENABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.10;
   private static final double DISABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.25;
   private static final double MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.50;
@@ -72,7 +71,6 @@ public class Swerve extends SubsystemBase {
   private final Map<String, Pose2d> lastAcceptedVisionPosesByCamera = new HashMap<>();
   private final Map<String, Pose2d> lastRawVisionPosesByCamera = new HashMap<>();
   private final Map<String, Double> lastRawVisionTimestampsByCamera = new HashMap<>();
-  private double lastVisionUpdateSeconds = -1.0;
   private double lastTelemetryUpdateSeconds = -1.0;
   private double lastModuleTelemetryUpdateSeconds = -1.0;
   private boolean visionMeasurementAccepted;
@@ -581,16 +579,6 @@ public class Swerve extends SubsystemBase {
     latestVisionPose = latestPoseEstimate.pose;
   }
 
-  private boolean shouldUpdateVision(double nowSeconds) {
-    if (lastVisionUpdateSeconds >= 0.0
-        && nowSeconds - lastVisionUpdateSeconds < VISION_UPDATE_INTERVAL_SECONDS) {
-      return false;
-    }
-
-    lastVisionUpdateSeconds = nowSeconds;
-    return true;
-  }
-
   private boolean shouldUpdateTelemetry(double nowSeconds, double intervalSeconds) {
     if (lastTelemetryUpdateSeconds >= 0.0
         && nowSeconds - lastTelemetryUpdateSeconds < intervalSeconds) {
@@ -708,9 +696,7 @@ public class Swerve extends SubsystemBase {
     swerveOdometry.update(gyroYaw, modulePositions);
     poseEstimator.update(gyroYaw, modulePositions);
 
-    if (shouldUpdateVision(nowSeconds)) {
-      addVisionMeasurementIfAvailable();
-    }
+    addVisionMeasurementIfAvailable();
 
     Pose2d odometryPose = getOdometryPose();
     Pose2d estimatedPose = getPose();

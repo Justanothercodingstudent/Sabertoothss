@@ -13,7 +13,7 @@ import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.Arrays;
 
 public class Limelight extends SubsystemBase {
-  private static final double PERIODIC_UPDATE_INTERVAL_SECONDS = 0.10;
+  private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
 
   private final Constants.LimelightConstants.CameraConfig config;
   private final String name;
@@ -89,6 +89,11 @@ public class Limelight extends SubsystemBase {
   }
 
   public void updateValues() {
+    updateMaintenance();
+    updateDashboardValues();
+  }
+
+  private void updateMaintenance() {
     applyHubCenterOffset();
 
     int[] validTagIds = Constants.TeamDependentFactors.getLocalizationTagIds();
@@ -96,11 +101,16 @@ public class Limelight extends SubsystemBase {
       LimelightHelpers.SetFiducialIDFiltersOverride(name, validTagIds);
       configuredValidTagIds = Arrays.copyOf(validTagIds, validTagIds.length);
     }
+  }
 
+  private void updateDashboardValues() {
     LimelightHelpers.RawFiducial[] rawFiducials = LimelightHelpers.getRawFiducials(name);
     SmartDashboard.putBoolean(dashboardKey("Has Target"), LimelightHelpers.getTV(name));
     SmartDashboard.putNumber(dashboardKey("Primary Tag ID"), LimelightHelpers.getFiducialID(name));
     SmartDashboard.putNumber(dashboardKey("Raw Fiducial Count"), rawFiducials.length);
+    SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), lastAppliedHubOffsetTagId);
+    SmartDashboard.putNumber(dashboardKey("Fiducial Offset X"), lastAppliedHubOffsetX);
+    SmartDashboard.putNumber(dashboardKey("Fiducial Offset Y"), lastAppliedHubOffsetY);
     SmartDashboard.putNumber(
         dashboardKey("Robot Relative Forward Heading"),
         getRobotRelativeForwardHeading().getDegrees());
@@ -216,10 +226,6 @@ public class Limelight extends SubsystemBase {
       lastAppliedHubOffsetX = offset.getX();
       lastAppliedHubOffsetY = offset.getY();
     }
-
-    SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), tagId);
-    SmartDashboard.putNumber(dashboardKey("Fiducial Offset X"), offset.getX());
-    SmartDashboard.putNumber(dashboardKey("Fiducial Offset Y"), offset.getY());
   }
 
   public void portForward() {
@@ -305,14 +311,16 @@ public class Limelight extends SubsystemBase {
 
   @Override
   public void periodic() {
+    updateMaintenance();
+
     double nowSeconds = Timer.getFPGATimestamp();
     if (lastPeriodicUpdateSeconds >= 0.0
-        && nowSeconds - lastPeriodicUpdateSeconds < PERIODIC_UPDATE_INTERVAL_SECONDS) {
+        && nowSeconds - lastPeriodicUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
       return;
     }
     lastPeriodicUpdateSeconds = nowSeconds;
 
-    updateValues();
+    updateDashboardValues();
     double nearestHubTag = getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
     Pose2d adjustedPose = getAdjustedRobotPose();
 

@@ -37,6 +37,8 @@ import frc.robot.subsystems.intake;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+  private static final double AUTO_HEADING_DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.25;
+
   // Previous manual team-color override kept for reference only.
   // private SendableChooser<Constants.TeamDependentFactors.TeamColorSelection> teamColorChooser;
 
@@ -75,7 +77,7 @@ public class RobotContainer {
   private SendableChooser<IMUmode> ImuMode;
   private Pose2d lastSeededAutoPose;
   private boolean autoHeadingSeedLocked;
-  private double lastAutoHeadingSeedSyncSeconds = -1.0;
+  private double lastAutoHeadingDashboardUpdateSeconds = -1.0;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -108,10 +110,11 @@ public class RobotContainer {
             () -> -driver.getRawAxis(rotationAxis),
             () -> false,
             vision,
-            () -> driver.getAButton() // ,
-            // () -> operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD
-            //     && !operator.getXButton()
-            ));
+            () ->
+                driver.getAButton()
+                    || (operator.getRightTriggerAxis()
+                            > Constants.OperatorConstants.TRIGGER_THRESHOLD
+                        && !operator.getXButton())));
 
     autoController = new AutoController(Intake, Spin, angler);
     Autos.registerNamedCommands(s_Swerve, autoController);
@@ -140,23 +143,28 @@ public class RobotContainer {
   }
 
   private void syncSelectedAutoHeadingSeed(boolean force) {
+    Command selectedAuto = getSelectedAutoCommand();
+    Pose2d autoStartingPose = Autos.getStartingPose(selectedAuto);
+
     double nowSeconds = Timer.getFPGATimestamp();
-    if (!force
-        && lastAutoHeadingSeedSyncSeconds >= 0.0
-        && nowSeconds - lastAutoHeadingSeedSyncSeconds < 0.25) {
-      return;
+    boolean updateDashboard =
+        force
+            || lastAutoHeadingDashboardUpdateSeconds < 0.0
+            || nowSeconds - lastAutoHeadingDashboardUpdateSeconds
+                >= AUTO_HEADING_DASHBOARD_UPDATE_INTERVAL_SECONDS;
+    if (updateDashboard) {
+      lastAutoHeadingDashboardUpdateSeconds = nowSeconds;
+      SmartDashboard.putString(
+          "Selected Auto", selectedAuto != null ? selectedAuto.getName() : "None");
+      SmartDashboard.putBoolean("Auto Start Pose Available", autoStartingPose != null);
+      SmartDashboard.putBoolean("Auto Heading Seed Locked", autoHeadingSeedLocked);
+
+      if (autoStartingPose != null) {
+        SmartDashboard.putNumber("Auto Start X", autoStartingPose.getX());
+        SmartDashboard.putNumber("Auto Start Y", autoStartingPose.getY());
+        SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
+      }
     }
-    lastAutoHeadingSeedSyncSeconds = nowSeconds;
-
-    Pose2d autoStartingPose = Autos.getStartingPose(getSelectedAutoCommand());
-
-    SmartDashboard.putString(
-        "Selected Auto",
-        chooser != null && chooser.getSelected() != null
-            ? chooser.getSelected().getName()
-            : "None");
-    SmartDashboard.putBoolean("Auto Start Pose Available", autoStartingPose != null);
-    SmartDashboard.putBoolean("Auto Heading Seed Locked", autoHeadingSeedLocked);
 
     if (autoHeadingSeedLocked && !force) {
       return;
@@ -166,10 +174,6 @@ public class RobotContainer {
       lastSeededAutoPose = null;
       return;
     }
-
-    SmartDashboard.putNumber("Auto Start X", autoStartingPose.getX());
-    SmartDashboard.putNumber("Auto Start Y", autoStartingPose.getY());
-    SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
 
     if (force
         || lastSeededAutoPose == null

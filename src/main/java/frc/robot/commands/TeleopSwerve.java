@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,7 +23,6 @@ public class TeleopSwerve extends Command {
   private static final double TAG_AIM_MAX_ANGULAR_SPEED = 3;
   private static final double TAG_AIM_MAX_ANGULAR_ACCELERATION = 6.0;
   private static final double TAG_AIM_MANUAL_BLEND = 0.35;
-  private static final double TAG_TARGET_UPDATE_INTERVAL_SECONDS = 0.05;
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
 
   private final Swerve s_Swerve;
@@ -37,9 +37,8 @@ public class TeleopSwerve extends Command {
       new PIDController(TAG_AIM_KP, TAG_AIM_KI, TAG_AIM_KD);
   private final SlewRateLimiter tagAimOutputLimiter =
       new SlewRateLimiter(TAG_AIM_MAX_ANGULAR_ACCELERATION);
-  private Vision.TrackedTag cachedTrackedTag;
-  private double lastTagTargetUpdateSeconds = -1.0;
   private double lastDashboardUpdateSeconds = -1.0;
+  private String lastAimSource = "Manual";
 
   public TeleopSwerve(
       Swerve s_Swerve,
@@ -92,18 +91,12 @@ public class TeleopSwerve extends Command {
 
     // boolean hubAimActive = anglerHubAimActiveSup.getAsBoolean();
     boolean aimAtTag = aimAtTagSup.getAsBoolean(); // && hubAimActive;
-    Vision.TrackedTag trackedTag = null;
-    if (aimAtTag && vision != null) {
-      if (lastTagTargetUpdateSeconds < 0.0
-          || nowSeconds - lastTagTargetUpdateSeconds >= TAG_TARGET_UPDATE_INTERVAL_SECONDS) {
-        cachedTrackedTag = vision.getBestTarget(Constants.TeamDependentFactors.getHubTagIds());
-        lastTagTargetUpdateSeconds = nowSeconds;
-      }
-      trackedTag = cachedTrackedTag;
-    } else {
-      cachedTrackedTag = null;
-      lastTagTargetUpdateSeconds = -1.0;
-    }
+    Vision.TrackedTag trackedTag =
+        aimAtTag && vision != null
+            ? vision.getBestTarget(
+                Constants.TeamDependentFactors.getHubTagIds(),
+                Constants.LimelightConstants.frontCamera.name)
+            : null;
     double targetTagId = trackedTag == null ? -1.0 : trackedTag.tagId;
     double[] tagData = trackedTag == null ? null : trackedTag.targetData;
     boolean tagVisible = trackedTag != null;
@@ -119,8 +112,12 @@ public class TeleopSwerve extends Command {
           "Tag Aim Camera", trackedTag == null ? "None" : trackedTag.limelight.getName());
     }
 
-    if (aimAtTag && tagVisible) {
-      double yawErrorDegrees = tagData[1];
+    if (aimAtTag) {
+      Pose2d robotPose = s_Swerve.getPose();
+      boolean usingFieldPoseFallback = !tagVisible;
+      double yawErrorDegrees = tagVisible ? tagData[1] : getFieldHubYawErrorDegrees(robotPose);
+      lastAimSource = tagVisible ? "Front Limelight" : "Field Pose";
+
       double autoRotationCommand =
           tagAimOutputLimiter.calculate(
               MathUtil.clamp(
@@ -143,15 +140,24 @@ public class TeleopSwerve extends Command {
         SmartDashboard.putNumber("Tag Aim Error Degrees", yawErrorDegrees);
         SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
         SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
+        SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", usingFieldPoseFallback);
+        SmartDashboard.putNumber(
+            "Tag Aim Desired Heading", getFieldHubHeading(robotPose).getDegrees());
       }
     } else {
+      lastAimSource = "Manual";
       tagAimController.reset();
       tagAimOutputLimiter.reset(0.0);
       if (updateDashboard) {
         SmartDashboard.putNumber("Tag Aim Error Degrees", 0.0);
         SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
         SmartDashboard.putNumber("Tag Aim Auto Rotation", 0.0);
+        SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", false);
       }
+    }
+
+    if (updateDashboard) {
+      SmartDashboard.putString("Tag Aim Source", lastAimSource);
     }
 
     double speedLimit = Constants.Swerve.maxSpeed;
@@ -166,5 +172,15 @@ public class TeleopSwerve extends Command {
     }
 
     s_Swerve.drive(requestedTranslation.times(speedLimit), rotationCommand, fieldRelative, true);
+  }
+
+  private Rotation2d getFieldHubHeading(Pose2d robotPose) {
+    Translation2d hubPosition = Constants.TeamDependentFactors.hubPosition();
+    Translation2d robotToHub = hubPosition.minus(robotPose.getTranslation());
+    return robotToHub.getAngle();
+  }
+
+  private double getFieldHubYawErrorDegrees(Pose2d robotPose) {
+    return robotPose.getRotation().minus(getFieldHubHeading(robotPose)).getDegrees();
   }
 }

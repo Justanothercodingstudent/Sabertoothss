@@ -44,7 +44,7 @@ public class AnglerCmd extends Command {
           Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
 
       if (rtPressed && !rtpressed /*&& clear*/) {
-        Angler.updateFromTrackedAprilTag();
+        Angler.updateFromTrackedAprilTag(swerve.getPose());
       } else if (xPressed && rtpressed /*&& clear*/) {
         Angler.setAnglePosition(Constants.Angler.Passing);
       } else {

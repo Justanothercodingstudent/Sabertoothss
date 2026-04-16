@@ -173,6 +173,20 @@ public final class Constants {
     public static int[] getLocalizationTagIds() {
       return localizationTagIds.clone();
     }
+
+    public static Translation2d hubPosition() {
+      DriverStation.Alliance alliance =
+          DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+      if (alliance == DriverStation.Alliance.Blue) {
+        return new Translation2d(Units.inchesToMeters(182.105), Units.inchesToMeters(158.845));
+      }
+
+      return new Translation2d(Units.inchesToMeters(469.115), Units.inchesToMeters(158.845));
+    }
+
+    public static double getDistanceToHubMeters(Translation2d robotPosition) {
+      return robotPosition.getDistance(hubPosition());
+    }
   }
 
   public static class LimelightConstants {

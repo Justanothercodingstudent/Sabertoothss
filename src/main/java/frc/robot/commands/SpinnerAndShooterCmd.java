@@ -94,6 +94,9 @@ public class SpinnerAndShooterCmd extends Command {
 
         if (updateDashboard) {
           SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
+          SmartDashboard.putNumber("Shooter Aim Distance", angler.getLastAimDistanceMeters());
+          SmartDashboard.putString(
+              "Shooter Aim Distance Source", angler.getLastAimDistanceSource());
           SmartDashboard.putNumber("Shooter Angler Target", anglerTarget);
           SmartDashboard.putNumber("Shoot Speed Target", tableShootSpeed);
           SmartDashboard.putNumber("Shoot Feed Requirement", shootRequirement);
