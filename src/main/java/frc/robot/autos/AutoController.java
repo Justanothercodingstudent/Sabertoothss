@@ -1,12 +1,11 @@
 package frc.robot.autos;
 
-import java.time.Instant;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.SpinnerAndShooter;
@@ -18,40 +17,7 @@ public class AutoController {
     private SpinnerAndShooter Shoot;
     private Angler angler;
 
-    double ShootSpeed;
-
-    private double AnglerShoot(double AnglerPos) {
-        double[][] table = Constants.Spin.ShootSpeedTable;
-        if (table.length == 0) {
-            return ShootSpeed;
-        }
-
-        if (AnglerPos <= table[0][0]) {
-            return table[0][1];
-        }
-
-        if (AnglerPos >= table[table.length - 1][0]) {
-            return table[table.length - 1][1];
-        }
-
-        for (int i = 1; i < table.length; i++) {
-            double lowerDistance = table[i - 1][0];
-            double upperDistance = table[i][0];
-            if (AnglerPos <= upperDistance) {
-                double lowerRotations = table[i - 1][1];
-                double upperRotations = table[i][1];
-                double range = upperDistance - lowerDistance;
-                if (range <= 0.0) {
-                    return upperRotations;
-                }
-
-                double fraction = (AnglerPos - lowerDistance) / range;
-                return lowerRotations + (fraction * (upperRotations - lowerRotations));
-            }
-        }
-
-        return table[table.length - 1][1];
-    }
+    private double activeShooterRequirementRPS = 0.0;
 
     public AutoController(intake Intake, SpinnerAndShooter Shoot, Angler angler) {
         this.Intake = Intake;
@@ -59,21 +25,23 @@ public class AutoController {
         this.angler = angler;
     }
 
-    // public Command Shoot(){
-    //     return new SequentialCommandGroup(
-    //         new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
-    //         new WaitCommand(2),
-    //         new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot)
-            
-    //     );
-    // }
+    private void primeShooterFromAngler() {
+        angler.updateFromTrackedAprilTag();
 
-    // public Command ShootStop(){
-    //     return new ParallelCommandGroup(
-    //         new InstantCommand(() -> angler.setAnglePosition(0), angler),
-    //         new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot)
-    //     );
-    // }
+        double anglerTarget = angler.getAngleTarget();
+        double shooterTargetRPS = Constants.Spin.getShooterRPSForAngle(anglerTarget);
+        activeShooterRequirementRPS = Constants.Spin.getShooterFeedRPSForAngle(anglerTarget);
+
+        if (Constants.Spin.ClosedLoopShooter) {
+            Shoot.setShooterRPS(shooterTargetRPS, shooterTargetRPS);
+        } else {
+            Shoot.OpenShootSpeed(Constants.Spin.ShootSpeed);
+        }
+    }
+
+    private boolean shooterReadyToFeed() {
+        return Shoot.isAtOrAboveRPS(activeShooterRequirementRPS);
+    }
 
     public Command Intake(){
         return new ParallelCommandGroup(
@@ -99,50 +67,10 @@ public class AutoController {
         );
     }
 
-    // public Command IntakeJig(){
-    //     return new SequentialCommandGroup(
-    //         new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
-    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
-    //         new WaitCommand(0.25),
-    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
-    //         new WaitCommand(0.25),
-    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
-    //         new WaitCommand(0.25),
-    //         new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.maxExtend), Intake),
-    //         new WaitCommand(0.25)
-    //     );
-    // }
-
-    // public Command Rollers(){
-    //     return new ParallelCommandGroup(
-    //         new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot)
-    //     );
-    // }
-
-    //  public Command RollersStop(){
-    //      return new ParallelCommandGroup(
-    //          new InstantCommand(() -> Shoot.roller(0), Shoot)
-    //      );
-    // }
-
-    // public Command Uptake(){
-    //     return new ParallelCommandGroup(
-    //         new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot)
-    //     );
-    // }
-
-    // public Command UptakeStop(){
-    //     return new ParallelCommandGroup(
-    //         new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
-    //     );
-    // }
-
     public Command ShootAndScore(){
         return new SequentialCommandGroup(
-            new InstantCommand(() -> angler.updateFromTrackedAprilTag(), angler),
-            new WaitCommand(0.05),
-            new InstantCommand(() -> Shoot.setShooterRPS(AnglerShoot(angler.getAnglePos()), AnglerShoot(angler.getAnglePos())), Shoot),
-            new WaitCommand(0.1),
+            new InstantCommand(this::primeShooterFromAngler, Shoot, angler),
+            new WaitUntilCommand(this::shooterReadyToFeed),
             new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
             new InstantCommand(() -> Intake.setIntakeSpeed(Constants.Intake.IntakeSpeed), Intake),
@@ -156,7 +84,7 @@ public class AutoController {
             new WaitCommand(2),
             new InstantCommand(() -> Intake.setIntakeSpeed(0), Intake),
             new InstantCommand(() -> angler.setAnglePosition(0), angler),
-            new InstantCommand(() -> Shoot.OpenShootSpeed(0), Shoot),
+            new InstantCommand(() -> Shoot.STOPSHOOTER(), Shoot),
             new InstantCommand(() -> Shoot.roller(0), Shoot),
             new InstantCommand(() -> Shoot.SpinSpeed(0), Shoot)
         );

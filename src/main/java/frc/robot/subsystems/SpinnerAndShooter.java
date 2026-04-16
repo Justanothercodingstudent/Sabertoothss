@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
@@ -21,6 +22,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 
 public class SpinnerAndShooter extends SubsystemBase{
+    private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
 
     private TalonFX UptakeMotor;
 
@@ -35,6 +37,7 @@ public class SpinnerAndShooter extends SubsystemBase{
 
     private final VelocityVoltage LeftRequest = new VelocityVoltage(0);
     private final VelocityVoltage RightRequest = new VelocityVoltage(0);
+    private double lastDashboardUpdateSeconds = -1.0;
    
     
 
@@ -138,6 +141,10 @@ public class SpinnerAndShooter extends SubsystemBase{
         return Math.abs(getLeftRPS() - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS
             && Math.abs(getRightRPS() - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS;
     }
+
+    public boolean isAtOrAboveRPS(double requiredRPS) {
+        return getLeftRPS() >= requiredRPS && getRightRPS() >= requiredRPS;
+    }
     
 
     public void roller(double speed){
@@ -149,11 +156,22 @@ public class SpinnerAndShooter extends SubsystemBase{
 
     @Override
     public void periodic() {
+        double nowSeconds = Timer.getFPGATimestamp();
+        if (lastDashboardUpdateSeconds >= 0.0
+            && nowSeconds - lastDashboardUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+            return;
+        }
+        lastDashboardUpdateSeconds = nowSeconds;
 
-        SmartDashboard.putNumber("Left Shooter RPS", getLeftRPS());
-        SmartDashboard.putNumber("Right Shooter RPS", getRightRPS());
+        double leftRPS = getLeftRPS();
+        double rightRPS = getRightRPS();
+        boolean atSpeed = Math.abs(leftRPS - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS
+            && Math.abs(rightRPS - Constants.Spin.TestTargetRPS) < Constants.Spin.ShooterToleranceRPS;
+
+        SmartDashboard.putNumber("Left Shooter RPS", leftRPS);
+        SmartDashboard.putNumber("Right Shooter RPS", rightRPS);
         SmartDashboard.putNumber("Target Shooter RPS", Constants.Spin.TestTargetRPS);
-        SmartDashboard.putBoolean("Shooter At Speed", isAtSpeed());
+        SmartDashboard.putBoolean("Shooter At Speed", atSpeed);
 
         SmartDashboard.putNumber("Speed of Shooter", Constants.Spin.ShootSpeed);
 

@@ -1,17 +1,18 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.Angler;
 import frc.robot.Constants;
-import frc.robot.Constants.Intake;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.Vision;
 
 public class SpinnerAndShooterCmd extends Command{
+    private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
     
     private final SpinnerAndShooter shoot;
     private final intake Intake;
@@ -20,10 +21,9 @@ public class SpinnerAndShooterCmd extends Command{
     private final XboxController Driver;
     private final Vision vision;
 
-    private double ShootSpeed;
-    private double ShootReq;
     private double SpinSpeed;
     private double Rollerspeed;
+    private double lastDashboardUpdateSeconds = -1.0;
     public SpinnerAndShooterCmd(
         SpinnerAndShooter shoot,
         XboxController Operator,
@@ -46,88 +46,26 @@ public class SpinnerAndShooterCmd extends Command{
     public void initialize() {
     }
 
-    private double AnglerShoot(double AnglerPos) {
-        double[][] table = Constants.Spin.ShootSpeedTable;
-        if (table.length == 0) {
-            return ShootSpeed;
-        }
-
-        if (AnglerPos <= table[0][0]) {
-            return table[0][1];
-        }
-
-        if (AnglerPos >= table[table.length - 1][0]) {
-            return table[table.length - 1][1];
-        }
-
-        for (int i = 1; i < table.length; i++) {
-            double lowerDistance = table[i - 1][0];
-            double upperDistance = table[i][0];
-            if (AnglerPos <= upperDistance) {
-                double lowerRotations = table[i - 1][1];
-                double upperRotations = table[i][1];
-                double range = upperDistance - lowerDistance;
-                if (range <= 0.0) {
-                    return upperRotations;
-                }
-
-                double fraction = (AnglerPos - lowerDistance) / range;
-                return lowerRotations + (fraction * (upperRotations - lowerRotations));
-            }
-        }
-
-        return table[table.length - 1][1];
-    }
-
-    private double ShootReq(double Speed) {
-        double[][] table = Constants.Spin.ShootReqTable;
-        if (table.length == 0) {
-            return ShootReq;
-        }
-
-        if (Speed <= table[0][0]) {
-            return table[0][1];
-        }
-
-        if (Speed >= table[table.length - 1][0]) {
-            return table[table.length - 1][1];
-        }
-
-        for (int i = 1; i < table.length; i++) {
-            double lowerDistance = table[i - 1][0];
-            double upperDistance = table[i][0];
-            if (Speed <= upperDistance) {
-                double lowerRotations = table[i - 1][1];
-                double upperRotations = table[i][1];
-                double range = upperDistance - lowerDistance;
-                if (range <= 0.0) {
-                    return upperRotations;
-                }
-
-                double fraction = (Speed - lowerDistance) / range;
-                return lowerRotations + (fraction * (upperRotations - lowerRotations));
-            }
-        }
-
-        return table[table.length - 1][1];
-    }
-
      @Override 
     public void execute() {
         if (DriverStation.isTeleop()) {
+            double nowSeconds = Timer.getFPGATimestamp();
+            boolean updateDashboard = lastDashboardUpdateSeconds < 0.0
+                || nowSeconds - lastDashboardUpdateSeconds >= DASHBOARD_UPDATE_INTERVAL_SECONDS;
+            if (updateDashboard) {
+                lastDashboardUpdateSeconds = nowSeconds;
+            }
 
             boolean rtPressed = Operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean lbPressed = Operator.getLeftBumperButtonPressed();
             boolean rbPressed = Operator.getRightBumperButton();
-            boolean apressed = Operator.getAButtonPressed();
             boolean xpressed = Operator.getXButton();
-            boolean joyLeftPressed = Operator.getLeftStickButtonPressed();
 
             boolean DriverRT = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean DriverRB = Driver.getRightBumperButton();
 
 
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
+            if (updateDashboard) {
+                SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
+            }
 
             
 
@@ -146,21 +84,27 @@ public class SpinnerAndShooterCmd extends Command{
             // SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
 
             if (rtPressed && !xpressed){
-                Vision.TrackedTag trackedTag = vision == null
-                    ? null
-                    : vision.getBestTarget(
+                Vision.TrackedTag trackedTag = updateDashboard && vision != null
+                    ? vision.getBestTarget(
                         Constants.TeamDependentFactors.getHubTagIds(),
                         Constants.LimelightConstants.frontCamera.name
-                    );
+                    )
+                    : null;
                 double trackedDistanceMeters = trackedTag == null ? -1.0 : trackedTag.distanceMeters;
-                double tableShootSpeed = AnglerShoot(trackedDistanceMeters);
-                double shootRequirement = ShootReq(trackedDistanceMeters);
+                double anglerTarget = angler.getAngleTarget();
+                double tableShootSpeed = Constants.Spin.getShooterRPSForAngle(anglerTarget);
+                double shootRequirement = Constants.Spin.getShooterFeedRPSForAngle(anglerTarget);
 
-                SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
-                SmartDashboard.putString(
-                    "Shooter Hub Tag Camera",
-                    trackedTag == null ? "None" : trackedTag.limelight.getName()
-                );
+                if (updateDashboard) {
+                    SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
+                    SmartDashboard.putNumber("Shooter Angler Target", anglerTarget);
+                    SmartDashboard.putNumber("Shoot Speed Target", tableShootSpeed);
+                    SmartDashboard.putNumber("Shoot Feed Requirement", shootRequirement);
+                    SmartDashboard.putString(
+                        "Shooter Hub Tag Camera",
+                        trackedTag == null ? "None" : trackedTag.limelight.getName()
+                    );
+                }
 
                 
                 SpinSpeed = Constants.Spin.SpinSpeed;
@@ -169,12 +113,12 @@ public class SpinnerAndShooterCmd extends Command{
                 if (Constants.Spin.ClosedLoopShooter) {
                     shoot.setShooterRPS(tableShootSpeed, tableShootSpeed);
                 } else {
-                    shoot.OpenShootSpeed(ShootSpeed);
+                    shoot.OpenShootSpeed(Constants.Spin.ShootSpeed);
                 }
 
                 // shoot.setShooterRPS(ShootSpeed, ShootSpeed);
 
-                if(shoot.getLeftRPS() >= shootRequirement){
+                if(shoot.isAtOrAboveRPS(shootRequirement)){
                     shoot.roller(Rollerspeed);
                     shoot.SpinSpeed(SpinSpeed);
                 } else {
@@ -183,7 +127,7 @@ public class SpinnerAndShooterCmd extends Command{
                 }
             } else if (DriverRT && xpressed){
                 shoot.setShooterRPS(Constants.Spin.PassingShootSpeed, Constants.Spin.PassingShootSpeed);
-                if (shoot.getLeftRPS() >= Constants.Spin.PassingShootReq){
+                if (shoot.isAtOrAboveRPS(Constants.Spin.PassingShootReq)){
                     shoot.roller(Constants.Spin.Rollerspeed);
                     shoot.SpinSpeed(Constants.Spin.SpinSpeed);
                 } else {

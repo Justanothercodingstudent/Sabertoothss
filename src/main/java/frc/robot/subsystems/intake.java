@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -12,18 +14,19 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants;
 
 public class intake extends SubsystemBase {
+    private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
 
     private final TalonFX intakeLeftMotor;
     private final TalonFX intakeRightMotor;
 
     private final TalonFX intakeOutMotor;
-     private TalonFX BackRoll;
-    private TalonFX FrontRoll;
     private final PositionDutyCycle extensionRequest = new PositionDutyCycle(0);
     private final MotorOutputConfigs extensionOutputConfig = new MotorOutputConfigs();
 
     private double intakePos;
     private double extendSpeed;
+    private double lastDashboardUpdateSeconds = -1.0;
+    private double lastExtensionMeasurement = Constants.Intake.minExtend;
 
     public intake() {
 
@@ -34,12 +37,6 @@ public class intake extends SubsystemBase {
 
         intakeRightMotor = new TalonFX(Constants.Intake.IntakeRightID);
         intakeRightMotor.setNeutralMode(NeutralModeValue.Brake);
-
-        BackRoll = new TalonFX(Constants.Spin.BackRollID, Constants.CTRE.CANIVORE_NAME);
-        BackRoll.setNeutralMode( NeutralModeValue.Brake); 
-
-        FrontRoll = new TalonFX(Constants.Spin.FrontRollID, Constants.CTRE.CANIVORE_NAME);
-        FrontRoll.setNeutralMode( NeutralModeValue.Brake); 
 
         intakeOutMotor = new TalonFX(Constants.Intake.IntakeOutID, Constants.CTRE.CANIVORE_NAME);
         intakeOutMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -70,18 +67,7 @@ public class intake extends SubsystemBase {
         intakeRightMotor.set(-speed);
     }
 
-    public void roller(double speed){
-        BackRoll.set(speed);
-        FrontRoll.set(speed);
-    }
-
         public void IntakeWait(){
-            try {
-                intakeOutMotor.wait(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
 
     public double getExtensionPos() {
@@ -124,8 +110,23 @@ public class intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        nextArmPID();
-        SmartDashboard.putNumber("Extension value", getExtensionPos());
+        boolean disabled = DriverStation.isDisabled();
+        if (!disabled) {
+            nextArmPID();
+        }
+
+        double nowSeconds = Timer.getFPGATimestamp();
+        if (lastDashboardUpdateSeconds >= 0.0
+            && nowSeconds - lastDashboardUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+            return;
+        }
+        lastDashboardUpdateSeconds = nowSeconds;
+
+        if (!disabled) {
+            lastExtensionMeasurement = getExtensionPos();
+        }
+
+        SmartDashboard.putNumber("Extension value", lastExtensionMeasurement);
         SmartDashboard.putNumber("Extension target", intakePos);
     }
 }

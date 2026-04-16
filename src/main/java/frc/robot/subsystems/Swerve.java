@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.wpi.first.networktables.BooleanSubscriber;
-
 import frc.robot.SwerveModule;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
@@ -39,12 +37,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -52,6 +50,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
 public class Swerve extends SubsystemBase {
+    private static final double VISION_UPDATE_INTERVAL_SECONDS = 0.05;
+    private static final double ENABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.10;
+    private static final double DISABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.25;
+    private static final double MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.50;
+
     private final Vision vision;
     public SwerveDriveOdometry swerveOdometry;
     private final SwerveDrivePoseEstimator poseEstimator;
@@ -77,6 +80,18 @@ public class Swerve extends SubsystemBase {
     private final Map<String, Pose2d> lastAcceptedVisionPosesByCamera = new HashMap<>();
     private final Map<String, Pose2d> lastRawVisionPosesByCamera = new HashMap<>();
     private final Map<String, Double> lastRawVisionTimestampsByCamera = new HashMap<>();
+    private double lastVisionUpdateSeconds = -1.0;
+    private double lastTelemetryUpdateSeconds = -1.0;
+    private double lastModuleTelemetryUpdateSeconds = -1.0;
+    private boolean visionMeasurementAccepted;
+    private int visionAcceptedMeasurementCount;
+    private boolean visionMeasurementInvalidNoValidEstimate = true;
+    private String latestVisionSelectedCamera = "None";
+    private int latestVisionTagCount;
+    private double latestVisionAvgTagDist = -1.0;
+    private double latestVisionAvgTagArea = 0.0;
+    private double latestVisionStdDevXY = 0.0;
+    private Pose2d latestVisionPose = new Pose2d();
 
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable driveStateTable = inst.getTable("DriveState");
@@ -515,15 +530,16 @@ public class Swerve extends SubsystemBase {
     private void addVisionMeasurementIfAvailable() {
         List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
 
-        SmartDashboard.putBoolean("Vision Measurement Accepted", !visionMeasurements.isEmpty());
-        SmartDashboard.putNumber("Vision Accepted Measurement Count", visionMeasurements.size());
+        visionMeasurementAccepted = !visionMeasurements.isEmpty();
+        visionAcceptedMeasurementCount = visionMeasurements.size();
 
         if (visionMeasurements.isEmpty()) {
-            SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", true);
+            visionMeasurementInvalidNoValidEstimate = true;
+            latestVisionSelectedCamera = "None";
             return;
         }
 
-        SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
+        visionMeasurementInvalidNoValidEstimate = false;
 
         Vision.CameraPoseEstimate latestMeasurement = null;
         double latestTranslationStdDev = 0.0;
@@ -555,15 +571,43 @@ public class Swerve extends SubsystemBase {
         }
 
         PoseEstimate latestPoseEstimate = latestMeasurement.poseEstimate;
-        SmartDashboard.putString("Vision Selected Camera", latestMeasurement.limelight.getName());
-        SmartDashboard.putNumber("Vision Tag Count", latestPoseEstimate.tagCount);
-        SmartDashboard.putNumber("Vision Avg Tag Dist", latestPoseEstimate.avgTagDist);
-        SmartDashboard.putNumber("Vision Avg Tag Area", latestPoseEstimate.avgTagArea);
-        SmartDashboard.putNumber("Vision Std Dev XY", latestTranslationStdDev);
-        SmartDashboard.putNumber("Vision Pose X", latestPoseEstimate.pose.getX());
-        SmartDashboard.putNumber("Vision Pose Y", latestPoseEstimate.pose.getY());
-        SmartDashboard.putNumber("Vision Pose Heading", latestPoseEstimate.pose.getRotation().getDegrees());
+        latestVisionSelectedCamera = latestMeasurement.limelight.getName();
+        latestVisionTagCount = latestPoseEstimate.tagCount;
+        latestVisionAvgTagDist = latestPoseEstimate.avgTagDist;
+        latestVisionAvgTagArea = latestPoseEstimate.avgTagArea;
+        latestVisionStdDevXY = latestTranslationStdDev;
+        latestVisionPose = latestPoseEstimate.pose;
         
+    }
+
+    private boolean shouldUpdateVision(double nowSeconds) {
+        if (lastVisionUpdateSeconds >= 0.0
+            && nowSeconds - lastVisionUpdateSeconds < VISION_UPDATE_INTERVAL_SECONDS) {
+            return false;
+        }
+
+        lastVisionUpdateSeconds = nowSeconds;
+        return true;
+    }
+
+    private boolean shouldUpdateTelemetry(double nowSeconds, double intervalSeconds) {
+        if (lastTelemetryUpdateSeconds >= 0.0
+            && nowSeconds - lastTelemetryUpdateSeconds < intervalSeconds) {
+            return false;
+        }
+
+        lastTelemetryUpdateSeconds = nowSeconds;
+        return true;
+    }
+
+    private boolean shouldUpdateModuleTelemetry(double nowSeconds) {
+        if (lastModuleTelemetryUpdateSeconds >= 0.0
+            && nowSeconds - lastModuleTelemetryUpdateSeconds < MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS) {
+            return false;
+        }
+
+        lastModuleTelemetryUpdateSeconds = nowSeconds;
+        return true;
     }
 
     public Pose2d visionPose(){
@@ -634,14 +678,49 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
+        double nowSeconds = Timer.getFPGATimestamp();
         updateLimelightImuMode();
-        swerveOdometry.update(getGyroYaw(), getModulePositions());
-        poseEstimator.update(getGyroYaw(), getModulePositions());
-        addVisionMeasurementIfAvailable();
+
+        if (DriverStation.isDisabled()) {
+            if (!shouldUpdateTelemetry(nowSeconds, DISABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS)) {
+                return;
+            }
+
+            Pose2d estimatedPose = getPose();
+            field.setRobotPose(estimatedPose);
+
+            SmartDashboard.putBoolean("X Enabled", Hello);
+            SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
+            SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
+            SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
+            SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
+            SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
+            SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
+            SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
+            SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
+            SmartDashboard.putBoolean("Driver Forward Heading Captured", driverForwardHeadingCaptured);
+            SmartDashboard.putString("Driver Forward Heading Source", driverForwardHeadingSource);
+            drivePose.set(estimatedPose);
+            return;
+        }
+
+        Rotation2d gyroYaw = getGyroYaw();
+        SwerveModulePosition[] modulePositions = getModulePositions();
+        swerveOdometry.update(gyroYaw, modulePositions);
+        poseEstimator.update(gyroYaw, modulePositions);
+
+        if (shouldUpdateVision(nowSeconds)) {
+            addVisionMeasurementIfAvailable();
+        }
 
         Pose2d odometryPose = getOdometryPose();
         Pose2d estimatedPose = getPose();
         field.setRobotPose(estimatedPose);
+        drivePose.set(estimatedPose);
+
+        if (!shouldUpdateTelemetry(nowSeconds, ENABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS)) {
+            return;
+        }
 
         SmartDashboard.putBoolean("X Enabled", Hello);
 
@@ -650,6 +729,17 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
         SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
         SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
+        SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurementAccepted);
+        SmartDashboard.putNumber("Vision Accepted Measurement Count", visionAcceptedMeasurementCount);
+        SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", visionMeasurementInvalidNoValidEstimate);
+        SmartDashboard.putString("Vision Selected Camera", latestVisionSelectedCamera);
+        SmartDashboard.putNumber("Vision Tag Count", latestVisionTagCount);
+        SmartDashboard.putNumber("Vision Avg Tag Dist", latestVisionAvgTagDist);
+        SmartDashboard.putNumber("Vision Avg Tag Area", latestVisionAvgTagArea);
+        SmartDashboard.putNumber("Vision Std Dev XY", latestVisionStdDevXY);
+        SmartDashboard.putNumber("Vision Pose X", latestVisionPose.getX());
+        SmartDashboard.putNumber("Vision Pose Y", latestVisionPose.getY());
+        SmartDashboard.putNumber("Vision Pose Heading", latestVisionPose.getRotation().getDegrees());
 
         SmartDashboard.putNumber("Odometry X", odometryPose.getX());
         SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
@@ -679,7 +769,6 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
         SmartDashboard.putNumber("Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
         SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
-        SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
 
         for (Limelight limelight : vision.getLimelights()) {
             String cameraName = limelight.getName();
@@ -704,14 +793,11 @@ public class Swerve extends SubsystemBase {
             SmartDashboard.putNumber("Last Vision " + cameraName + " Timestamp", acceptedTimestamp);
         }
 
-        // Older generic pose debug kept here in case we want to re-enable it later.
-        SmartDashboard.putNumber("Odometry X", getOdometryPose().getX());
-        SmartDashboard.putNumber("Odometry Y", getOdometryPose().getY());
-        SmartDashboard.putNumber("Estimated Pose X", getPose().getX());
-        SmartDashboard.putNumber("Estimated Pose Y", getPose().getY());
-        SmartDashboard.putNumber("Estimated Pose Heading", getPose().getRotation().getDegrees());
+        if (!shouldUpdateModuleTelemetry(nowSeconds)) {
+            return;
+        }
 
-        // Per-module dashboard
+        SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
         for(SwerveModule mod : mSwerveMods){
              SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
              SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
@@ -720,7 +806,6 @@ public class Swerve extends SubsystemBase {
 
         // SmartDashboard.putNumber("Pigeon ang vel", gyro.getAngularVelocityXDevice().getValueAsDouble());
 
-        drivePose.set(poseEstimator.getEstimatedPosition());
         //visionLog.set(acceptedPose);
         //visionLog.set(lastAcceptedVisionPosesByCamera.getOrDefault("limelight", new Pose2d()));
     }

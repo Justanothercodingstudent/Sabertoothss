@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -73,6 +74,7 @@ public class RobotContainer {
   private SendableChooser<IMUmode> ImuMode;
   private Pose2d lastSeededAutoPose;
   private boolean autoHeadingSeedLocked;
+  private double lastAutoHeadingSeedSyncSeconds = -1.0;
  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -140,6 +142,14 @@ private void configureAutoSelector() {
   }
 
   private void syncSelectedAutoHeadingSeed(boolean force) {
+    double nowSeconds = Timer.getFPGATimestamp();
+    if (!force
+        && lastAutoHeadingSeedSyncSeconds >= 0.0
+        && nowSeconds - lastAutoHeadingSeedSyncSeconds < 0.25) {
+      return;
+    }
+    lastAutoHeadingSeedSyncSeconds = nowSeconds;
+
     Pose2d autoStartingPose = Autos.getStartingPose(getSelectedAutoCommand());
 
     SmartDashboard.putString(

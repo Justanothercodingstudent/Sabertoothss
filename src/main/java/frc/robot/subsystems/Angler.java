@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -12,6 +13,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants;
 
 public class Angler extends SubsystemBase{
+    private static final double TRACKED_TAG_UPDATE_INTERVAL_SECONDS = 0.05;
+    private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+
     private final TalonFX Angler;
     private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
     private final Vision vision;
@@ -21,6 +25,9 @@ public class Angler extends SubsystemBase{
     private double lastTrackedHubDistanceMeters = -1.0;
     private double lastTrackedHubTagId = -1.0;
     private String lastTrackedHubCameraName = "None";
+    private double lastAngleMeasurement = Constants.Angler.MinAngle;
+    private double lastTrackedTagUpdateSeconds = -1.0;
+    private double lastDashboardUpdateSeconds = -1.0;
 
     public Angler(Vision vision) {
         this.vision = vision;
@@ -77,6 +84,10 @@ public class Angler extends SubsystemBase{
         return Angler.getPosition().getValueAsDouble();
     }
 
+    public double getAngleTarget() {
+        return AnglerPos;
+    }
+
     public void rotateArmMotor(double speed) {
         Angler.set(speed * Constants.Angler.AngleSpeed);
     }
@@ -114,10 +125,15 @@ public class Angler extends SubsystemBase{
     }
 
     public void updateFromTrackedAprilTag() {
+        double nowSeconds = Timer.getFPGATimestamp();
+        if (lastTrackedTagUpdateSeconds >= 0.0
+            && nowSeconds - lastTrackedTagUpdateSeconds < TRACKED_TAG_UPDATE_INTERVAL_SECONDS) {
+            return;
+        }
+        lastTrackedTagUpdateSeconds = nowSeconds;
+
         Vision.TrackedTag trackedTag = getTrackedHubTag();
         updateTrackedHubDashboardCache(trackedTag);
-
-        double nowSeconds = Timer.getFPGATimestamp();
 
         if (trackedTag == null) {
             handleLostTrackedTag(nowSeconds);
@@ -178,8 +194,24 @@ public class Angler extends SubsystemBase{
 
     @Override
     public void periodic(){
-        nextArmPID();
-        SmartDashboard.putNumber("Angle value", getAnglePos());
+        boolean disabled = DriverStation.isDisabled();
+        double nowSeconds = Timer.getFPGATimestamp();
+
+        if (!disabled) {
+            nextArmPID();
+        }
+
+        if (lastDashboardUpdateSeconds >= 0.0
+            && nowSeconds - lastDashboardUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+            return;
+        }
+        lastDashboardUpdateSeconds = nowSeconds;
+
+        if (!disabled) {
+            lastAngleMeasurement = getAnglePos();
+        }
+
+        SmartDashboard.putNumber("Angle value", lastAngleMeasurement);
         SmartDashboard.putNumber("Angle target", AnglerPos);
         SmartDashboard.putNumber("Nearest Hub AprilTag Distance", lastTrackedHubDistanceMeters);
         SmartDashboard.putNumber("Nearest Hub AprilTag ID", lastTrackedHubTagId);

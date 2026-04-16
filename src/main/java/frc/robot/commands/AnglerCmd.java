@@ -2,10 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.Constants.Intake;
 import frc.robot.subsystems.Angler;
 import frc.robot.subsystems.Swerve;
 
@@ -44,8 +42,6 @@ public class AnglerCmd extends Command{
             boolean xPressed = Operator.getXButton();
 
             boolean rtpressed = Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-            boolean clear = !(swerve.getPose().getX() <= 5.5 && swerve.getPose().getX() >= 4) && !(swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
-            boolean trench = (swerve.getPose().getX() <= 5.5 && swerve.getPose().getX() >= 4) || (swerve.getPose().getX() < 12.5 && swerve.getPose().getX() > 11.25);
 
             if (rtPressed && !rtpressed /*&& clear*/){
                 Angler.updateFromTrackedAprilTag();

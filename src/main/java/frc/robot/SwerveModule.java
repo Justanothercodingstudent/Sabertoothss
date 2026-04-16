@@ -21,7 +21,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.lib.math.Conversions;
 import frc.lib.util.SwerveModuleConstants;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveModule {
     public int moduleNumber;
@@ -72,15 +71,10 @@ public class SwerveModule {
         return talons;
     }
 
-    public void updateDashboard() {
-        SmartDashboard.putNumber("Swerve Module " + moduleNumber + " CANcoder Angle", getCANcoder().getDegrees());
-    }
-
     public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop) {
-        desiredState = SwerveModuleState.optimize(desiredState, getState().angle); 
+        desiredState = SwerveModuleState.optimize(desiredState, getAngle());
         mAngleMotor.setControl(anglePosition.withPosition(desiredState.angle.getRotations()));
         setSpeed(desiredState, isOpenLoop);
-        updateDashboard();
     }
 
     private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop) {
@@ -99,6 +93,10 @@ public class SwerveModule {
         return Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble());
     }// Hi this is a test
 
+    private Rotation2d getAngle() {
+        return Rotation2d.fromRotations(mAngleMotor.getPosition().getValueAsDouble());
+    }
+
     public void resetToAbsolute() {
         double absolutePosition = getCANcoder().getRotations() - angleOffset.getRotations();
         mAngleMotor.setPosition(absolutePosition);
@@ -107,14 +105,14 @@ public class SwerveModule {
     public SwerveModuleState getState() {
         return new SwerveModuleState(
             Conversions.RPSToMPS(mDriveMotor.getVelocity().getValueAsDouble(), Constants.Swerve.wheelCircumference), 
-            Rotation2d.fromRotations(mAngleMotor.getPosition().getValueAsDouble())
+            getAngle()
         );
     }
 
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
             Conversions.rotationsToMeters(mDriveMotor.getPosition().getValueAsDouble(), Constants.Swerve.wheelCircumference), 
-            Rotation2d.fromRotations(mAngleMotor.getPosition().getValueAsDouble())
+            getAngle()
         );
     }
 

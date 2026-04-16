@@ -10,8 +10,11 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.intake;
 import frc.robot.Constants;
+import edu.wpi.first.wpilibj.Timer;
 
 public class IntakeCmd extends Command {
+    private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+
     private final intake Intake;
     private final XboxController Operator;
     private final XboxController Driver;
@@ -20,6 +23,7 @@ public class IntakeCmd extends Command {
     private double speed;
     private double Rollerspeed;
     private Command activeIntakeCycle;
+    private double lastDashboardUpdateSeconds = -1.0;
 
     public IntakeCmd(intake Intake, XboxController Operator, XboxController Driver){
         this.Intake = Intake;
@@ -51,6 +55,7 @@ public class IntakeCmd extends Command {
     public void initialize() {
         Intake.setExtendSpeed(Constants.Intake.ExtendSpeed);
         activeIntakeCycle = null;
+        lastDashboardUpdateSeconds = -1.0;
     }
 
      @Override 
@@ -62,7 +67,12 @@ public class IntakeCmd extends Command {
             boolean bPressed = Operator.getBButtonPressed();
             boolean ltpressed = Operator.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rbPressed = Operator.getRightBumperButton();
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed); // Debugging
+            double nowSeconds = Timer.getFPGATimestamp();
+            if (lastDashboardUpdateSeconds < 0.0
+                || nowSeconds - lastDashboardUpdateSeconds >= DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+                lastDashboardUpdateSeconds = nowSeconds;
+                SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed);
+            }
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
                 if (shoot.FrontLeftRPM() <= -20){

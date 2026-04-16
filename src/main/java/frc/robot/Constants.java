@@ -420,26 +420,61 @@ public final class Constants {
         public static final double RightSideShooterkD = 0;
 
         public static final double[][] ShootSpeedTable = {
-            //{AnglePos(Rotations), Shoot Speed}
+            // {Angler position (rotations), shooter target RPS}
             {0.0, 45},
             {1.0, 40},
             {2.16, 45},
             {3.14, 52},
             {4.42, 59},
         };
-
-
-
-        //TODO something with this table
-        
         public static final double[][] ShootReqTable = {                         
-            //{AnglePos(Rotations), Roll Speed Requirement}
+            // {Angler position (rotations), minimum shooter RPS before feeding}
             {0.0, 43},
             {1.0, 38},
             {2.16, 43},
             {3.14, 49},
             {4.42, 56},
         };
+
+        public static double getShooterRPSForAngle(double angleRotations) {
+            return interpolateTable(ShootSpeedTable, angleRotations, ShootSpeed);
+        }
+
+        public static double getShooterFeedRPSForAngle(double angleRotations) {
+            return interpolateTable(ShootReqTable, angleRotations, ShootReq);
+        }
+
+        private static double interpolateTable(double[][] table, double key, double fallback) {
+            if (table.length == 0) {
+                return fallback;
+            }
+
+            if (key <= table[0][0]) {
+                return table[0][1];
+            }
+
+            if (key >= table[table.length - 1][0]) {
+                return table[table.length - 1][1];
+            }
+
+            for (int i = 1; i < table.length; i++) {
+                double lowerKey = table[i - 1][0];
+                double upperKey = table[i][0];
+                if (key <= upperKey) {
+                    double lowerValue = table[i - 1][1];
+                    double upperValue = table[i][1];
+                    double range = upperKey - lowerKey;
+                    if (range <= 0.0) {
+                        return upperValue;
+                    }
+
+                    double fraction = (key - lowerKey) / range;
+                    return lowerValue + (fraction * (upperValue - lowerValue));
+                }
+            }
+
+            return table[table.length - 1][1];
+        }
     }
 
 

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -13,9 +14,15 @@ import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
 public class Limelight extends SubsystemBase {
+    private static final double PERIODIC_UPDATE_INTERVAL_SECONDS = 0.10;
+
     private final Constants.LimelightConstants.CameraConfig config;
     private final String name;
     private int[] configuredValidTagIds = new int[0];
+    private double lastPeriodicUpdateSeconds = -1.0;
+    private int lastAppliedHubOffsetTagId = Integer.MIN_VALUE;
+    private double lastAppliedHubOffsetX = Double.NaN;
+    private double lastAppliedHubOffsetY = Double.NaN;
 
     public Limelight(Constants.LimelightConstants.CameraConfig config) {
         this.config = config;
@@ -189,10 +196,26 @@ public class Limelight extends SubsystemBase {
     }
 
     public void applyHubCenterOffset() {
-        Translation2d offset = getCurrentHubCenterOffset();
-        LimelightHelpers.setFiducial3DOffset(name, offset.getX(), offset.getY(), 0.0);
+        int tagId = (int) getCurrentHubTagId();
+        Translation2d offset = new Translation2d();
+        if (tagId > 0) {
+            try {
+                offset = getHubCenterOffset(tagId);
+            } catch (IllegalArgumentException ex) {
+                offset = new Translation2d();
+            }
+        }
 
-        SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), LimelightHelpers.getFiducialID(name));
+        if (tagId != lastAppliedHubOffsetTagId
+            || Math.abs(offset.getX() - lastAppliedHubOffsetX) > 1e-9
+            || Math.abs(offset.getY() - lastAppliedHubOffsetY) > 1e-9) {
+            LimelightHelpers.setFiducial3DOffset(name, offset.getX(), offset.getY(), 0.0);
+            lastAppliedHubOffsetTagId = tagId;
+            lastAppliedHubOffsetX = offset.getX();
+            lastAppliedHubOffsetY = offset.getY();
+        }
+
+        SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), tagId);
         SmartDashboard.putNumber(dashboardKey("Fiducial Offset X"), offset.getX());
         SmartDashboard.putNumber(dashboardKey("Fiducial Offset Y"), offset.getY());
     }
@@ -287,23 +310,32 @@ public class Limelight extends SubsystemBase {
 
     @Override
     public void periodic() {
+        double nowSeconds = Timer.getFPGATimestamp();
+        if (lastPeriodicUpdateSeconds >= 0.0
+            && nowSeconds - lastPeriodicUpdateSeconds < PERIODIC_UPDATE_INTERVAL_SECONDS) {
+            return;
+        }
+        lastPeriodicUpdateSeconds = nowSeconds;
+
         updateValues();
+        double nearestHubTag = getClosestTag(Constants.TeamDependentFactors.getHubTagIds());
+        Pose2d adjustedPose = getAdjustedRobotPose();
 
         SmartDashboard.putNumber(
             dashboardKey("Nearest Hub Tag"),
-            getClosestTag(Constants.TeamDependentFactors.getHubTagIds())
+            nearestHubTag
         );
         SmartDashboard.putNumber(
             dashboardKey("BotPose X"),
-            getAdjustedRobotPose().getTranslation().getX()
+            adjustedPose.getTranslation().getX()
         );
         SmartDashboard.putNumber(
             dashboardKey("BotPose Y"),
-            getAdjustedRobotPose().getTranslation().getY()
+            adjustedPose.getTranslation().getY()
         );
         SmartDashboard.putNumber(
             dashboardKey("BotPose Yaw"),
-            getAdjustedRobotPose().getRotation().getDegrees()
+            adjustedPose.getRotation().getDegrees()
         );
     }
 }

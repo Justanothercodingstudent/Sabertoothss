@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -23,6 +24,8 @@ import frc.robot.subsystems.Limelight;
  */
 
 public class Robot extends TimedRobot {
+  private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+
   private Command m_autonomousCommand;
 
   private Swerve swerve;
@@ -35,6 +38,8 @@ public class Robot extends TimedRobot {
   private BooleanSubscriber ToggledX;
 
   public static boolean XToggle;
+
+  private double lastDashboardUpdateSeconds = -1.0;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -90,9 +95,14 @@ public class Robot extends TimedRobot {
 
     // lime.getRecording(matchTime);
 
-    SmartDashboard.putBoolean("HubActive", hubActive);
-    SmartDashboard.putNumber("Hub Shift Change In", secondsUntilHubShiftChange);
-    SmartDashboard.putNumber("MatchTime", matchTime);
+    double nowSeconds = Timer.getFPGATimestamp();
+    if (lastDashboardUpdateSeconds < 0.0
+        || nowSeconds - lastDashboardUpdateSeconds >= DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+      lastDashboardUpdateSeconds = nowSeconds;
+      SmartDashboard.putBoolean("HubActive", hubActive);
+      SmartDashboard.putNumber("Hub Shift Change In", secondsUntilHubShiftChange);
+      SmartDashboard.putNumber("MatchTime", matchTime);
+    }
 
     XToggle = ToggledX != null && ToggledX.get();
 
