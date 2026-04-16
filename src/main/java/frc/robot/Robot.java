@@ -7,22 +7,20 @@ package frc.robot;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj.DriverStation;
-
-import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Swerve;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
-
 public class Robot extends TimedRobot {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
 
@@ -34,7 +32,7 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
   private BooleanSubscriber wonAutoSub;
-  
+
   private BooleanSubscriber ToggledX;
 
   public static boolean XToggle;
@@ -60,14 +58,14 @@ public class Robot extends TimedRobot {
     // Seed the dashboard entry so Elastic can toggle it before a match.
     SmartDashboard.putBoolean("WonAuto", false);
 
-    BooleanTopic wonAutoTopic = NetworkTableInstance.getDefault()
-        .getBooleanTopic("/SmartDashboard/WonAuto");
+    BooleanTopic wonAutoTopic =
+        NetworkTableInstance.getDefault().getBooleanTopic("/SmartDashboard/WonAuto");
     wonAutoSub = wonAutoTopic.subscribe(false);
 
     SmartDashboard.putBoolean("XToggle", false);
 
-    BooleanTopic XToggleTopic = NetworkTableInstance.getDefault()
-      .getBooleanTopic("/SmartDashboard/XToggle");
+    BooleanTopic XToggleTopic =
+        NetworkTableInstance.getDefault().getBooleanTopic("/SmartDashboard/XToggle");
     ToggledX = XToggleTopic.subscribe(false);
   }
 
@@ -88,7 +86,7 @@ public class Robot extends TimedRobot {
     double matchTime = DriverStation.getMatchTime();
     boolean hubActive = isHubActive(wonAuto, matchTime);
     int secondsUntilHubShiftChange =
-        (int)Constants.TeamDependentFactors.getSecondsUntilNextHubShiftChange(matchTime);
+        (int) Constants.TeamDependentFactors.getSecondsUntilNextHubShiftChange(matchTime);
 
     Constants.TeamDependentFactors.wonAuto = wonAuto;
     Constants.TeamDependentFactors.hubActive = hubActive;
@@ -111,8 +109,6 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-
-
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -161,9 +157,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
-    
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void testInit() {

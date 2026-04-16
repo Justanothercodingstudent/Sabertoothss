@@ -4,31 +4,31 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.LimelightConstants.IMUmode;
 import frc.robot.autos.AutoController;
 import frc.robot.autos.Autos;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.AnglerCmd;
 import frc.robot.commands.IntakeCmd;
 import frc.robot.commands.SpinnerAndShooterCmd;
-//import frc.robot.commands.climberCmd;
-import frc.robot.commands.AnglerCmd;
+// import frc.robot.commands.climberCmd;
+import frc.robot.commands.TeleopSwerve;
+import frc.robot.subsystems.Angler;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.SpinnerAndShooter;
+// import frc.robot.subsystems.climber;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
-import frc.robot.subsystems.SpinnerAndShooter;
-//import frc.robot.subsystems.climber;
-import frc.robot.subsystems.Angler;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -50,7 +50,8 @@ public class RobotContainer {
   private final int rotationAxis = XboxController.Axis.kRightX.value;
 
   /* Driver Buttons */
-  private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kX.value);
+  private final JoystickButton zeroGyro =
+      new JoystickButton(driver, XboxController.Button.kX.value);
 
   /* Subsystems */
   private final Swerve s_Swerve;
@@ -59,13 +60,13 @@ public class RobotContainer {
   private final Vision vision;
   private final intake Intake;
   private final SpinnerAndShooter Spin;
- // private final climber climb;
+  // private final climber climb;
   private final Angler angler;
 
   /* Commands */
   private IntakeCmd intakeCmd;
   private SpinnerAndShooterCmd ShootCmd;
- // private climberCmd climbCmd;
+  // private climberCmd climbCmd;
   private AnglerCmd anglerCmd;
 
   private AutoController autoController;
@@ -75,7 +76,7 @@ public class RobotContainer {
   private Pose2d lastSeededAutoPose;
   private boolean autoHeadingSeedLocked;
   private double lastAutoHeadingSeedSyncSeconds = -1.0;
- 
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     frontLimelight = new Limelight(Constants.LimelightConstants.frontCamera);
@@ -98,20 +99,19 @@ public class RobotContainer {
     // climb = new climber();
     // climbCmd = new climberCmd(climb, driver);
     // climb.setDefaultCommand(climbCmd);
-    
+
     s_Swerve.setDefaultCommand(
         new TeleopSwerve(
             s_Swerve,
-            () -> -driver.getRawAxis(translationAxis), 
-            () -> -driver.getRawAxis(strafeAxis), 
-            () -> -driver.getRawAxis(rotationAxis), 
+            () -> -driver.getRawAxis(translationAxis),
+            () -> -driver.getRawAxis(strafeAxis),
+            () -> -driver.getRawAxis(rotationAxis),
             () -> false,
             vision,
-             () -> driver.getAButton()//,
+            () -> driver.getAButton() // ,
             // () -> operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD
             //     && !operator.getXButton()
-        )
-    );
+            ));
 
     autoController = new AutoController(Intake, Spin, angler);
     Autos.registerNamedCommands(s_Swerve, autoController);
@@ -122,20 +122,18 @@ public class RobotContainer {
   private void configureButtonBindings() {
     /* Driver Buttons */
     zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
-}
+  }
 
-private void configureAutoSelector() {
-  chooser = Autos.buildChooser();
-  SmartDashboard.putData("Auto Mode", chooser);
-  SmartDashboard.putString(
-      "Driver Station Alliance",
-      DriverStation.getAlliance().map(Enum::name).orElse("Unknown")
-  );
+  private void configureAutoSelector() {
+    chooser = Autos.buildChooser();
+    SmartDashboard.putData("Auto Mode", chooser);
+    SmartDashboard.putString(
+        "Driver Station Alliance", DriverStation.getAlliance().map(Enum::name).orElse("Unknown"));
 
-  // Previous manual team-color override kept for reference only.
-  ImuMode = Constants.LimelightConstants.getImuMode();
-  SmartDashboard.putData("IMU Mode", ImuMode);
-}
+    // Previous manual team-color override kept for reference only.
+    ImuMode = Constants.LimelightConstants.getImuMode();
+    SmartDashboard.putData("IMU Mode", ImuMode);
+  }
 
   public void syncSelectedAutoHeadingSeed() {
     syncSelectedAutoHeadingSeed(false);
@@ -154,8 +152,9 @@ private void configureAutoSelector() {
 
     SmartDashboard.putString(
         "Selected Auto",
-        chooser != null && chooser.getSelected() != null ? chooser.getSelected().getName() : "None"
-    );
+        chooser != null && chooser.getSelected() != null
+            ? chooser.getSelected().getName()
+            : "None");
     SmartDashboard.putBoolean("Auto Start Pose Available", autoStartingPose != null);
     SmartDashboard.putBoolean("Auto Heading Seed Locked", autoHeadingSeedLocked);
 
@@ -206,10 +205,6 @@ private void configureAutoSelector() {
     lockAutoHeadingSeed();
 
     Command selectedAuto = getSelectedAutoCommand();
-    return selectedAuto != null
-        ? selectedAuto
-        : Commands.none();
-}
-  
-
+    return selectedAuto != null ? selectedAuto : Commands.none();
+  }
 }

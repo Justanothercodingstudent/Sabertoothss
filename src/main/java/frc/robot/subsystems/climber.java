@@ -22,7 +22,7 @@
 //         climber.setNeutralMode(NeutralModeValue.Brake);
 //         TalonFXConfiguration ClimbConfig = new TalonFXConfiguration();
 //         ClimbConfig.Slot0.kP = Constants.climber.climbP;
-//         ClimbConfig.Slot0.kI =Constants.climber.climbI; 
+//         ClimbConfig.Slot0.kI =Constants.climber.climbI;
 //         ClimbConfig.Slot0.kD = Constants.climber.climbD;
 //         ClimbConfig.MotorOutput. PeakForwardDutyCycle = Constants.climber.ClimbSpeed;
 //         ClimbConfig.MotorOutput.PeakReverseDutyCycle = -Constants.climber.ClimbSpeed;
@@ -36,7 +36,7 @@
 
 //         ClimbPos = Constants.climber.minClimb;
 //     }
-    
+
 //     public void ClimbSpeed(double speed){
 //         climber.set(speed);
 //     }
@@ -44,8 +44,6 @@
 //         ClimbPos = position;
 //         clampClimbSetPos();
 //     }
-
-   
 
 //     public void clampClimbSetPos() {
 //         ClimbPos = Math.max(
@@ -73,5 +71,5 @@
 //         SmartDashboard.putNumber("Climb value", getclimberPos());
 //         SmartDashboard.putNumber("Climb target", ClimbPos);
 //     }
-    
+
 // }

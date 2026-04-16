@@ -10,7 +10,7 @@
 // import frc.robot.Constants.Intake;
 
 // public class climberCmd extends Command{
-    
+
 //     private final climber climber;
 //     private final XboxController xbox;
 
@@ -32,14 +32,16 @@
 //     public void initialize() {
 //     }
 
-//      @Override 
+//      @Override
 //     public void execute() {
 //         if (DriverStation.isTeleop()) {
 
 //             boolean lbPressed = xbox.getLeftBumperButtonPressed();
 //             boolean rbPressed = xbox.getRightBumperButtonPressed();
-//             boolean LtPressed = xbox.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
-//             boolean rtPressed = xbox.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+//             boolean LtPressed = xbox.getLeftTriggerAxis() >
+// Constants.OperatorConstants.TRIGGER_THRESHOLD;
+//             boolean rtPressed = xbox.getRightTriggerAxis() >
+// Constants.OperatorConstants.TRIGGER_THRESHOLD;
 
 //             SmartDashboard.putBoolean("Right Trigger Button Pressed", lbPressed); // Debugging
 
@@ -51,7 +53,6 @@
 //                 climber.setClimberPosition(ClimbPos);
 //             }*/
 
-            
 //            //if (ltPressed){
 //            //     climber.ClimbSpeed(Constants.climber.ClimbSpeed);
 //           // } else if (rtPressed) {
@@ -59,9 +60,7 @@
 //            //} else {
 //            //     climber.ClimbSpeed(0);
 //            //}
-//         } 
-           
+//         }
 
-        
 //     }
 // }
