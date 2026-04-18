@@ -8,6 +8,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.config.RobotConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -348,6 +349,42 @@ public final class Constants {
       {2.84, 3.0},
       {4.42, 3.0},
     };
+
+    public static double getAngleRotationsForDistance(double distanceMeters) {
+      return interpolateTable(distanceToRotationTable, distanceMeters, noTagFallbackAngle);
+    }
+
+    private static double interpolateTable(double[][] table, double key, double fallback) {
+      if (table.length == 0) {
+        return fallback;
+      }
+
+      if (key <= table[0][0]) {
+        return table[0][1];
+      }
+
+      if (key >= table[table.length - 1][0]) {
+        return table[table.length - 1][1];
+      }
+
+      for (int i = 1; i < table.length; i++) {
+        double lowerKey = table[i - 1][0];
+        double upperKey = table[i][0];
+        if (key <= upperKey) {
+          double lowerValue = table[i - 1][1];
+          double upperValue = table[i][1];
+          double range = upperKey - lowerKey;
+          if (range <= 0.0) {
+            return upperValue;
+          }
+
+          double fraction = (key - lowerKey) / range;
+          return lowerValue + (fraction * (upperValue - lowerValue));
+        }
+      }
+
+      return table[table.length - 1][1];
+    }
   }
 
   public static final class Spin {
@@ -578,6 +615,85 @@ public final class Constants {
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(offset3);
       public static final SwerveModuleConstants constants =
           new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+    }
+  }
+
+  public static final class ShootOnMove {
+    public static final boolean enabled = true;
+
+    // Time from deciding to feed until the note is actually clear of the shooter.
+    public static final double releaseDelaySeconds = 0.10;
+
+    // Ignore very small drivetrain velocity so odometry noise does not create aim jitter.
+    public static final double minCompensationSpeedMetersPerSecond = 0.08;
+    public static final double maxCompensationSpeedMetersPerSecond = Swerve.maxSpeed;
+
+    public static final int solverIterations = 3;
+    public static final double minFlightTimeSeconds = 0.18;
+    public static final double maxFlightTimeSeconds = 1.10;
+
+    // Flight time estimate inputs. These convert your existing hood/RPS tables into physics units.
+    public static final double shooterWheelDiameterMeters = Units.inchesToMeters(4.0);
+    public static final double shooterWheelSurfaceSpeedToNoteSpeed = 0.55;
+    public static final double minEstimatedLaunchAngleDegrees = 30.0;
+    public static final double maxEstimatedLaunchAngleDegrees = 60.0;
+    public static final double minEstimatedNoteExitVelocityMetersPerSecond = 1.0;
+    public static final double maxEstimatedNoteExitVelocityMetersPerSecond = 25.0;
+    public static final double flightTimeScale = 1.0;
+
+    // Convert required note horizontal velocity into flywheel RPS correction.
+    // This is intentionally tunable because wheel compression and slip dominate the exact value.
+    public static final double shooterRpsPerMeterPerSecond = 3.0;
+    public static final double maxShooterRpsCorrection = 12.0;
+    public static final double minShooterTargetRPS = 20.0;
+    public static final double maxShooterTargetRPS = 85.0;
+    public static final double feedAimToleranceDegrees = 3.0;
+
+    public static double getFlightTimeForDistance(double distanceMeters) {
+      double hoodAngleRotations = Angler.getAngleRotationsForDistance(distanceMeters);
+      double shooterRPS = Spin.getShooterRPSForAngle(hoodAngleRotations);
+      return getFlightTimeForShot(distanceMeters, hoodAngleRotations, shooterRPS);
+    }
+
+    public static double getFlightTimeForShot(
+        double distanceMeters, double hoodAngleRotations, double shooterRPS) {
+      double noteExitVelocityMetersPerSecond =
+          getEstimatedNoteExitVelocityMetersPerSecond(shooterRPS);
+      double launchAngleRadians =
+          Math.toRadians(getEstimatedLaunchAngleDegrees(hoodAngleRotations));
+      double horizontalVelocityMetersPerSecond =
+          noteExitVelocityMetersPerSecond * Math.cos(launchAngleRadians);
+
+      if (horizontalVelocityMetersPerSecond <= 1e-6) {
+        return maxFlightTimeSeconds;
+      }
+
+      double flightTimeSeconds =
+          (Math.max(distanceMeters, 0.0) / horizontalVelocityMetersPerSecond) * flightTimeScale;
+      return MathUtil.clamp(flightTimeSeconds, minFlightTimeSeconds, maxFlightTimeSeconds);
+    }
+
+    public static double getEstimatedLaunchAngleDegrees(double hoodAngleRotations) {
+      double hoodRangeRotations = Angler.MaxAngle - Angler.MinAngle;
+      if (hoodRangeRotations <= 0.0) {
+        return minEstimatedLaunchAngleDegrees;
+      }
+
+      double hoodPercent =
+          MathUtil.clamp((hoodAngleRotations - Angler.MinAngle) / hoodRangeRotations, 0.0, 1.0);
+      return minEstimatedLaunchAngleDegrees
+          + (hoodPercent * (maxEstimatedLaunchAngleDegrees - minEstimatedLaunchAngleDegrees));
+    }
+
+    public static double getEstimatedNoteExitVelocityMetersPerSecond(double shooterRPS) {
+      double wheelSurfaceSpeedMetersPerSecond =
+          Math.PI * shooterWheelDiameterMeters * Math.max(shooterRPS, 0.0);
+      double noteExitVelocityMetersPerSecond =
+          wheelSurfaceSpeedMetersPerSecond * shooterWheelSurfaceSpeedToNoteSpeed;
+      return MathUtil.clamp(
+          noteExitVelocityMetersPerSecond,
+          minEstimatedNoteExitVelocityMetersPerSecond,
+          maxEstimatedNoteExitVelocityMetersPerSecond);
     }
   }
 

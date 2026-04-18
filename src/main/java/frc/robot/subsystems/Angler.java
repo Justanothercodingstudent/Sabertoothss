@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.ShootOnMoveCalculator;
 
 public class Angler extends SubsystemBase {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
@@ -97,35 +98,7 @@ public class Angler extends SubsystemBase {
   }
 
   private double distanceToMotorRotations(double distanceMeters) {
-    double[][] table = Constants.Angler.distanceToRotationTable;
-    if (table.length == 0) {
-      return AnglerPos;
-    }
-
-    if (distanceMeters <= table[0][0]) {
-      return table[0][1];
-    }
-    if (distanceMeters >= table[table.length - 1][0]) {
-      return table[table.length - 1][1];
-    }
-
-    for (int i = 1; i < table.length; i++) {
-      double lowerDistance = table[i - 1][0];
-      double upperDistance = table[i][0];
-      if (distanceMeters <= upperDistance) {
-        double lowerRotations = table[i - 1][1];
-        double upperRotations = table[i][1];
-        double range = upperDistance - lowerDistance;
-        if (range <= 0.0) {
-          return upperRotations;
-        }
-
-        double fraction = (distanceMeters - lowerDistance) / range;
-        return lowerRotations + (fraction * (upperRotations - lowerRotations));
-      }
-    }
-
-    return table[table.length - 1][1];
+    return Constants.Angler.getAngleRotationsForDistance(distanceMeters);
   }
 
   public void updateFromTrackedAprilTag() {
@@ -169,6 +142,20 @@ public class Angler extends SubsystemBase {
     }
 
     handleLostTrackedTag(nowSeconds);
+  }
+
+  public void updateFromShootOnMove(ShootOnMoveCalculator.ShotSolution shotSolution) {
+    if (shotSolution == null) {
+      updateFromTrackedAprilTag();
+      return;
+    }
+
+    lastTagSeenTimestampSeconds = Timer.getFPGATimestamp();
+    lastTrackedHubDistanceMeters = shotSolution.getEffectiveDistanceMeters();
+    lastTrackedHubTagId = -1.0;
+    lastTrackedHubCameraName = "Field Pose";
+    lastAimDistanceSource = shotSolution.isCompensationActive() ? "Shoot On Move" : "Field Pose";
+    setAnglePosition(shotSolution.getHoodAngleRotations());
   }
 
   private Vision.TrackedTag getTrackedHubTag() {

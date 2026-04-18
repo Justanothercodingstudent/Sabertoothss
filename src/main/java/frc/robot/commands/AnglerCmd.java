@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.ShootOnMoveCalculator;
 import frc.robot.subsystems.Angler;
 import frc.robot.subsystems.Swerve;
 
@@ -44,7 +45,8 @@ public class AnglerCmd extends Command {
           Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
 
       if (rtPressed && !rtpressed /*&& clear*/) {
-        Angler.updateFromTrackedAprilTag(swerve.getPose());
+        Angler.updateFromShootOnMove(
+            ShootOnMoveCalculator.calculate(swerve.getPose(), swerve.getFieldRelativeVelocity()));
       } else if (xPressed && rtpressed /*&& clear*/) {
         Angler.setAnglePosition(Constants.Angler.Passing);
       } else {

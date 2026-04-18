@@ -193,6 +193,13 @@ public class Swerve extends SubsystemBase {
     return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
   }
 
+  public Translation2d getFieldRelativeVelocity() {
+    ChassisSpeeds robotRelativeSpeeds = getChassisSpeeds();
+    return new Translation2d(
+            robotRelativeSpeeds.vxMetersPerSecond, robotRelativeSpeeds.vyMetersPerSecond)
+        .rotateBy(getHeading());
+  }
+
   public void drive(ChassisSpeeds speeds) {
     driveRobotRelative(speeds);
   }

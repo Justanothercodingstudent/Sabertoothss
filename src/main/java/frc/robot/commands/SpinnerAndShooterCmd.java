@@ -6,8 +6,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.ShootOnMoveCalculator;
 import frc.robot.subsystems.Angler;
 import frc.robot.subsystems.SpinnerAndShooter;
+import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.intake;
 
@@ -20,6 +22,7 @@ public class SpinnerAndShooterCmd extends Command {
   private final XboxController Operator;
   private final XboxController Driver;
   private final Vision vision;
+  private final Swerve swerve;
 
   private double SpinSpeed;
   private double Rollerspeed;
@@ -31,7 +34,8 @@ public class SpinnerAndShooterCmd extends Command {
       Angler angler,
       intake Intake,
       Vision vision,
-      XboxController Driver) {
+      XboxController Driver,
+      Swerve swerve) {
     this.shoot = shoot;
     addRequirements(this.shoot);
 
@@ -40,6 +44,7 @@ public class SpinnerAndShooterCmd extends Command {
     this.vision = vision;
     this.Operator = Operator;
     this.Driver = Driver;
+    this.swerve = swerve;
   }
 
   @Override
@@ -81,6 +86,11 @@ public class SpinnerAndShooterCmd extends Command {
       // SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
 
       if (rtPressed && !xpressed) {
+        ShootOnMoveCalculator.ShotSolution shotSolution =
+            swerve == null
+                ? null
+                : ShootOnMoveCalculator.calculate(
+                    swerve.getPose(), swerve.getFieldRelativeVelocity());
         Vision.TrackedTag trackedTag =
             updateDashboard && vision != null
                 ? vision.getBestTarget(
@@ -88,9 +98,17 @@ public class SpinnerAndShooterCmd extends Command {
                     Constants.LimelightConstants.frontCamera.name)
                 : null;
         double trackedDistanceMeters = trackedTag == null ? -1.0 : trackedTag.distanceMeters;
-        double anglerTarget = angler.getAngleTarget();
-        double tableShootSpeed = Constants.Spin.getShooterRPSForAngle(anglerTarget);
-        double shootRequirement = Constants.Spin.getShooterFeedRPSForAngle(anglerTarget);
+        double anglerTarget =
+            shotSolution == null ? angler.getAngleTarget() : shotSolution.getHoodAngleRotations();
+        double tableShootSpeed =
+            shotSolution == null
+                ? Constants.Spin.getShooterRPSForAngle(anglerTarget)
+                : shotSolution.getShooterTargetRPS();
+        double shootRequirement =
+            shotSolution == null
+                ? Constants.Spin.getShooterFeedRPSForAngle(anglerTarget)
+                : shotSolution.getShooterFeedRPS();
+        boolean robotAimed = shotSolution == null || shotSolution.isRobotAimed(swerve.getHeading());
 
         if (updateDashboard) {
           SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
@@ -100,6 +118,26 @@ public class SpinnerAndShooterCmd extends Command {
           SmartDashboard.putNumber("Shooter Angler Target", anglerTarget);
           SmartDashboard.putNumber("Shoot Speed Target", tableShootSpeed);
           SmartDashboard.putNumber("Shoot Feed Requirement", shootRequirement);
+          SmartDashboard.putBoolean("Shoot On Move Ready To Feed", robotAimed);
+          SmartDashboard.putBoolean(
+              "Shoot On Move Active", shotSolution != null && shotSolution.isCompensationActive());
+          SmartDashboard.putNumber(
+              "Shoot On Move Shooter RPS Correction",
+              shotSolution == null ? 0.0 : shotSolution.getShooterRpsCorrection());
+          SmartDashboard.putNumber(
+              "Shoot On Move Aim Error",
+              shotSolution == null ? 0.0 : shotSolution.getYawErrorDegrees(swerve.getHeading()));
+          SmartDashboard.putNumber(
+              "Shoot On Move Release Delay",
+              shotSolution == null ? 0.0 : shotSolution.getReleaseDelaySeconds());
+          SmartDashboard.putNumber(
+              "Shoot On Move Launch Angle",
+              shotSolution == null ? 0.0 : shotSolution.getEstimatedLaunchAngleDegrees());
+          SmartDashboard.putNumber(
+              "Shoot On Move Exit Velocity",
+              shotSolution == null
+                  ? 0.0
+                  : shotSolution.getEstimatedNoteExitVelocityMetersPerSecond());
           SmartDashboard.putString(
               "Shooter Hub Tag Camera",
               trackedTag == null ? "None" : trackedTag.limelight.getName());
@@ -116,7 +154,7 @@ public class SpinnerAndShooterCmd extends Command {
 
         // shoot.setShooterRPS(ShootSpeed, ShootSpeed);
 
-        if (shoot.isAtOrAboveRPS(shootRequirement)) {
+        if (shoot.isAtOrAboveRPS(shootRequirement) && robotAimed) {
           shoot.roller(Rollerspeed);
           shoot.SpinSpeed(SpinSpeed);
         } else {

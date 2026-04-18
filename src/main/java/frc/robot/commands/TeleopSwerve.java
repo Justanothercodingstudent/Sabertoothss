@@ -4,12 +4,12 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.ShootOnMoveCalculator;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import java.util.function.BooleanSupplier;
@@ -98,7 +98,6 @@ public class TeleopSwerve extends Command {
                 Constants.LimelightConstants.frontCamera.name)
             : null;
     double targetTagId = trackedTag == null ? -1.0 : trackedTag.tagId;
-    double[] tagData = trackedTag == null ? null : trackedTag.targetData;
     boolean tagVisible = trackedTag != null;
 
     if (updateDashboard) {
@@ -114,9 +113,11 @@ public class TeleopSwerve extends Command {
 
     if (aimAtTag) {
       Pose2d robotPose = s_Swerve.getPose();
+      ShootOnMoveCalculator.ShotSolution shotSolution =
+          ShootOnMoveCalculator.calculate(robotPose, s_Swerve.getFieldRelativeVelocity());
       boolean usingFieldPoseFallback = !tagVisible;
-      double yawErrorDegrees = tagVisible ? tagData[1] : getFieldHubYawErrorDegrees(robotPose);
-      lastAimSource = tagVisible ? "Front Limelight" : "Field Pose";
+      double yawErrorDegrees = shotSolution.getYawErrorDegrees(robotPose.getRotation());
+      lastAimSource = shotSolution.isCompensationActive() ? "Shoot On Move" : "Field Pose";
 
       double autoRotationCommand =
           tagAimOutputLimiter.calculate(
@@ -142,7 +143,23 @@ public class TeleopSwerve extends Command {
         SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
         SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", usingFieldPoseFallback);
         SmartDashboard.putNumber(
-            "Tag Aim Desired Heading", getFieldHubHeading(robotPose).getDegrees());
+            "Tag Aim Desired Heading", shotSolution.getCompensatedHeading().getDegrees());
+        SmartDashboard.putNumber(
+            "Shoot On Move Stationary Heading", shotSolution.getStationaryHeading().getDegrees());
+        SmartDashboard.putNumber("Shoot On Move Lead Degrees", shotSolution.getLeadAngleDegrees());
+        SmartDashboard.putNumber(
+            "Shoot On Move Direct Distance", shotSolution.getDirectDistanceMeters());
+        SmartDashboard.putNumber(
+            "Shoot On Move Effective Distance", shotSolution.getEffectiveDistanceMeters());
+        SmartDashboard.putNumber("Shoot On Move Flight Time", shotSolution.getFlightTimeSeconds());
+        SmartDashboard.putNumber(
+            "Shoot On Move Launch Angle", shotSolution.getEstimatedLaunchAngleDegrees());
+        SmartDashboard.putNumber(
+            "Shoot On Move Exit Velocity",
+            shotSolution.getEstimatedNoteExitVelocityMetersPerSecond());
+        SmartDashboard.putNumber(
+            "Shoot On Move Field Velocity",
+            shotSolution.getFieldVelocityMetersPerSecond().getNorm());
       }
     } else {
       lastAimSource = "Manual";
@@ -172,15 +189,5 @@ public class TeleopSwerve extends Command {
     }
 
     s_Swerve.drive(requestedTranslation.times(speedLimit), rotationCommand, fieldRelative, true);
-  }
-
-  private Rotation2d getFieldHubHeading(Pose2d robotPose) {
-    Translation2d hubPosition = Constants.TeamDependentFactors.hubPosition();
-    Translation2d robotToHub = hubPosition.minus(robotPose.getTranslation());
-    return robotToHub.getAngle();
-  }
-
-  private double getFieldHubYawErrorDegrees(Pose2d robotPose) {
-    return robotPose.getRotation().minus(getFieldHubHeading(robotPose)).getDegrees();
   }
 }
