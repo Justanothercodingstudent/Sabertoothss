@@ -41,6 +41,12 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.5
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Return P2"
@@ -70,12 +76,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake"
           }
         },
         {

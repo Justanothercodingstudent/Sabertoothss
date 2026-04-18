@@ -48,18 +48,28 @@ public class SwerveModule {
         /* Angle Encoder Config */
         angleEncoder = new CoreCANcoder(moduleConstants.cancoderID, Constants.CTRE.CANIVORE_NAME);
         //angleEncoder.getConfigurator().apply(Robot.ctreConfigs.swerveCANcoderConfig);
-        angleEncoder.getConfigurator().apply(ctreConfigs.swerveCANcoderConfig);
+        
+        for(int i = 0; i < 5; i++) {
+            angleEncoder.getConfigurator().apply(ctreConfigs.swerveCANcoderConfig);
+        }
 
         /* Angle Motor Config */
         mAngleMotor = new TalonFX(moduleConstants.angleMotorID, Constants.CTRE.CANIVORE_NAME);
-        mAngleMotor.getConfigurator().apply(ctreConfigs.swerveAngleFXConfig);
+
+        for (int i = 0; i < 5; i++) {
+            mAngleMotor.getConfigurator().apply(ctreConfigs.swerveAngleFXConfig);
+        }
         resetToAbsolute();
 
         /* Drive Motor Config */
         mDriveMotor = new TalonFX(moduleConstants.driveMotorID, Constants.CTRE.CANIVORE_NAME);
-        mDriveMotor.getConfigurator().apply(ctreConfigs.swerveDriveFXConfig);
-        mDriveMotor.getConfigurator().setPosition(0.0);
-        mDriveMotor.set(0);
+
+        for (int i = 0; i < 5; i++) {
+            mDriveMotor.getConfigurator().apply(ctreConfigs.swerveDriveFXConfig);
+            mDriveMotor.getConfigurator().setPosition(0.0);
+        
+            mDriveMotor.set(0);
+        }
 
         //mDriveMotor.setNeutralMode(NeutralModeValue.Coast);
     }
