@@ -328,7 +328,9 @@ public class Swerve extends SubsystemBase {
   }
 
   public void zeroHeading() {
+    gyro.setYaw(0.0);
     resetPoseTrackers(new Pose2d(getPose().getTranslation(), new Rotation2d()));
+    resetDriverForwardHeading();
   }
 
   public void seedFieldHeading(Rotation2d fieldHeading) {
@@ -374,6 +376,12 @@ public class Swerve extends SubsystemBase {
     driverForwardHeading = getGyroYaw();
     driverForwardHeadingCaptured = true;
     driverForwardHeadingSource = "Gyro";
+  }
+
+  public void resetDriverForwardHeading() {
+    driverForwardHeading = new Rotation2d();
+    driverForwardHeadingCaptured = true;
+    driverForwardHeadingSource = "Field Forward";
   }
 
   public void captureDriverForwardHeadingFromLimelightForward(Limelight limelight) {

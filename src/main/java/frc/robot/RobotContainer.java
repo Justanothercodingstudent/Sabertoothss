@@ -197,6 +197,10 @@ public class RobotContainer {
     s_Swerve.captureDriverForwardHeadingFromLimelightForward(frontLimelight);
   }
 
+  public void resetDriverForwardHeading() {
+    s_Swerve.resetDriverForwardHeading();
+  }
+
   private Command getSelectedAutoCommand() {
     return chooser != null ? chooser.getSelected() : null;
   }
