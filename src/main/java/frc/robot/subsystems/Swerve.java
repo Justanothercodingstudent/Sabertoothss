@@ -25,6 +25,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -82,6 +83,9 @@ public class Swerve extends SubsystemBase {
   private double latestVisionAvgTagArea = 0.0;
   private double latestVisionStdDevXY = 0.0;
   private Pose2d latestVisionPose = new Pose2d();
+  private Pose2d simulatedPose = new Pose2d();
+  private ChassisSpeeds lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
+  private double lastSimUpdateSeconds = -1.0;
 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable driveStateTable = inst.getTable("DriveState");
@@ -190,6 +194,10 @@ public class Swerve extends SubsystemBase {
   } // I dont know if this'll work cuz im a chud
 
   public ChassisSpeeds getChassisSpeeds() {
+    if (RobotBase.isSimulation()) {
+      return lastCommandedRobotRelativeSpeeds;
+    }
+
     return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
   }
 
@@ -217,6 +225,7 @@ public class Swerve extends SubsystemBase {
   }
 
   private void SetX() {
+    lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
     mSwerveMods[0].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)), true);
     mSwerveMods[1].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
     mSwerveMods[2].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
@@ -227,6 +236,8 @@ public class Swerve extends SubsystemBase {
     SwerveModuleState[] swerveModuleStates =
         Constants.Swerve.swerveKinematics.toSwerveModuleStates(speeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+    lastCommandedRobotRelativeSpeeds =
+        Constants.Swerve.swerveKinematics.toChassisSpeeds(swerveModuleStates);
 
     for (SwerveModule mod : mSwerveMods) {
       mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
@@ -273,6 +284,8 @@ public class Swerve extends SubsystemBase {
   /* Used by SwerveControllerCommand in Auto */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
+    lastCommandedRobotRelativeSpeeds =
+        Constants.Swerve.swerveKinematics.toChassisSpeeds(desiredStates);
 
     for (SwerveModule mod : mSwerveMods) {
       mod.setDesiredState(desiredStates[mod.moduleNumber], false);
@@ -304,10 +317,18 @@ public class Swerve extends SubsystemBase {
   }
 
   public Pose2d getPose() {
+    if (RobotBase.isSimulation()) {
+      return simulatedPose;
+    }
+
     return poseEstimator.getEstimatedPosition();
   }
 
   public Pose2d getOdometryPose() {
+    if (RobotBase.isSimulation()) {
+      return simulatedPose;
+    }
+
     return swerveOdometry.getPoseMeters();
   }
 
@@ -412,12 +433,59 @@ public class Swerve extends SubsystemBase {
   }
 
   private void resetPoseTrackers(Pose2d pose) {
+    simulatedPose = pose;
+    lastSimUpdateSeconds = -1.0;
+    lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
+
     swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
     poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
     lastVisionTimestampSeconds = -1.0;
     for (String cameraName : lastVisionTimestampsByCamera.keySet()) {
       lastVisionTimestampsByCamera.put(cameraName, -1.0);
     }
+  }
+
+  private void updateSimulationPose(double nowSeconds) {
+    if (!RobotBase.isSimulation()) {
+      return;
+    }
+
+    if (DriverStation.isDisabled()) {
+      lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
+      lastSimUpdateSeconds = nowSeconds;
+      return;
+    }
+
+    if (lastSimUpdateSeconds < 0.0) {
+      lastSimUpdateSeconds = nowSeconds;
+      return;
+    }
+
+    double dtSeconds = nowSeconds - lastSimUpdateSeconds;
+    lastSimUpdateSeconds = nowSeconds;
+    if (dtSeconds <= 0.0) {
+      return;
+    }
+
+    dtSeconds = Math.min(dtSeconds, 0.05);
+
+    Rotation2d heading = simulatedPose.getRotation();
+    double cos = heading.getCos();
+    double sin = heading.getSin();
+    double fieldVxMetersPerSecond =
+        (lastCommandedRobotRelativeSpeeds.vxMetersPerSecond * cos)
+            - (lastCommandedRobotRelativeSpeeds.vyMetersPerSecond * sin);
+    double fieldVyMetersPerSecond =
+        (lastCommandedRobotRelativeSpeeds.vxMetersPerSecond * sin)
+            + (lastCommandedRobotRelativeSpeeds.vyMetersPerSecond * cos);
+
+    simulatedPose =
+        new Pose2d(
+            simulatedPose.getX() + fieldVxMetersPerSecond * dtSeconds,
+            simulatedPose.getY() + fieldVyMetersPerSecond * dtSeconds,
+            heading.plus(
+                Rotation2d.fromRadians(
+                    lastCommandedRobotRelativeSpeeds.omegaRadiansPerSecond * dtSeconds)));
   }
 
   private Vision.CameraPoseEstimate[] getMegaTag2PoseEstimates() {
@@ -681,6 +749,7 @@ public class Swerve extends SubsystemBase {
   @Override
   public void periodic() {
     double nowSeconds = Timer.getFPGATimestamp();
+    updateSimulationPose(nowSeconds);
     updateLimelightImuMode();
 
     if (DriverStation.isDisabled()) {
