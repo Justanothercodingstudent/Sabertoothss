@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -68,6 +69,7 @@ public class SpinnerAndShooterCmd extends Command {
 
       boolean DriverRT =
           Driver.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
+      boolean driverAimPressed = Driver.getAButton();
 
       if (updateDashboard) {
         SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
@@ -86,17 +88,13 @@ public class SpinnerAndShooterCmd extends Command {
       // SmartDashboard.putNumber("Shoot Speed Target", ShootSpeed);
 
       if (rtPressed && !xpressed) {
-        ShootOnMoveCalculator.ShotSolution shotSolution =
-            swerve == null
-                ? null
-                : ShootOnMoveCalculator.calculate(
-                    swerve.getPose(), swerve.getFieldRelativeVelocity());
         Vision.TrackedTag trackedTag =
-            updateDashboard && vision != null
+            vision != null
                 ? vision.getBestTarget(
                     Constants.TeamDependentFactors.getHubTagIds(),
                     Constants.LimelightConstants.frontCamera.name)
                 : null;
+        ShootOnMoveCalculator.ShotSolution shotSolution = getLineOfSightShotSolution(trackedTag);
         double trackedDistanceMeters = trackedTag == null ? -1.0 : trackedTag.distanceMeters;
         double anglerTarget =
             shotSolution == null ? angler.getAngleTarget() : shotSolution.getHoodAngleRotations();
@@ -108,7 +106,10 @@ public class SpinnerAndShooterCmd extends Command {
             shotSolution == null
                 ? Constants.Spin.getShooterFeedRPSForAngle(anglerTarget)
                 : shotSolution.getShooterFeedRPS();
-        boolean robotAimed = shotSolution == null || shotSolution.isRobotAimed(swerve.getHeading());
+        boolean robotAimed =
+            !driverAimPressed
+                || shotSolution == null
+                || shotSolution.isRobotAimed(new Rotation2d());
 
         if (updateDashboard) {
           SmartDashboard.putNumber("Shooter Hub Tag Distance", trackedDistanceMeters);
@@ -126,7 +127,7 @@ public class SpinnerAndShooterCmd extends Command {
               shotSolution == null ? 0.0 : shotSolution.getShooterRpsCorrection());
           SmartDashboard.putNumber(
               "Shoot On Move Aim Error",
-              shotSolution == null ? 0.0 : shotSolution.getYawErrorDegrees(swerve.getHeading()));
+              shotSolution == null ? 0.0 : shotSolution.getYawErrorDegrees(new Rotation2d()));
           SmartDashboard.putNumber(
               "Shoot On Move Release Delay",
               shotSolution == null ? 0.0 : shotSolution.getReleaseDelaySeconds());
@@ -179,5 +180,19 @@ public class SpinnerAndShooterCmd extends Command {
         shoot.roller(0);
       }
     }
+  }
+
+  private ShootOnMoveCalculator.ShotSolution getLineOfSightShotSolution(
+      Vision.TrackedTag trackedTag) {
+    if (swerve == null
+        || trackedTag == null
+        || trackedTag.distanceMeters <= 0.0
+        || trackedTag.targetData.length <= 1
+        || !Double.isFinite(trackedTag.targetData[1])) {
+      return null;
+    }
+
+    return ShootOnMoveCalculator.calculateLineOfSight(
+        trackedTag.targetData[1], trackedTag.distanceMeters, swerve.getChassisSpeeds());
   }
 }

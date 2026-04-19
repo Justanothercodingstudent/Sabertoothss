@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
             == DriverStation.Alliance.Red;
     Constants.TeamDependentFactors.isRedTeam = isRedAlliance;
 
-    m_robotContainer.syncSelectedAutoHeadingSeed();
+    m_robotContainer.updateSelectedAutoHeadingDashboard();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

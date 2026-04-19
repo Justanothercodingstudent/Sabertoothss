@@ -161,6 +161,36 @@ public final class ShootOnMoveCalculator {
     return calculate(robotPose, fieldVelocity);
   }
 
+  public static ShotSolution calculateLineOfSight(
+      double yawErrorDegrees, double distanceMeters, ChassisSpeeds robotRelativeSpeeds) {
+    Translation2d robotRelativeVelocity = new Translation2d();
+    if (robotRelativeSpeeds != null) {
+      robotRelativeVelocity =
+          new Translation2d(
+              robotRelativeSpeeds.vxMetersPerSecond, robotRelativeSpeeds.vyMetersPerSecond);
+    }
+
+    return calculateLineOfSight(yawErrorDegrees, distanceMeters, robotRelativeVelocity);
+  }
+
+  public static ShotSolution calculateLineOfSight(
+      double yawErrorDegrees, double distanceMeters, Translation2d robotRelativeVelocity) {
+    if (!Double.isFinite(yawErrorDegrees)) {
+      yawErrorDegrees = 0.0;
+    }
+    if (!Double.isFinite(distanceMeters)) {
+      distanceMeters = 0.0;
+    }
+    if (robotRelativeVelocity == null) {
+      robotRelativeVelocity = new Translation2d();
+    }
+
+    Pose2d robotPose = new Pose2d();
+    Translation2d targetPosition =
+        new Translation2d(Math.max(distanceMeters, 0.0), Rotation2d.fromDegrees(-yawErrorDegrees));
+    return calculate(robotPose, targetPosition, robotRelativeVelocity);
+  }
+
   public static ShotSolution calculate(Pose2d robotPose, Translation2d fieldVelocity) {
     return calculate(robotPose, Constants.TeamDependentFactors.hubPosition(), fieldVelocity);
   }

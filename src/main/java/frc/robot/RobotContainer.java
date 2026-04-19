@@ -110,11 +110,7 @@ public class RobotContainer {
             () -> -driver.getRawAxis(rotationAxis),
             () -> false,
             vision,
-            () ->
-                driver.getAButton()
-                    || (operator.getRightTriggerAxis()
-                            > Constants.OperatorConstants.TRIGGER_THRESHOLD
-                        && !operator.getXButton())));
+            driver::getAButton));
 
     autoController = new AutoController(Intake, Spin, angler);
     Autos.registerNamedCommands(s_Swerve, autoController);
@@ -138,11 +134,11 @@ public class RobotContainer {
     SmartDashboard.putData("IMU Mode", ImuMode);
   }
 
-  public void syncSelectedAutoHeadingSeed() {
-    syncSelectedAutoHeadingSeed(false);
+  public void updateSelectedAutoHeadingDashboard() {
+    updateSelectedAutoHeadingDashboard(false);
   }
 
-  private void syncSelectedAutoHeadingSeed(boolean force) {
+  private Pose2d updateSelectedAutoHeadingDashboard(boolean force) {
     Command selectedAuto = getSelectedAutoCommand();
     Pose2d autoStartingPose = Autos.getStartingPose(selectedAuto);
 
@@ -165,6 +161,12 @@ public class RobotContainer {
         SmartDashboard.putNumber("Auto Seed Heading", autoStartingPose.getRotation().getDegrees());
       }
     }
+
+    return autoStartingPose;
+  }
+
+  private void seedSelectedAutoHeading(boolean force) {
+    Pose2d autoStartingPose = updateSelectedAutoHeadingDashboard(force);
 
     if (autoHeadingSeedLocked && !force) {
       return;
@@ -205,7 +207,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    syncSelectedAutoHeadingSeed(true);
+    seedSelectedAutoHeading(true);
     lockAutoHeadingSeed();
 
     Command selectedAuto = getSelectedAutoCommand();
