@@ -134,6 +134,7 @@ public class Swerve extends SubsystemBase {
     lastRawVisionPose = new Pose2d();
     lastRawVisionTimestampSeconds = -1.0;
     initializeVisionState();
+    configureSimulationVision();
     applyLimelightImuMode(Constants.LimelightConstants.getLimelightImuSeedMode());
   }
 
@@ -144,6 +145,16 @@ public class Swerve extends SubsystemBase {
       lastAcceptedVisionPosesByCamera.put(cameraName, new Pose2d());
       lastRawVisionPosesByCamera.put(cameraName, new Pose2d());
       lastRawVisionTimestampsByCamera.put(cameraName, -1.0);
+    }
+  }
+
+  private void configureSimulationVision() {
+    if (!RobotBase.isSimulation()) {
+      return;
+    }
+
+    for (Limelight limelight : vision.getLimelights()) {
+      limelight.setSimulationPoseSupplier(this::getPose);
     }
   }
 
@@ -590,7 +601,31 @@ public class Swerve extends SubsystemBase {
             ? Constants.LimelightConstants.maxMultiTagPoseDeltaMeters
             : Constants.LimelightConstants.maxSingleTagPoseDeltaMeters;
 
-    return poseDeltaMeters <= maxPoseDeltaMeters;
+    return poseDeltaMeters <= (maxPoseDeltaMeters * getVisionPoseDeltaMultiplier());
+  }
+
+  private boolean isRobotMovingSlowForVisionTrust() {
+    ChassisSpeeds chassisSpeeds = getChassisSpeeds();
+    double linearSpeedMetersPerSecond =
+        Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+    double omegaDegreesPerSecond = Math.toDegrees(Math.abs(chassisSpeeds.omegaRadiansPerSecond));
+
+    return linearSpeedMetersPerSecond
+            <= Constants.LimelightConstants.visionSpeedTrustGateMetersPerSecond
+        && omegaDegreesPerSecond
+            <= Constants.LimelightConstants.visionOmegaTrustGateDegreesPerSecond;
+  }
+
+  private double getVisionPoseDeltaMultiplier() {
+    return isRobotMovingSlowForVisionTrust()
+        ? Constants.LimelightConstants.slowSpeedPoseDeltaMultiplier
+        : Constants.LimelightConstants.highSpeedPoseDeltaMultiplier;
+  }
+
+  private double getVisionTrustStdDevMultiplier() {
+    return isRobotMovingSlowForVisionTrust()
+        ? Constants.LimelightConstants.slowSpeedVisionStdDevMultiplier
+        : Constants.LimelightConstants.highSpeedVisionStdDevMultiplier;
   }
 
   private double getVisionTranslationStdDev(PoseEstimate estimate) {
@@ -607,6 +642,8 @@ public class Swerve extends SubsystemBase {
     if (estimate.avgTagArea < 0.15) {
       translationStdDev *= Constants.LimelightConstants.lowAreaStdDevMultiplier;
     }
+
+    translationStdDev *= getVisionTrustStdDevMultiplier();
 
     return Math.max(0.05, Math.min(translationStdDev, 2.0));
   }
@@ -801,6 +838,7 @@ public class Swerve extends SubsystemBase {
     SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
     SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurementAccepted);
     SmartDashboard.putNumber("Vision Accepted Measurement Count", visionAcceptedMeasurementCount);
+    SmartDashboard.putBoolean("Vision Slow Motion Trust Mode", isRobotMovingSlowForVisionTrust());
     SmartDashboard.putBoolean(
         "Vision Measurement Invalid - No Valid Estimate", visionMeasurementInvalidNoValidEstimate);
     SmartDashboard.putString("Vision Selected Camera", latestVisionSelectedCamera);

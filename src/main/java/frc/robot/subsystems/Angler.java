@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.ShootOnMoveCalculator;
 
 public class Angler extends SubsystemBase {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
@@ -142,20 +141,6 @@ public class Angler extends SubsystemBase {
     }
 
     handleLostTrackedTag(nowSeconds);
-  }
-
-  public void updateFromShootOnMove(ShootOnMoveCalculator.ShotSolution shotSolution) {
-    if (shotSolution == null) {
-      updateFromTrackedAprilTag();
-      return;
-    }
-
-    lastTagSeenTimestampSeconds = Timer.getFPGATimestamp();
-    lastTrackedHubDistanceMeters = shotSolution.getEffectiveDistanceMeters();
-    lastTrackedHubTagId = -1.0;
-    lastTrackedHubCameraName = "Field Pose";
-    lastAimDistanceSource = shotSolution.isCompensationActive() ? "Shoot On Move" : "Field Pose";
-    setAnglePosition(shotSolution.getHoodAngleRotations());
   }
 
   private Vision.TrackedTag getTrackedHubTag() {
