@@ -4,13 +4,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.ShootOnMoveCalculator;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Vision;
 import java.util.function.BooleanSupplier;
@@ -115,20 +113,8 @@ public class TeleopSwerve extends Command {
     }
 
     if (aimAtTag && lineOfSightAimAvailable) {
-      double rawYawErrorDegrees = trackedTag.targetData[1];
-      ShootOnMoveCalculator.ShotSolution shotSolution =
-          trackedTag.distanceMeters > 0.0
-              ? ShootOnMoveCalculator.calculateLineOfSight(
-                  rawYawErrorDegrees, trackedTag.distanceMeters, s_Swerve.getChassisSpeeds())
-              : null;
-      double yawErrorDegrees =
-          shotSolution == null
-              ? rawYawErrorDegrees
-              : shotSolution.getYawErrorDegrees(new Rotation2d());
-      lastAimSource =
-          shotSolution != null && shotSolution.isCompensationActive()
-              ? "Front Limelight + Correction"
-              : "Front Limelight";
+      double yawErrorDegrees = trackedTag.targetData[1];
+      lastAimSource = "Front Limelight";
 
       double autoRotationCommand =
           tagAimOutputLimiter.calculate(
@@ -153,40 +139,6 @@ public class TeleopSwerve extends Command {
         SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
         SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
         SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", false);
-        SmartDashboard.putNumber("Tag Aim Raw Error Degrees", rawYawErrorDegrees);
-        SmartDashboard.putNumber(
-            "Tag Aim Desired Heading",
-            shotSolution == null ? 0.0 : shotSolution.getCompensatedHeading().getDegrees());
-        SmartDashboard.putNumber(
-            "Shoot On Move Stationary Heading",
-            shotSolution == null ? 0.0 : shotSolution.getStationaryHeading().getDegrees());
-        SmartDashboard.putNumber(
-            "Shoot On Move Lead Degrees",
-            shotSolution == null ? 0.0 : shotSolution.getLeadAngleDegrees());
-        SmartDashboard.putNumber(
-            "Shoot On Move Direct Distance",
-            shotSolution == null
-                ? trackedTag.distanceMeters
-                : shotSolution.getDirectDistanceMeters());
-        SmartDashboard.putNumber(
-            "Shoot On Move Effective Distance",
-            shotSolution == null
-                ? trackedTag.distanceMeters
-                : shotSolution.getEffectiveDistanceMeters());
-        SmartDashboard.putNumber(
-            "Shoot On Move Flight Time",
-            shotSolution == null ? 0.0 : shotSolution.getFlightTimeSeconds());
-        SmartDashboard.putNumber(
-            "Shoot On Move Launch Angle",
-            shotSolution == null ? 0.0 : shotSolution.getEstimatedLaunchAngleDegrees());
-        SmartDashboard.putNumber(
-            "Shoot On Move Exit Velocity",
-            shotSolution == null
-                ? 0.0
-                : shotSolution.getEstimatedNoteExitVelocityMetersPerSecond());
-        SmartDashboard.putNumber(
-            "Shoot On Move Field Velocity",
-            shotSolution == null ? 0.0 : shotSolution.getFieldVelocityMetersPerSecond().getNorm());
       }
     } else {
       lastAimSource = aimAtTag ? "No Tag" : "Manual";

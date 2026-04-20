@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -11,6 +12,7 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class Limelight extends SubsystemBase {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
@@ -22,6 +24,7 @@ public class Limelight extends SubsystemBase {
   private int lastAppliedHubOffsetTagId = Integer.MIN_VALUE;
   private double lastAppliedHubOffsetX = Double.NaN;
   private double lastAppliedHubOffsetY = Double.NaN;
+  private Supplier<Pose2d> simulationPoseSupplier;
 
   public Limelight(Constants.LimelightConstants.CameraConfig config) {
     this.config = config;
@@ -81,7 +84,43 @@ public class Limelight extends SubsystemBase {
   }
 
   public PoseEstimate getMegaTag2PoseEstimate() {
+    PoseEstimate simulationEstimate = getSimulationPoseEstimate();
+    if (simulationEstimate != null) {
+      return simulationEstimate;
+    }
+
     return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
+  }
+
+  public void setSimulationPoseSupplier(Supplier<Pose2d> simulationPoseSupplier) {
+    this.simulationPoseSupplier = simulationPoseSupplier;
+  }
+
+  public void clearSimulationPoseSupplier() {
+    this.simulationPoseSupplier = null;
+  }
+
+  private PoseEstimate getSimulationPoseEstimate() {
+    if (!RobotBase.isSimulation() || simulationPoseSupplier == null) {
+      return null;
+    }
+
+    Pose2d simulatedPose = simulationPoseSupplier.get();
+    if (simulatedPose == null) {
+      return null;
+    }
+
+    double nowSeconds = Timer.getFPGATimestamp();
+    return new PoseEstimate(
+        simulatedPose,
+        nowSeconds - 0.02,
+        20.0,
+        2,
+        1.0,
+        2.0,
+        0.5,
+        new LimelightHelpers.RawFiducial[0],
+        true);
   }
 
   public Rotation2d getRobotRelativeForwardHeading() {

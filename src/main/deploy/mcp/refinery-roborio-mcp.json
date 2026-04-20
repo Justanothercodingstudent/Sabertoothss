@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "refinery-roborio": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@frc-refinery/roborio-mcp-server"
+      ],
+      "env": {
+        "ROBORIO_HOST": "10.36.59.2",
+        "ROBORIO_USER": "lvuser",
+        "ROBORIO_PASSWORD": "",
+        "NT_INSTANCE": "default"
+      }
+    }
+  }
+}
