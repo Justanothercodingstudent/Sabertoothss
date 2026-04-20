@@ -4,8 +4,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +26,7 @@ public class Angler extends SubsystemBase {
   private String lastAimDistanceSource = "None";
   private double lastAngleMeasurement = Constants.Angler.MinAngle;
   private double lastDashboardUpdateSeconds = -1.0;
+  private double simulatedAnglePosition = Constants.Angler.MinAngle;
 
   public Angler(Vision vision) {
     this.vision = vision;
@@ -77,6 +78,10 @@ public class Angler extends SubsystemBase {
   }
 
   public double getAnglePos() {
+    if (RobotBase.isSimulation()) {
+      return simulatedAnglePosition;
+    }
+
     return Angler.getPosition().getValueAsDouble();
   }
 
@@ -101,21 +106,12 @@ public class Angler extends SubsystemBase {
   }
 
   public void updateFromTrackedAprilTag() {
-    updateFromTrackedAprilTag(null);
-  }
-
-  public void updateFromTrackedAprilTag(Pose2d robotPose) {
     double nowSeconds = Timer.getFPGATimestamp();
 
     Vision.TrackedTag trackedTag = getTrackedHubTag();
     updateTrackedHubDashboardCache(trackedTag);
 
     if (trackedTag == null) {
-      if (robotPose != null) {
-        setAngleFromFieldHubDistance(robotPose);
-        return;
-      }
-
       handleLostTrackedTag(nowSeconds);
       return;
     }
@@ -132,11 +128,6 @@ public class Angler extends SubsystemBase {
       lastTagSeenTimestampSeconds = nowSeconds;
       lastAimDistanceSource = "Front Limelight";
       setAnglePosition(distanceToMotorRotations(distanceMeters));
-      return;
-    }
-
-    if (robotPose != null) {
-      setAngleFromFieldHubDistance(robotPose);
       return;
     }
 
@@ -166,16 +157,6 @@ public class Angler extends SubsystemBase {
     lastTrackedHubCameraName = trackedTag.limelight.getName();
   }
 
-  private void setAngleFromFieldHubDistance(Pose2d robotPose) {
-    double distanceMeters =
-        Constants.TeamDependentFactors.getDistanceToHubMeters(robotPose.getTranslation());
-    lastTrackedHubDistanceMeters = distanceMeters;
-    lastTrackedHubTagId = -1.0;
-    lastTrackedHubCameraName = "Field Pose";
-    lastAimDistanceSource = "Field Pose";
-    setAnglePosition(distanceToMotorRotations(distanceMeters));
-  }
-
   private void handleLostTrackedTag(double nowSeconds) {
     lastAimDistanceSource = "Fallback";
     double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
@@ -192,6 +173,15 @@ public class Angler extends SubsystemBase {
 
     if (!disabled) {
       nextArmPID();
+      if (RobotBase.isSimulation()) {
+        double maxStepPerCycle = 0.3;
+        double delta = AnglerPos - simulatedAnglePosition;
+        if (Math.abs(delta) <= maxStepPerCycle) {
+          simulatedAnglePosition = AnglerPos;
+        } else {
+          simulatedAnglePosition += Math.copySign(maxStepPerCycle, delta);
+        }
+      }
     }
 
     if (lastDashboardUpdateSeconds >= 0.0

@@ -8,6 +8,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,6 +32,11 @@ public class SpinnerAndShooter extends SubsystemBase {
   private final VelocityVoltage LeftRequest = new VelocityVoltage(0);
   private final VelocityVoltage RightRequest = new VelocityVoltage(0);
   private double lastDashboardUpdateSeconds = -1.0;
+  private double simulatedLeftRPS = 0.0;
+  private double simulatedRightRPS = 0.0;
+  private double simulatedTargetLeftRPS = 0.0;
+  private double simulatedTargetRightRPS = 0.0;
+  private double lastSimulationUpdateSeconds = -1.0;
 
   public SpinnerAndShooter() {
     UptakeMotor = new TalonFX(Constants.Spin.UptakeID, Constants.CTRE.CANIVORE_NAME);
@@ -99,11 +106,22 @@ public class SpinnerAndShooter extends SubsystemBase {
   // }
 
   public void OpenShootSpeed(double speed) {
+    if (RobotBase.isSimulation()) {
+      double targetRps = speed * Constants.Spin.TestTargetRPS;
+      simulatedTargetLeftRPS = targetRps;
+      simulatedTargetRightRPS = targetRps;
+    }
+
     LeftFront.set(speed);
     RightFront.set(speed);
   }
 
   public void setShooterRPS(double LeftRPS, double RightRPS) {
+    if (RobotBase.isSimulation()) {
+      simulatedTargetLeftRPS = LeftRPS;
+      simulatedTargetRightRPS = RightRPS;
+    }
+
     LeftFront.setControl(LeftRequest.withVelocity(LeftRPS));
     RightFront.setControl(RightRequest.withVelocity(RightRPS));
   }
@@ -119,10 +137,18 @@ public class SpinnerAndShooter extends SubsystemBase {
   }
 
   public double getLeftRPS() {
+    if (RobotBase.isSimulation()) {
+      return simulatedLeftRPS;
+    }
+
     return LeftFront.getVelocity().getValueAsDouble();
   }
 
   public double getRightRPS() {
+    if (RobotBase.isSimulation()) {
+      return simulatedRightRPS;
+    }
+
     return RightFront.getVelocity().getValueAsDouble();
   }
 
@@ -145,6 +171,8 @@ public class SpinnerAndShooter extends SubsystemBase {
   @Override
   public void periodic() {
     double nowSeconds = Timer.getFPGATimestamp();
+    updateSimulationVelocity(nowSeconds);
+
     if (lastDashboardUpdateSeconds >= 0.0
         && nowSeconds - lastDashboardUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
       return;
@@ -189,5 +217,29 @@ public class SpinnerAndShooter extends SubsystemBase {
     SmartDashboard.putNumber("Left Back Stall", LeftBack.getMotorStallCurrent().getValueAsDouble());
     SmartDashboard.putNumber("Right Back Stall", RightBack.getMotorStallCurrent().getValueAsDouble());*/
 
+  }
+
+  private void updateSimulationVelocity(double nowSeconds) {
+    if (!RobotBase.isSimulation()) {
+      return;
+    }
+
+    if (lastSimulationUpdateSeconds < 0.0) {
+      lastSimulationUpdateSeconds = nowSeconds;
+      return;
+    }
+
+    double dtSeconds = nowSeconds - lastSimulationUpdateSeconds;
+    lastSimulationUpdateSeconds = nowSeconds;
+    if (dtSeconds <= 0.0) {
+      return;
+    }
+
+    double shooterAccelerationRpsPerSecond = 120.0;
+    double maxStep = shooterAccelerationRpsPerSecond * dtSeconds;
+    simulatedLeftRPS +=
+        MathUtil.clamp(simulatedTargetLeftRPS - simulatedLeftRPS, -maxStep, maxStep);
+    simulatedRightRPS +=
+        MathUtil.clamp(simulatedTargetRightRPS - simulatedRightRPS, -maxStep, maxStep);
   }
 }

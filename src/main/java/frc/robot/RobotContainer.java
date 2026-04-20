@@ -194,7 +194,7 @@ public class RobotContainer {
   }
 
   public void captureDriverForwardHeading() {
-    s_Swerve.captureDriverForwardHeadingFromLimelightForward(frontLimelight);
+    s_Swerve.captureDriverForwardHeadingFromCurrentFieldHeading();
   }
 
   public void resetDriverForwardHeading() {
