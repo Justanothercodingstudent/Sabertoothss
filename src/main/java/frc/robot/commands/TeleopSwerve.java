@@ -86,16 +86,16 @@ public class TeleopSwerve extends Command {
         double[] tagData = trackedTag == null ? null : trackedTag.targetData;
         boolean tagVisible = trackedTag != null;
 
-        SmartDashboard.putBoolean("Tag Aim Requested", aimAtTagSup.getAsBoolean());
-        //SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
-        SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag);
-        SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
-        SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
-        SmartDashboard.putNumber("Tag Aim Manual Rotation", manualRotationCommand);
-        SmartDashboard.putString(
-            "Tag Aim Camera",
-            trackedTag == null ? "None" : trackedTag.limelight.getName()
-        );
+        // SmartDashboard.putBoolean("Tag Aim Requested", aimAtTagSup.getAsBoolean());
+        // SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
+        // SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag);
+        // SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
+        // SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
+        // SmartDashboard.putNumber("Tag Aim Manual Rotation", manualRotationCommand);
+        // SmartDashboard.putString(
+        //     "Tag Aim Camera",
+        //     trackedTag == null ? "None" : trackedTag.limelight.getName()
+        // );
 
         if (aimAtTag && tagVisible) {
             double yawErrorDegrees = tagData[1];
@@ -117,25 +117,25 @@ public class TeleopSwerve extends Command {
                 Constants.Swerve.maxAngularVelocity
             );
 
-            SmartDashboard.putNumber("Tag Aim Error Degrees", yawErrorDegrees);
-            SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
-            SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
+            // SmartDashboard.putNumber("Tag Aim Error Degrees", yawErrorDegrees);
+            // SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
+            // SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
         } else {
             tagAimController.reset();
             tagAimOutputLimiter.reset(0.0);
-            SmartDashboard.putNumber("Tag Aim Error Degrees", 0.0);
-            SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
-            SmartDashboard.putNumber("Tag Aim Auto Rotation", 0.0);
+            // SmartDashboard.putNumber("Tag Aim Error Degrees", 0.0);
+            // SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
+            // SmartDashboard.putNumber("Tag Aim Auto Rotation", 0.0);
         }
 
-        double speedLimit = Constants.Swerve.maxSpeed;
+        // double speedLimit = Constants.Swerve.maxSpeed;
         Translation2d requestedTranslation = new Translation2d(translationVal, strafeVal);
         // if (fieldRelative) {
         //     requestedTranslation = requestedTranslation.rotateBy(s_Swerve.getDriverForwardHeading());
         // }
 
         s_Swerve.drive(
-            requestedTranslation.times(speedLimit), 
+            requestedTranslation.times(Constants.Swerve.maxSpeed), 
             rotationCommand, 
             fieldRelative, 
             true

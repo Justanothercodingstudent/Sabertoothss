@@ -100,9 +100,9 @@ public class Limelight extends SubsystemBase {
         }
 
         LimelightHelpers.RawFiducial[] rawFiducials = LimelightHelpers.getRawFiducials(name);
-        SmartDashboard.putBoolean(dashboardKey("Has Target"), LimelightHelpers.getTV(name));
-        SmartDashboard.putNumber(dashboardKey("Primary Tag ID"), LimelightHelpers.getFiducialID(name));
-        SmartDashboard.putNumber(dashboardKey("Raw Fiducial Count"), rawFiducials.length);
+        // SmartDashboard.putBoolean(dashboardKey("Has Target"), LimelightHelpers.getTV(name));
+        // SmartDashboard.putNumber(dashboardKey("Primary Tag ID"), LimelightHelpers.getFiducialID(name));
+        // SmartDashboard.putNumber(dashboardKey("Raw Fiducial Count"), rawFiducials.length);
     }
 
     public static Translation2d getHubCenterOffset(int tagId) {
@@ -281,21 +281,21 @@ public class Limelight extends SubsystemBase {
     public void periodic() {
         updateValues();
 
-        SmartDashboard.putNumber(
-            dashboardKey("Nearest Hub Tag"),
-            getClosestTag(Constants.TeamDependentFactors.getHubTagIds())
-        );
-        SmartDashboard.putNumber(
-            dashboardKey("BotPose X"),
-            getAdjustedRobotPose().getTranslation().getX()
-        );
-        SmartDashboard.putNumber(
-            dashboardKey("BotPose Y"),
-            getAdjustedRobotPose().getTranslation().getY()
-        );
-        SmartDashboard.putNumber(
-            dashboardKey("BotPose Yaw"),
-            getAdjustedRobotPose().getRotation().getDegrees()
-        );
+        // SmartDashboard.putNumber(
+        //     dashboardKey("Nearest Hub Tag"),
+        //     getClosestTag(Constants.TeamDependentFactors.getHubTagIds())
+        // );
+        // SmartDashboard.putNumber(
+        //     dashboardKey("BotPose X"),
+        //     getAdjustedRobotPose().getTranslation().getX()
+        // );
+        // SmartDashboard.putNumber(
+        //     dashboardKey("BotPose Y"),
+        //     getAdjustedRobotPose().getTranslation().getY()
+        // );
+        // SmartDashboard.putNumber(
+        //     dashboardKey("BotPose Yaw"),
+        //     getAdjustedRobotPose().getRotation().getDegrees()
+        // );
     }
 }

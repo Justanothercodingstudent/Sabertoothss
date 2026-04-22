@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.688,
-        "y": 6.96
+        "x": 3.09,
+        "y": 5.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.1210262529832935,
-        "y": 7.226945107398568
+        "x": 2.1199715099715104,
+        "y": 5.998874643874644
       },
       "isLocked": false,
       "linkedName": "LNC"
@@ -20,8 +20,8 @@
         "y": 7.45
       },
       "prevControl": {
-        "x": 2.722,
-        "y": 7.45
+        "x": 2.572179487179487,
+        "y": 7.575142450142451
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.45,
+      "waypointRelativePos": 0.4723061430010138,
       "rotationDegrees": 180.0
     }
   ],
@@ -53,7 +53,7 @@
   "folder": "Half Middle(Left)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -56.23762122345811
+    "rotation": -41.84396598043218
   },
   "useDefaultConstraints": true
 }

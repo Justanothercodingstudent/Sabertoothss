@@ -13,7 +13,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 0.5
           }
         },
         {
@@ -38,12 +38,6 @@
           "type": "path",
           "data": {
             "pathName": "Return P1"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
           }
         },
         {
@@ -87,7 +81,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "New New Path"
+            "pathName": "Hey back up man"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Turn TUrn Turn"
           }
         }
       ]

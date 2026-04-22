@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6884615384615382,
-        "y": 1.140868945868947
+        "x": 3.1,
+        "y": 2.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.107051282051282,
-        "y": 0.4560968660968685
+        "x": 2.518589743589744,
+        "y": 1.9152279202279217
       },
       "isLocked": false,
       "linkedName": "P3E"
@@ -53,7 +53,7 @@
   "folder": "Half Middle(Right)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 56.30993247402021
+    "rotation": 44.48640888049679
   },
   "useDefaultConstraints": false
 }

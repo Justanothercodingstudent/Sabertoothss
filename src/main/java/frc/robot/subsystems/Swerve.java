@@ -610,25 +610,27 @@ public class Swerve extends SubsystemBase {
         Pose2d estimatedPose = getPose();
         field.setRobotPose(estimatedPose);
 
-        SmartDashboard.putBoolean("X Enabled", Hello);
+        // SmartDashboard.putBoolean("X Enabled", Hello);
 
-        SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
-        SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
-        SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
-        SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
+        // SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
+        // SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
+        // SmartDashboard.putBoolean("Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
+        // SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
 
-        SmartDashboard.putNumber("Odometry X", odometryPose.getX());
-        SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
-        SmartDashboard.putNumber("Odometry Heading", odometryPose.getRotation().getDegrees());
+        // SmartDashboard.putNumber("Odometry X", odometryPose.getX());
+        // SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
+        // SmartDashboard.putNumber("Odometry Heading", odometryPose.getRotation().getDegrees());
 
+
+         // Vision Debug
         SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
         SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
         SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
         SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
-        SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
-        SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
-        SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());
-        SmartDashboard.putNumber("Raw MegaTag2 Timestamp", lastRawVisionTimestampSeconds);
+        // SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
+        // SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
+        // SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());
+        // SmartDashboard.putNumber("Raw MegaTag2 Timestamp", lastRawVisionTimestampSeconds);
 
         SmartDashboard.putNumber(
             "Estimator/Odometry Translation Error",
@@ -639,11 +641,11 @@ public class Swerve extends SubsystemBase {
             estimatedPose.getRotation().minus(odometryPose.getRotation()).getDegrees()
         );
 
-        SmartDashboard.putNumber("Last Vision Pose X", lastAcceptedVisionPose.getX());
-        SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
-        SmartDashboard.putNumber("Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
-        SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
-        SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
+        // SmartDashboard.putNumber("Last Vision Pose X", lastAcceptedVisionPose.getX());
+        // SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
+        // SmartDashboard.putNumber("Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
+        // SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
+        // SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
 
         for (Limelight limelight : vision.getLimelights()) {
             String cameraName = limelight.getName();
@@ -652,20 +654,20 @@ public class Swerve extends SubsystemBase {
             double rawTimestamp = lastRawVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
             double acceptedTimestamp = lastVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
 
-            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " X", rawPose.getX());
-            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Y", rawPose.getY());
-            SmartDashboard.putNumber(
-                "Raw MegaTag2 " + cameraName + " Heading",
-                rawPose.getRotation().getDegrees()
-            );
-            SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Timestamp", rawTimestamp);
-            SmartDashboard.putNumber("Last Vision " + cameraName + " X", acceptedPose.getX());
-            SmartDashboard.putNumber("Last Vision " + cameraName + " Y", acceptedPose.getY());
-            SmartDashboard.putNumber(
-                "Last Vision " + cameraName + " Heading",
-                acceptedPose.getRotation().getDegrees()
-            );
-            SmartDashboard.putNumber("Last Vision " + cameraName + " Timestamp", acceptedTimestamp);
+            // SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " X", rawPose.getX());
+            // SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Y", rawPose.getY());
+            // SmartDashboard.putNumber(
+            //     "Raw MegaTag2 " + cameraName + " Heading",
+            //     rawPose.getRotation().getDegrees()
+            // );
+            // SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Timestamp", rawTimestamp);
+            // SmartDashboard.putNumber("Last Vision " + cameraName + " X", acceptedPose.getX());
+            // SmartDashboard.putNumber("Last Vision " + cameraName + " Y", acceptedPose.getY());
+            // SmartDashboard.putNumber(
+            //     "Last Vision " + cameraName + " Heading",
+            //     acceptedPose.getRotation().getDegrees()
+            // );
+            // SmartDashboard.putNumber("Last Vision " + cameraName + " Timestamp", acceptedTimestamp);
         }
 
         // Older generic pose debug kept here in case we want to re-enable it later.

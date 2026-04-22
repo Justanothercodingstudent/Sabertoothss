@@ -298,21 +298,21 @@ public final class Constants {
         public static final double maxMultiTagDistanceMeters = 7.0;
         public static final double maxSingleTagPoseDeltaMeters = 1.5;
         public static final double maxMultiTagPoseDeltaMeters = 3.0;
-        public static final double visionStdDevBase = 0.10;
+        public static final double visionStdDevBase = 0.1;
         public static final double visionStdDevPerMeter = 0.12;
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
         public static final int limelightImuSeedMode = Mode();
         public static final int limelightImuEnabledMode = 4;
-        public static final double limelightImuAssistAlpha = 0.001;
+        public static final double limelightImuAssistAlpha = 0.01;
     }
 
     public static final class Intake {
         public static final int IntakeLeftID = 55;
         public static final int IntakeRightID = 61;
 
-        public static final double IntakeSpeed = -0.4;
+        public static final double IntakeSpeed = -0.55;
         public static final double ExtendSpeed = 0.25;
         public static final double JigSpeed = 0.35;
 
@@ -518,7 +518,7 @@ public final class Constants {
       public static final double offset0 = 74.5;
       public static final double offset1 = -149.6;
       public static final double offset2 = -169.5;
-      public static final double offset3 = 18.3;
+      public static final double offset3 = 19.8;
 
       /* Module Specific Constants */
       /* Front Left Module - Module 0 */

@@ -3,39 +3,35 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5024358974358965,
-        "y": 0.699
+        "x": 6.487008547008547,
+        "y": 0.6499002849002864
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3266951566951573,
-        "y": 0.8178632478632482
+        "x": 7.487008547008547,
+        "y": 0.6499002849002862
       },
       "isLocked": false,
-      "linkedName": "R2"
+      "linkedName": "Lets Turn"
     },
     {
       "anchor": {
-        "x": 3.1,
-        "y": 2.6
+        "x": 6.306125356125356,
+        "y": 2.6912962962962967
       },
       "prevControl": {
-        "x": 2.094131054131054,
-        "y": 2.2520085470085487
+        "x": 7.869472934472933,
+        "y": 2.6912962962962967
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "P3E"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.2930513595166154,
-      "rotationDegrees": 180.0
-    },
-    {
-      "waypointRelativePos": 0.9556898288016077,
-      "rotationDegrees": 44.49
+      "waypointRelativePos": 0.4984894259818714,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -50,8 +46,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 44.48640888049679
+    "velocity": 0,
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "Half Middle(Right)",
@@ -59,5 +55,5 @@
     "velocity": 3.0,
     "rotation": 180.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

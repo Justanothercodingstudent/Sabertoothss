@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 7.623988603988604,
+        "x": 6.487008547008547,
         "y": 0.6499002849002864
       },
       "prevControl": {
-        "x": 6.623988603988604,
+        "x": 5.487008547008547,
         "y": 0.6499002849002865
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Lets Turn"
     }
   ],
   "rotationTargets": [],
@@ -41,7 +41,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 3.0,
     "rotation": 180.0
   },
   "reversed": false,
