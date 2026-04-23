@@ -48,6 +48,7 @@ public class Swerve extends SubsystemBase {
   private static final double MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.50;
   private static final Rotation2d DRIVER_FORWARD_HEADING_OFFSET = Rotation2d.fromDegrees(180.0);
   private static final Pose2d EMPTY_POSE = new Pose2d();
+  private static final String DASHBOARD_ROOT = "Swerve/";
 
   private final Vision vision;
   public SwerveDriveOdometry swerveOdometry;
@@ -74,6 +75,7 @@ public class Swerve extends SubsystemBase {
   private final Map<String, Pose2d> lastAcceptedVisionPosesByCamera = new HashMap<>();
   private final Map<String, Pose2d> lastRawVisionPosesByCamera = new HashMap<>();
   private final Map<String, Double> lastRawVisionTimestampsByCamera = new HashMap<>();
+  private final Map<String, CameraDashboardKeys> cameraDashboardKeysByName = new HashMap<>();
   private double lastTelemetryUpdateSeconds = -1.0;
   private double lastModuleTelemetryUpdateSeconds = -1.0;
   private boolean visionMeasurementAccepted;
@@ -106,6 +108,29 @@ public class Swerve extends SubsystemBase {
       driveStateTable.getStructTopic("latestPoseEstimate", Pose2d.struct).publish();
   private final StructPublisher<Pose2d> lastVisionLog =
       driveStateTable.getStructTopic("lastAcceptedVisionPosesByCamera", Pose2d.struct).publish();
+
+  private static class CameraDashboardKeys {
+    final String rawX;
+    final String rawY;
+    final String rawHeading;
+    final String rawTimestamp;
+    final String acceptedX;
+    final String acceptedY;
+    final String acceptedHeading;
+    final String acceptedTimestamp;
+
+    CameraDashboardKeys(String cameraName) {
+      String root = DASHBOARD_ROOT + "Vision/Cameras/" + cameraName + "/";
+      rawX = root + "Raw/X";
+      rawY = root + "Raw/Y";
+      rawHeading = root + "Raw/Heading";
+      rawTimestamp = root + "Raw/Timestamp";
+      acceptedX = root + "Accepted/X";
+      acceptedY = root + "Accepted/Y";
+      acceptedHeading = root + "Accepted/Heading";
+      acceptedTimestamp = root + "Accepted/Timestamp";
+    }
+  }
 
   public Swerve(Vision vision) {
     this.vision = vision == null ? new Vision() : vision;
@@ -150,13 +175,15 @@ public class Swerve extends SubsystemBase {
   }
 
   private void initializeVisionState() {
-    for (Limelight limelight : vision.getLimelights()) {
-      String cameraName = limelight.getName();
-      lastVisionTimestampsByCamera.put(cameraName, -1.0);
-      lastAcceptedVisionPosesByCamera.put(cameraName, new Pose2d());
-      lastRawVisionPosesByCamera.put(cameraName, new Pose2d());
-      lastRawVisionTimestampsByCamera.put(cameraName, -1.0);
-    }
+    vision.forEachLimelight(
+        limelight -> {
+          String cameraName = limelight.getName();
+          lastVisionTimestampsByCamera.put(cameraName, -1.0);
+          lastAcceptedVisionPosesByCamera.put(cameraName, new Pose2d());
+          lastRawVisionPosesByCamera.put(cameraName, new Pose2d());
+          lastRawVisionTimestampsByCamera.put(cameraName, -1.0);
+          cameraDashboardKeysByName.put(cameraName, new CameraDashboardKeys(cameraName));
+        });
   }
 
   private void configureSimulationVision() {
@@ -164,9 +191,7 @@ public class Swerve extends SubsystemBase {
       return;
     }
 
-    for (Limelight limelight : vision.getLimelights()) {
-      limelight.setSimulationPoseSupplier(this::getPose);
-    }
+    vision.forEachLimelight(limelight -> limelight.setSimulationPoseSupplier(this::getPose));
   }
 
   private void configureAutoBuilder() {
@@ -812,17 +837,23 @@ public class Swerve extends SubsystemBase {
       Pose2d estimatedPose = getPose();
       field.setRobotPose(estimatedPose);
 
-      SmartDashboard.putBoolean("X Enabled", Hello);
-      SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
-      SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
-      SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
-      SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
-      SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
-      SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
-      SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
-      SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
-      SmartDashboard.putBoolean("Driver Forward Heading Captured", driverForwardHeadingCaptured);
-      SmartDashboard.putString("Driver Forward Heading Source", driverForwardHeadingSource);
+      SmartDashboard.putBoolean(DASHBOARD_ROOT + "State/XEnabled", Hello);
+      SmartDashboard.putBoolean(
+          DASHBOARD_ROOT + "State/AutoEnabled", DriverStation.isAutonomousEnabled());
+      SmartDashboard.putBoolean(DASHBOARD_ROOT + "State/AutoMovementEnabled", autonMovingEnabled);
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/LimelightIMUMode", currentLimelightImuMode);
+      SmartDashboard.putBoolean(
+          DASHBOARD_ROOT + "Vision/LimelightIMUSeedingEnabled", limelightImuSeedingEnabled);
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Estimated/X", estimatedPose.getX());
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Estimated/Y", estimatedPose.getY());
+      SmartDashboard.putNumber(
+          DASHBOARD_ROOT + "Pose/Estimated/Heading", estimatedPose.getRotation().getDegrees());
+      SmartDashboard.putNumber(
+          DASHBOARD_ROOT + "Driver/ForwardHeading", driverForwardHeading.getDegrees());
+      SmartDashboard.putBoolean(
+          DASHBOARD_ROOT + "Driver/ForwardHeadingCaptured", driverForwardHeadingCaptured);
+      SmartDashboard.putString(
+          DASHBOARD_ROOT + "Driver/ForwardHeadingSource", driverForwardHeadingSource);
       drivePose.set(estimatedPose);
       return;
     }
@@ -843,87 +874,120 @@ public class Swerve extends SubsystemBase {
       return;
     }
 
-    SmartDashboard.putBoolean("X Enabled", Hello);
+    SmartDashboard.putBoolean(DASHBOARD_ROOT + "State/XEnabled", Hello);
 
-    SmartDashboard.putBoolean("Auto Enabled", DriverStation.isAutonomousEnabled());
-    SmartDashboard.putBoolean("Auto Movement Enabled", autonMovingEnabled);
     SmartDashboard.putBoolean(
-        "Vision Using Red Tag Filter", Constants.TeamDependentFactors.isRedTeam);
-    SmartDashboard.putNumber("Limelight IMU Mode", currentLimelightImuMode);
-    SmartDashboard.putBoolean("Limelight IMU Seeding Enabled", limelightImuSeedingEnabled);
-    SmartDashboard.putBoolean("Vision Measurement Accepted", visionMeasurementAccepted);
-    SmartDashboard.putNumber("Vision Accepted Measurement Count", visionAcceptedMeasurementCount);
-    SmartDashboard.putBoolean("Vision Slow Motion Trust Mode", isRobotMovingSlowForVisionTrust());
+        DASHBOARD_ROOT + "State/AutoEnabled", DriverStation.isAutonomousEnabled());
+    SmartDashboard.putBoolean(DASHBOARD_ROOT + "State/AutoMovementEnabled", autonMovingEnabled);
     SmartDashboard.putBoolean(
-        "Vision Measurement Invalid - No Valid Estimate", visionMeasurementInvalidNoValidEstimate);
-    SmartDashboard.putString("Vision Selected Camera", latestVisionSelectedCamera);
-    SmartDashboard.putNumber("Vision Tag Count", latestVisionTagCount);
-    SmartDashboard.putNumber("Vision Avg Tag Dist", latestVisionAvgTagDist);
-    SmartDashboard.putNumber("Vision Avg Tag Area", latestVisionAvgTagArea);
-    SmartDashboard.putNumber("Vision Std Dev XY", latestVisionStdDevXY);
-    SmartDashboard.putNumber("Vision Pose X", latestVisionPose.getX());
-    SmartDashboard.putNumber("Vision Pose Y", latestVisionPose.getY());
-    SmartDashboard.putNumber("Vision Pose Heading", latestVisionPose.getRotation().getDegrees());
+        DASHBOARD_ROOT + "Vision/UsingRedTagFilter", Constants.TeamDependentFactors.isRedTeam);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/LimelightIMUMode", currentLimelightImuMode);
+    SmartDashboard.putBoolean(
+        DASHBOARD_ROOT + "Vision/LimelightIMUSeedingEnabled", limelightImuSeedingEnabled);
+    SmartDashboard.putBoolean(
+        DASHBOARD_ROOT + "Vision/MeasurementAccepted", visionMeasurementAccepted);
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/AcceptedMeasurementCount", visionAcceptedMeasurementCount);
+    SmartDashboard.putBoolean(
+        DASHBOARD_ROOT + "Vision/SlowMotionTrustMode", isRobotMovingSlowForVisionTrust());
+    SmartDashboard.putBoolean(
+        DASHBOARD_ROOT + "Vision/MeasurementInvalidNoValidEstimate",
+        visionMeasurementInvalidNoValidEstimate);
+    SmartDashboard.putString(DASHBOARD_ROOT + "Vision/SelectedCamera", latestVisionSelectedCamera);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/TagCount", latestVisionTagCount);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/AvgTagDist", latestVisionAvgTagDist);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/AvgTagArea", latestVisionAvgTagArea);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/StdDevXY", latestVisionStdDevXY);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/Pose/X", latestVisionPose.getX());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/Pose/Y", latestVisionPose.getY());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/Pose/Heading", latestVisionPose.getRotation().getDegrees());
 
-    SmartDashboard.putNumber("Odometry X", odometryPose.getX());
-    SmartDashboard.putNumber("Odometry Y", odometryPose.getY());
-    SmartDashboard.putNumber("Odometry Heading", odometryPose.getRotation().getDegrees());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Odometry/X", odometryPose.getX());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Odometry/Y", odometryPose.getY());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Pose/Odometry/Heading", odometryPose.getRotation().getDegrees());
 
-    SmartDashboard.putNumber("Estimated Pose X", estimatedPose.getX());
-    SmartDashboard.putNumber("Estimated Pose Y", estimatedPose.getY());
-    SmartDashboard.putNumber("Estimated Pose Heading", estimatedPose.getRotation().getDegrees());
-    SmartDashboard.putNumber("Driver Forward Heading", driverForwardHeading.getDegrees());
-    SmartDashboard.putBoolean("Driver Forward Heading Captured", driverForwardHeadingCaptured);
-    SmartDashboard.putString("Driver Forward Heading Source", driverForwardHeadingSource);
-    SmartDashboard.putNumber("Raw MegaTag2 X", lastRawVisionPose.getX());
-    SmartDashboard.putNumber("Raw MegaTag2 Y", lastRawVisionPose.getY());
-    SmartDashboard.putNumber("Raw MegaTag2 Heading", lastRawVisionPose.getRotation().getDegrees());
-    SmartDashboard.putNumber("Raw MegaTag2 Timestamp", lastRawVisionTimestampSeconds);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Estimated/X", estimatedPose.getX());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Estimated/Y", estimatedPose.getY());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Pose/Estimated/Heading", estimatedPose.getRotation().getDegrees());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Driver/ForwardHeading", driverForwardHeading.getDegrees());
+    SmartDashboard.putBoolean(
+        DASHBOARD_ROOT + "Driver/ForwardHeadingCaptured", driverForwardHeadingCaptured);
+    SmartDashboard.putString(
+        DASHBOARD_ROOT + "Driver/ForwardHeadingSource", driverForwardHeadingSource);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/RawMegaTag2/X", lastRawVisionPose.getX());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/RawMegaTag2/Y", lastRawVisionPose.getY());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/RawMegaTag2/Heading",
+        lastRawVisionPose.getRotation().getDegrees());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/RawMegaTag2/Timestamp", lastRawVisionTimestampSeconds);
 
     SmartDashboard.putNumber(
-        "Estimator/Odometry Translation Error",
+        DASHBOARD_ROOT + "Pose/Error/EstimatorOdometryTranslation",
         estimatedPose.getTranslation().getDistance(odometryPose.getTranslation()));
     SmartDashboard.putNumber(
-        "Estimator/Odometry Heading Error",
+        DASHBOARD_ROOT + "Pose/Error/EstimatorOdometryHeading",
         estimatedPose.getRotation().minus(odometryPose.getRotation()).getDegrees());
 
-    SmartDashboard.putNumber("Last Vision Pose X", lastAcceptedVisionPose.getX());
-    SmartDashboard.putNumber("Last Vision Pose Y", lastAcceptedVisionPose.getY());
     SmartDashboard.putNumber(
-        "Last Vision Pose Heading", lastAcceptedVisionPose.getRotation().getDegrees());
-    SmartDashboard.putNumber("Last Vision Timestamp", lastVisionTimestampSeconds);
+        DASHBOARD_ROOT + "Vision/LastAcceptedPose/X", lastAcceptedVisionPose.getX());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/LastAcceptedPose/Y", lastAcceptedVisionPose.getY());
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "Vision/LastAcceptedPose/Heading",
+        lastAcceptedVisionPose.getRotation().getDegrees());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Vision/LastTimestamp", lastVisionTimestampSeconds);
 
-    for (Limelight limelight : vision.getLimelights()) {
-      String cameraName = limelight.getName();
-      Pose2d rawPose = lastRawVisionPosesByCamera.getOrDefault(cameraName, EMPTY_POSE);
-      Pose2d acceptedPose = lastAcceptedVisionPosesByCamera.getOrDefault(cameraName, EMPTY_POSE);
-      double rawTimestamp = lastRawVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
-      double acceptedTimestamp = lastVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
+    vision.forEachLimelight(
+        limelight -> {
+          String cameraName = limelight.getName();
+          Pose2d rawPose = lastRawVisionPosesByCamera.get(cameraName);
+          Pose2d acceptedPose = lastAcceptedVisionPosesByCamera.get(cameraName);
+          double rawTimestamp = lastRawVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
+          double acceptedTimestamp = lastVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
+          CameraDashboardKeys cameraKeys = cameraDashboardKeysByName.get(cameraName);
+          if (cameraKeys == null) {
+            cameraKeys = new CameraDashboardKeys(cameraName);
+            cameraDashboardKeysByName.put(cameraName, cameraKeys);
+          }
 
-      SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " X", rawPose.getX());
-      SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Y", rawPose.getY());
-      SmartDashboard.putNumber(
-          "Raw MegaTag2 " + cameraName + " Heading", rawPose.getRotation().getDegrees());
-      SmartDashboard.putNumber("Raw MegaTag2 " + cameraName + " Timestamp", rawTimestamp);
-      SmartDashboard.putNumber("Last Vision " + cameraName + " X", acceptedPose.getX());
-      SmartDashboard.putNumber("Last Vision " + cameraName + " Y", acceptedPose.getY());
-      SmartDashboard.putNumber(
-          "Last Vision " + cameraName + " Heading", acceptedPose.getRotation().getDegrees());
-      SmartDashboard.putNumber("Last Vision " + cameraName + " Timestamp", acceptedTimestamp);
-    }
+          if (rawPose == null) {
+            rawPose = EMPTY_POSE;
+          }
+          if (acceptedPose == null) {
+            acceptedPose = EMPTY_POSE;
+          }
+
+          SmartDashboard.putNumber(cameraKeys.rawX, rawPose.getX());
+          SmartDashboard.putNumber(cameraKeys.rawY, rawPose.getY());
+          SmartDashboard.putNumber(cameraKeys.rawHeading, rawPose.getRotation().getDegrees());
+          SmartDashboard.putNumber(cameraKeys.rawTimestamp, rawTimestamp);
+          SmartDashboard.putNumber(cameraKeys.acceptedX, acceptedPose.getX());
+          SmartDashboard.putNumber(cameraKeys.acceptedY, acceptedPose.getY());
+          SmartDashboard.putNumber(
+              cameraKeys.acceptedHeading, acceptedPose.getRotation().getDegrees());
+          SmartDashboard.putNumber(cameraKeys.acceptedTimestamp, acceptedTimestamp);
+        });
 
     if (!shouldUpdateModuleTelemetry(nowSeconds)) {
       return;
     }
 
-    SmartDashboard.putNumber("Pigeon Yaw", gyro.getYaw().getValueAsDouble());
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Gyro/PigeonYaw", gyro.getYaw().getValueAsDouble());
     for (SwerveModule mod : mSwerveMods) {
       SmartDashboard.putNumber(
-          "Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
+          DASHBOARD_ROOT + "Modules/" + mod.moduleNumber + "/CANcoder",
+          mod.getCANcoder().getDegrees());
       SmartDashboard.putNumber(
-          "Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
+          DASHBOARD_ROOT + "Modules/" + mod.moduleNumber + "/Angle",
+          mod.getPosition().angle.getDegrees());
       SmartDashboard.putNumber(
-          "Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);
+          DASHBOARD_ROOT + "Modules/" + mod.moduleNumber + "/Velocity",
+          mod.getState().speedMetersPerSecond);
     }
 
     // SmartDashboard.putNumber("Pigeon ang vel",

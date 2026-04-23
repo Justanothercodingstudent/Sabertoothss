@@ -23,6 +23,7 @@ public class TeleopSwerve extends Command {
   private static final double TAG_AIM_MAX_ANGULAR_ACCELERATION = 6.0;
   private static final double TAG_AIM_MANUAL_BLEND = 0.35;
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+  private static final String DASHBOARD_ROOT = "TeleopSwerve/";
 
   private final Swerve s_Swerve;
   private final DoubleSupplier translationSup;
@@ -77,8 +78,8 @@ public class TeleopSwerve extends Command {
     if (updateDashboard) {
       lastDashboardUpdateSeconds = nowSeconds;
       Pose2d pose = s_Swerve.getPose();
-      SmartDashboard.putNumber("Pose X", pose.getX());
-      SmartDashboard.putNumber("Pose Y", pose.getY());
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/X", pose.getX());
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "Pose/Y", pose.getY());
     }
 
     double translationVal =
@@ -103,14 +104,16 @@ public class TeleopSwerve extends Command {
         tagVisible && trackedTag.targetData.length > 1 && Double.isFinite(trackedTag.targetData[1]);
 
     if (updateDashboard) {
-      SmartDashboard.putBoolean("Tag Aim Requested", aimAtTag);
+      SmartDashboard.putBoolean(DASHBOARD_ROOT + "TagAim/Requested", aimAtTag);
       // SmartDashboard.putBoolean("Hub Aim Active", hubAimActive);
-      SmartDashboard.putBoolean("Tag Aim Enabled", aimAtTag && lineOfSightAimAvailable);
-      SmartDashboard.putNumber("Tag Aim Target ID", targetTagId);
-      SmartDashboard.putBoolean("Tag Aim Visible", tagVisible);
-      SmartDashboard.putNumber("Tag Aim Manual Rotation", manualRotationCommand);
+      SmartDashboard.putBoolean(
+          DASHBOARD_ROOT + "TagAim/Enabled", aimAtTag && lineOfSightAimAvailable);
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/TargetID", targetTagId);
+      SmartDashboard.putBoolean(DASHBOARD_ROOT + "TagAim/Visible", tagVisible);
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/ManualRotation", manualRotationCommand);
       SmartDashboard.putString(
-          "Tag Aim Camera", trackedTag == null ? "None" : trackedTag.limelight.getName());
+          DASHBOARD_ROOT + "TagAim/Camera",
+          trackedTag == null ? "None" : trackedTag.limelight.getName());
     }
 
     if (aimAtTag && lineOfSightAimAvailable) {
@@ -136,25 +139,25 @@ public class TeleopSwerve extends Command {
               Constants.Swerve.maxAngularVelocity);
 
       if (updateDashboard) {
-        SmartDashboard.putNumber("Tag Aim Error Degrees", yawErrorDegrees);
-        SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
-        SmartDashboard.putNumber("Tag Aim Auto Rotation", autoRotationCommand);
-        SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", false);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/ErrorDegrees", yawErrorDegrees);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/RotationCommand", rotationCommand);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/AutoRotation", autoRotationCommand);
+        SmartDashboard.putBoolean(DASHBOARD_ROOT + "TagAim/FieldPoseFallback", false);
       }
     } else {
       lastAimSource = aimAtTag ? "No Tag" : "Manual";
       tagAimController.reset();
       tagAimOutputLimiter.reset(0.0);
       if (updateDashboard) {
-        SmartDashboard.putNumber("Tag Aim Error Degrees", 0.0);
-        SmartDashboard.putNumber("Tag Aim Rotation Command", rotationCommand);
-        SmartDashboard.putNumber("Tag Aim Auto Rotation", 0.0);
-        SmartDashboard.putBoolean("Tag Aim Field Pose Fallback", false);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/ErrorDegrees", 0.0);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/RotationCommand", rotationCommand);
+        SmartDashboard.putNumber(DASHBOARD_ROOT + "TagAim/AutoRotation", 0.0);
+        SmartDashboard.putBoolean(DASHBOARD_ROOT + "TagAim/FieldPoseFallback", false);
       }
     }
 
     if (updateDashboard) {
-      SmartDashboard.putString("Tag Aim Source", lastAimSource);
+      SmartDashboard.putString(DASHBOARD_ROOT + "TagAim/Source", lastAimSource);
     }
 
     double speedLimit = Constants.Swerve.maxSpeed;
@@ -165,7 +168,8 @@ public class TeleopSwerve extends Command {
 
     if (updateDashboard) {
       SmartDashboard.putNumber(
-          "Driver Forward Applied Heading", s_Swerve.getDriverForwardHeading().getDegrees());
+          DASHBOARD_ROOT + "Driver/ForwardAppliedHeading",
+          s_Swerve.getDriverForwardHeading().getDegrees());
     }
 
     s_Swerve.drive(requestedTranslation.times(speedLimit), rotationCommand, fieldRelative, true);

@@ -4,9 +4,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Vision {
   private static final CameraPoseEstimate[] EMPTY_POSE_ESTIMATES = new CameraPoseEstimate[0];
+
   public static class TrackedTag {
     public final Limelight limelight;
     public final int tagId;
@@ -49,6 +51,12 @@ public class Vision {
     return limelights.clone();
   }
 
+  public void forEachLimelight(Consumer<Limelight> action) {
+    for (Limelight limelight : limelights) {
+      action.accept(limelight);
+    }
+  }
+
   public void pushFieldHeadingToLimelights(Rotation2d fieldHeading) {
     for (Limelight limelight : limelights) {
       limelight.pushRobotOrientation(fieldHeading);
@@ -89,19 +97,16 @@ public class Vision {
         continue;
       }
 
-      double closestTagId = limelight.getClosestTag(validTagIds);
-      if (closestTagId < 0.0) {
+      Limelight.TargetObservation observation = limelight.getBestTargetObservation(validTagIds);
+      if (observation == null) {
         continue;
       }
 
-      double[] targetData = limelight.getTarget((int) closestTagId);
-      if (targetData == null) {
-        continue;
-      }
-
-      double distanceMeters = limelight.getDistanceToTag(closestTagId);
+      double distanceMeters = observation.distanceMeters;
       if (bestTarget == null || isBetterTarget(distanceMeters, bestTarget.distanceMeters)) {
-        bestTarget = new TrackedTag(limelight, (int) closestTagId, distanceMeters, targetData);
+        bestTarget =
+            new TrackedTag(
+                limelight, observation.tagId, distanceMeters, observation.toTargetData());
       }
     }
 

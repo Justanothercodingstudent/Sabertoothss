@@ -13,6 +13,7 @@ import frc.robot.Constants;
 
 public class Angler extends SubsystemBase {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+  private static final String DASHBOARD_ROOT = "Angler/";
 
   private final TalonFX Angler;
   private final PositionDutyCycle AngleRequest = new PositionDutyCycle(0);
@@ -26,6 +27,7 @@ public class Angler extends SubsystemBase {
   private String lastAimDistanceSource = "None";
   private double lastAngleMeasurement = Constants.Angler.MinAngle;
   private double lastDashboardUpdateSeconds = -1.0;
+  private double lastTrackedTagDashboardUpdateSeconds = -1.0;
   private double simulatedAnglePosition = Constants.Angler.MinAngle;
 
   public Angler(Vision vision) {
@@ -120,9 +122,13 @@ public class Angler extends SubsystemBase {
     double distanceMeters = trackedTag.distanceMeters;
     boolean hasTrackedTag = distanceMeters >= 0.0;
 
-    SmartDashboard.putNumber("AprilTag " + trackedTagId + " Distance", distanceMeters);
-    SmartDashboard.putBoolean("AprilTag " + trackedTagId + " Seen", hasTrackedTag);
-    SmartDashboard.putString("Tracked AprilTag Camera", trackedTag.limelight.getName());
+    if (shouldUpdateTrackedTagDashboard(nowSeconds)) {
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "TrackedTag/ID", trackedTagId);
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "TrackedTag/DistanceMeters", distanceMeters);
+      SmartDashboard.putBoolean(DASHBOARD_ROOT + "TrackedTag/Seen", hasTrackedTag);
+      SmartDashboard.putString(
+          DASHBOARD_ROOT + "TrackedTag/Camera", trackedTag.limelight.getName());
+    }
 
     if (hasTrackedTag) {
       lastTagSeenTimestampSeconds = nowSeconds;
@@ -160,10 +166,22 @@ public class Angler extends SubsystemBase {
   private void handleLostTrackedTag(double nowSeconds) {
     lastAimDistanceSource = "Fallback";
     double timeSinceLastSeen = nowSeconds - lastTagSeenTimestampSeconds;
-    SmartDashboard.putNumber("Tracked AprilTag Time Since Seen", timeSinceLastSeen);
+    if (shouldUpdateTrackedTagDashboard(nowSeconds)) {
+      SmartDashboard.putNumber(DASHBOARD_ROOT + "TrackedTag/TimeSinceSeen", timeSinceLastSeen);
+    }
     if (timeSinceLastSeen >= Constants.Angler.tagLostDelaySeconds) {
       setAnglePosition(Constants.Angler.noTagFallbackAngle);
     }
+  }
+
+  private boolean shouldUpdateTrackedTagDashboard(double nowSeconds) {
+    if (lastTrackedTagDashboardUpdateSeconds >= 0.0
+        && nowSeconds - lastTrackedTagDashboardUpdateSeconds < DASHBOARD_UPDATE_INTERVAL_SECONDS) {
+      return false;
+    }
+
+    lastTrackedTagDashboardUpdateSeconds = nowSeconds;
+    return true;
   }
 
   @Override
@@ -194,12 +212,14 @@ public class Angler extends SubsystemBase {
       lastAngleMeasurement = getAnglePos();
     }
 
-    SmartDashboard.putNumber("Angle value", lastAngleMeasurement);
-    SmartDashboard.putNumber("Angle target", AnglerPos);
-    SmartDashboard.putNumber("Nearest Hub AprilTag Distance", lastTrackedHubDistanceMeters);
-    SmartDashboard.putNumber("Nearest Hub AprilTag ID", lastTrackedHubTagId);
-    SmartDashboard.putString("Nearest Hub AprilTag Camera", lastTrackedHubCameraName);
-    SmartDashboard.putString("Shooter Aim Distance Source", lastAimDistanceSource);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Angle/Value", lastAngleMeasurement);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "Angle/Target", AnglerPos);
+    SmartDashboard.putNumber(
+        DASHBOARD_ROOT + "TrackedTag/NearestHubDistance", lastTrackedHubDistanceMeters);
+    SmartDashboard.putNumber(DASHBOARD_ROOT + "TrackedTag/NearestHubID", lastTrackedHubTagId);
+    SmartDashboard.putString(
+        DASHBOARD_ROOT + "TrackedTag/NearestHubCamera", lastTrackedHubCameraName);
+    SmartDashboard.putString(DASHBOARD_ROOT + "Aim/DistanceSource", lastAimDistanceSource);
   }
   // helllloooooo
 }

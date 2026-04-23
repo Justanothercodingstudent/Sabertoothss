@@ -47,6 +47,24 @@ public class Limelight extends SubsystemBase {
     return config.dashboardPrefix;
   }
 
+  public static class TargetObservation {
+    public final int tagId;
+    public final double distanceMeters;
+    public final double txDegrees;
+    public final double tyDegrees;
+
+    public TargetObservation(int tagId, double distanceMeters, double txDegrees, double tyDegrees) {
+      this.tagId = tagId;
+      this.distanceMeters = distanceMeters;
+      this.txDegrees = txDegrees;
+      this.tyDegrees = tyDegrees;
+    }
+
+    public double[] toTargetData() {
+      return new double[] {tagId, txDegrees, tyDegrees};
+    }
+  }
+
   public double[] percentPosition(double[] tagInfo) {
     if (tagInfo == null) {
       return null;
@@ -291,28 +309,8 @@ public class Limelight extends SubsystemBase {
   }
 
   public double getClosestTag(double[] validTagIds) {
-    double closestTag = -1.0;
-    double closestDistanceMeters = Double.MAX_VALUE;
-
-    for (LimelightHelpers.RawFiducial fiducial : LimelightHelpers.getRawFiducials(name)) {
-      for (double validId : validTagIds) {
-        if (fiducial.id == (int) validId && fiducial.distToCamera < closestDistanceMeters) {
-          closestTag = fiducial.id;
-          closestDistanceMeters = fiducial.distToCamera;
-        }
-      }
-    }
-
-    if (closestTag >= 0.0) {
-      return closestTag;
-    }
-
-    int primaryTagId = (int) LimelightHelpers.getFiducialID(name);
-    if (LimelightHelpers.getTV(name) && isTrackedTag(validTagIds, primaryTagId)) {
-      return primaryTagId;
-    }
-
-    return -1.0;
+    TargetObservation observation = getBestTargetObservation(validTagIds);
+    return observation == null ? -1.0 : observation.tagId;
   }
 
   public double getDistanceToTag(double targetTagId) {
@@ -337,6 +335,44 @@ public class Limelight extends SubsystemBase {
 
     if (LimelightHelpers.getTV(name) && id == (int) LimelightHelpers.getFiducialID(name)) {
       return new double[] {id, LimelightHelpers.getTXNC(name), LimelightHelpers.getTYNC(name)};
+    }
+
+    return null;
+  }
+
+  public TargetObservation getBestTargetObservation(double[] validTagIds) {
+    if (validTagIds == null || validTagIds.length == 0) {
+      return null;
+    }
+
+    LimelightHelpers.RawFiducial closestFiducial = null;
+    for (LimelightHelpers.RawFiducial fiducial : LimelightHelpers.getRawFiducials(name)) {
+      if (!isTrackedTag(validTagIds, fiducial.id)) {
+        continue;
+      }
+
+      if (closestFiducial == null || fiducial.distToCamera < closestFiducial.distToCamera) {
+        closestFiducial = fiducial;
+      }
+    }
+
+    if (closestFiducial != null) {
+      return new TargetObservation(
+          closestFiducial.id,
+          closestFiducial.distToCamera,
+          closestFiducial.txnc,
+          closestFiducial.tync);
+    }
+
+    int primaryTagId = (int) LimelightHelpers.getFiducialID(name);
+    if (LimelightHelpers.getTV(name) && isTrackedTag(validTagIds, primaryTagId)) {
+      double distanceMeters =
+          LimelightHelpers.getTargetPose3d_CameraSpace(name).getTranslation().getNorm();
+      return new TargetObservation(
+          primaryTagId,
+          distanceMeters,
+          LimelightHelpers.getTXNC(name),
+          LimelightHelpers.getTYNC(name));
     }
 
     return null;
