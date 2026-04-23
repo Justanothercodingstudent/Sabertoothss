@@ -12,10 +12,14 @@ import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class Limelight extends SubsystemBase {
   private static final double DASHBOARD_UPDATE_INTERVAL_SECONDS = 0.10;
+  private static final Translation2d ZERO_TRANSLATION = new Translation2d();
+  private static final Map<Integer, Translation2d> HUB_CENTER_OFFSETS = createHubCenterOffsets();
 
   private final Constants.LimelightConstants.CameraConfig config;
   private final String name;
@@ -156,42 +160,32 @@ public class Limelight extends SubsystemBase {
   }
 
   public static Translation2d getHubCenterOffset(int tagId) {
-    switch (tagId) {
-      case 2:
-        return new Translation2d(-0.6033770, 0.0001016);
-      case 3:
-        return new Translation2d(-0.6036564, 0.3555746);
-      case 4:
-        return new Translation2d(0.6036564, 0.0000254);
-      case 5:
-        return new Translation2d(-0.6034278, -0.0001016);
-      case 8:
-        return new Translation2d(-0.3554984, -0.2034278);
-      case 9:
-        return new Translation2d(-0.6036564, 0.3056254);
-      case 10:
-        return new Translation2d(-0.6036564, 0.0000254);
-      case 11:
-        return new Translation2d(-0.2554984, 0.0337700);
-      case 18:
-        return new Translation2d(-0.0001524, 0.6034278);
-      case 19:
-        return new Translation2d(-0.6037072, 0.3556254);
-      case 20:
-        return new Translation2d(-0.6037072, 0.0000254);
-      case 21:
-        return new Translation2d(0.6033770, -0.0001524);
-      case 24:
-        return new Translation2d(-0.6033770, -0.3554476);
-      case 25:
-        return new Translation2d(-0.6036056, 0.3555746);
-      case 26:
-        return new Translation2d(-0.6036056, 0.0000254);
-      case 27:
-        return new Translation2d(-0.6034278, 0.3554476);
-      default:
-        throw new IllegalArgumentException("Tag " + tagId + " is not a hub tag");
+    Translation2d offset = HUB_CENTER_OFFSETS.get(tagId);
+    if (offset == null) {
+      throw new IllegalArgumentException("Tag " + tagId + " is not a hub tag");
     }
+    return offset;
+  }
+
+  private static Map<Integer, Translation2d> createHubCenterOffsets() {
+    Map<Integer, Translation2d> offsets = new HashMap<>();
+    offsets.put(2, new Translation2d(-0.6033770, 0.0001016));
+    offsets.put(3, new Translation2d(-0.6036564, 0.3555746));
+    offsets.put(4, new Translation2d(0.6036564, 0.0000254));
+    offsets.put(5, new Translation2d(-0.6034278, -0.0001016));
+    offsets.put(8, new Translation2d(-0.3554984, -0.2034278));
+    offsets.put(9, new Translation2d(-0.6036564, 0.3056254));
+    offsets.put(10, new Translation2d(-0.6036564, 0.0000254));
+    offsets.put(11, new Translation2d(-0.2554984, 0.0337700));
+    offsets.put(18, new Translation2d(-0.0001524, 0.6034278));
+    offsets.put(19, new Translation2d(-0.6037072, 0.3556254));
+    offsets.put(20, new Translation2d(-0.6037072, 0.0000254));
+    offsets.put(21, new Translation2d(0.6033770, -0.0001524));
+    offsets.put(24, new Translation2d(-0.6033770, -0.3554476));
+    offsets.put(25, new Translation2d(-0.6036056, 0.3555746));
+    offsets.put(26, new Translation2d(-0.6036056, 0.0000254));
+    offsets.put(27, new Translation2d(-0.6034278, 0.3554476));
+    return offsets;
   }
 
   private String dashboardKey(String key) {
@@ -236,24 +230,24 @@ public class Limelight extends SubsystemBase {
   public Translation2d getCurrentHubCenterOffset() {
     int tagId = (int) getCurrentHubTagId();
     if (tagId <= 0) {
-      return new Translation2d();
+      return ZERO_TRANSLATION;
     }
 
     try {
       return getHubCenterOffset(tagId);
     } catch (IllegalArgumentException ex) {
-      return new Translation2d();
+      return ZERO_TRANSLATION;
     }
   }
 
   public void applyHubCenterOffset() {
     int tagId = (int) getCurrentHubTagId();
-    Translation2d offset = new Translation2d();
+    Translation2d offset = ZERO_TRANSLATION;
     if (tagId > 0) {
       try {
         offset = getHubCenterOffset(tagId);
       } catch (IllegalArgumentException ex) {
-        offset = new Translation2d();
+        offset = ZERO_TRANSLATION;
       }
     }
 
