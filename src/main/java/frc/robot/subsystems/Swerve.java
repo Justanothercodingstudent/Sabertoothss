@@ -46,6 +46,7 @@ public class Swerve extends SubsystemBase {
   private static final double ENABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.10;
   private static final double DISABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.25;
   private static final double MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.50;
+  private static final Rotation2d DRIVER_FORWARD_HEADING_OFFSET = Rotation2d.fromDegrees(180.0);
 
   private final Vision vision;
   public SwerveDriveOdometry swerveOdometry;
@@ -405,29 +406,34 @@ public class Swerve extends SubsystemBase {
   }
 
   public void captureDriverForwardHeadingFromCurrentFieldHeading() {
-    driverForwardHeading = getGyroYaw();
+    driverForwardHeading = applyDriverForwardHeadingOffset(getGyroYaw());
     driverForwardHeadingCaptured = true;
-    driverForwardHeadingSource = "Gyro";
+    driverForwardHeadingSource = "Gyro + 180";
   }
 
   public void resetDriverForwardHeading() {
-    driverForwardHeading = new Rotation2d();
+    driverForwardHeading = applyDriverForwardHeadingOffset(new Rotation2d());
     driverForwardHeadingCaptured = true;
-    driverForwardHeadingSource = "Field Forward";
+    driverForwardHeadingSource = "Field Forward + 180";
   }
 
   public void captureDriverForwardHeadingFromLimelightForward(Limelight limelight) {
     Rotation2d robotRelativeForward =
         limelight == null ? new Rotation2d() : limelight.getRobotRelativeForwardHeading();
 
-    driverForwardHeading = getGyroYaw().rotateBy(robotRelativeForward);
+    driverForwardHeading =
+        applyDriverForwardHeadingOffset(getGyroYaw().rotateBy(robotRelativeForward));
     driverForwardHeadingCaptured = true;
     driverForwardHeadingSource =
-        limelight == null ? "Gyro" : limelight.getName() + " configured forward";
+        limelight == null ? "Gyro + 180" : limelight.getName() + " configured forward + 180";
   }
 
   public Rotation2d getDriverForwardHeading() {
     return driverForwardHeading;
+  }
+
+  private Rotation2d applyDriverForwardHeadingOffset(Rotation2d heading) {
+    return heading.rotateBy(DRIVER_FORWARD_HEADING_OFFSET);
   }
 
   public void setLimelightImuSeedingEnabled(boolean enabled) {
