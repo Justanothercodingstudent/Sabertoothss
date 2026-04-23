@@ -26,7 +26,6 @@ public final class Autos {
             "Intake Extend", autoController.IntakeExtend(),
             "Intake", autoController.Intake(),
             "Intake Stop", autoController.IntakeStop()
-            // "Intake Jig", autoController.IntakeJig()
         ));
 
         NamedCommands.registerCommands(Map.of(
