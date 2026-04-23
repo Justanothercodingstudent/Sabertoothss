@@ -77,7 +77,8 @@ public class TeleopSwerve extends Command {
     if (updateDashboard) {
       lastDashboardUpdateSeconds = nowSeconds;
       Pose2d pose = s_Swerve.getPose();
-      SmartDashboard.putString("pose", pose.getX() + ", " + pose.getY());
+      SmartDashboard.putNumber("Pose X", pose.getX());
+      SmartDashboard.putNumber("Pose Y", pose.getY());
     }
 
     double translationVal =

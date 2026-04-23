@@ -47,6 +47,7 @@ public class Swerve extends SubsystemBase {
   private static final double DISABLED_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.25;
   private static final double MODULE_TELEMETRY_UPDATE_INTERVAL_SECONDS = 0.50;
   private static final Rotation2d DRIVER_FORWARD_HEADING_OFFSET = Rotation2d.fromDegrees(180.0);
+  private static final Pose2d EMPTY_POSE = new Pose2d();
 
   private final Vision vision;
   public SwerveDriveOdometry swerveOdometry;
@@ -86,7 +87,16 @@ public class Swerve extends SubsystemBase {
   private Pose2d latestVisionPose = new Pose2d();
   private Pose2d simulatedPose = new Pose2d();
   private ChassisSpeeds lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
+  private final ChassisSpeeds zeroChassisSpeeds = new ChassisSpeeds();
   private double lastSimUpdateSeconds = -1.0;
+  private final List<Vision.CameraPoseEstimate> reusableVisionMeasurements = new ArrayList<>();
+  private final SwerveModuleState[] xLockStates =
+      new SwerveModuleState[] {
+        new SwerveModuleState(0.0, Rotation2d.fromDegrees(45.0)),
+        new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45.0)),
+        new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45.0)),
+        new SwerveModuleState(0.0, Rotation2d.fromDegrees(45.0))
+      };
 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable driveStateTable = inst.getTable("DriveState");
@@ -226,7 +236,7 @@ public class Swerve extends SubsystemBase {
 
   public void driveRobotRelative(ChassisSpeeds speeds) {
     if (!autonMovingEnabled) {
-      speeds = new ChassisSpeeds();
+      speeds = zeroChassisSpeeds;
     }
 
     setChassisSpeeds(speeds, false);
@@ -237,11 +247,10 @@ public class Swerve extends SubsystemBase {
   }
 
   private void SetX() {
-    lastCommandedRobotRelativeSpeeds = new ChassisSpeeds();
-    mSwerveMods[0].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)), true);
-    mSwerveMods[1].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
-    mSwerveMods[2].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(-45)), true);
-    mSwerveMods[3].setDesiredState(new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)), true);
+    lastCommandedRobotRelativeSpeeds = zeroChassisSpeeds;
+    for (int i = 0; i < mSwerveMods.length; i++) {
+      mSwerveMods[i].setDesiredState(xLockStates[i], true);
+    }
   }
 
   private void setChassisSpeeds(ChassisSpeeds speeds, boolean isOpenLoop) {
@@ -265,7 +274,7 @@ public class Swerve extends SubsystemBase {
             : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
 
     if (!autonMovingEnabled && !isOpenLoop) {
-      chassisSpeeds = new ChassisSpeeds();
+      chassisSpeeds = zeroChassisSpeeds;
     }
 
     boolean SoManyVariables = Robot.XToggle;
@@ -536,7 +545,7 @@ public class Swerve extends SubsystemBase {
   }
 
   private List<Vision.CameraPoseEstimate> getMegaTag2VisionMeasurements() {
-    List<Vision.CameraPoseEstimate> validMeasurements = new ArrayList<>();
+    reusableVisionMeasurements.clear();
 
     for (Vision.CameraPoseEstimate cameraEstimate : getMegaTag2PoseEstimates()) {
       PoseEstimate poseEstimate = cameraEstimate.poseEstimate;
@@ -549,16 +558,16 @@ public class Swerve extends SubsystemBase {
       }
 
       if (isVisionMeasurementValid(cameraEstimate)) {
-        validMeasurements.add(cameraEstimate);
+        reusableVisionMeasurements.add(cameraEstimate);
       }
     }
 
-    validMeasurements.sort(
+    reusableVisionMeasurements.sort(
         Comparator.comparingDouble(
                 (Vision.CameraPoseEstimate estimate) -> estimate.poseEstimate.timestampSeconds)
             .thenComparingDouble(estimate -> getVisionTranslationStdDev(estimate.poseEstimate)));
 
-    return validMeasurements;
+    return reusableVisionMeasurements;
   }
 
   private boolean isVisionMeasurementValid(Vision.CameraPoseEstimate cameraEstimate) {
@@ -886,8 +895,8 @@ public class Swerve extends SubsystemBase {
 
     for (Limelight limelight : vision.getLimelights()) {
       String cameraName = limelight.getName();
-      Pose2d rawPose = lastRawVisionPosesByCamera.getOrDefault(cameraName, new Pose2d());
-      Pose2d acceptedPose = lastAcceptedVisionPosesByCamera.getOrDefault(cameraName, new Pose2d());
+      Pose2d rawPose = lastRawVisionPosesByCamera.getOrDefault(cameraName, EMPTY_POSE);
+      Pose2d acceptedPose = lastAcceptedVisionPosesByCamera.getOrDefault(cameraName, EMPTY_POSE);
       double rawTimestamp = lastRawVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
       double acceptedTimestamp = lastVisionTimestampsByCamera.getOrDefault(cameraName, -1.0);
 

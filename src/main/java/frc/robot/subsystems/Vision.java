@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Vision {
+  private static final CameraPoseEstimate[] EMPTY_POSE_ESTIMATES = new CameraPoseEstimate[0];
   public static class TrackedTag {
     public final Limelight limelight;
     public final int tagId;
@@ -31,6 +32,7 @@ public class Vision {
   }
 
   private final Limelight[] limelights;
+  private final List<CameraPoseEstimate> reusablePoseEstimates = new ArrayList<>();
 
   public Vision(Limelight... limelights) {
     List<Limelight> configuredLimelights = new ArrayList<>();
@@ -60,15 +62,19 @@ public class Vision {
   }
 
   public CameraPoseEstimate[] getMegaTag2PoseEstimates() {
-    List<CameraPoseEstimate> poseEstimates = new ArrayList<>();
+    if (limelights.length == 0) {
+      return EMPTY_POSE_ESTIMATES;
+    }
+
+    reusablePoseEstimates.clear();
     for (Limelight limelight : limelights) {
       PoseEstimate poseEstimate = limelight.getMegaTag2PoseEstimate();
       if (poseEstimate != null) {
-        poseEstimates.add(new CameraPoseEstimate(limelight, poseEstimate));
+        reusablePoseEstimates.add(new CameraPoseEstimate(limelight, poseEstimate));
       }
     }
 
-    return poseEstimates.toArray(new CameraPoseEstimate[0]);
+    return reusablePoseEstimates.toArray(new CameraPoseEstimate[reusablePoseEstimates.size()]);
   }
 
   public TrackedTag getBestTarget(double[] validTagIds) {
