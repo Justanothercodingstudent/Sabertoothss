@@ -127,7 +127,7 @@ public class SpinnerAndShooterCmd extends Command{
             boolean DriverRB = Driver.getRightBumperButton();
 
 
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
+            // SmartDashboard.putBoolean("Right Trigger Button Pressed", rtPressed); // Debugging
 
             
 

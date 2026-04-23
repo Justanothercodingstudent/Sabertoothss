@@ -184,9 +184,9 @@ public class Limelight extends SubsystemBase {
         Translation2d offset = getCurrentHubCenterOffset();
         LimelightHelpers.setFiducial3DOffset(name, offset.getX(), offset.getY(), 0.0);
 
-        SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), LimelightHelpers.getFiducialID(name));
-        SmartDashboard.putNumber(dashboardKey("Fiducial Offset X"), offset.getX());
-        SmartDashboard.putNumber(dashboardKey("Fiducial Offset Y"), offset.getY());
+        // SmartDashboard.putNumber(dashboardKey("Offset Tag ID"), LimelightHelpers.getFiducialID(name));
+        // SmartDashboard.putNumber(dashboardKey("Fiducial Offset X"), offset.getX());
+        // SmartDashboard.putNumber(dashboardKey("Fiducial Offset Y"), offset.getY());
     }
 
     public void portForward() {
@@ -285,17 +285,17 @@ public class Limelight extends SubsystemBase {
         //     dashboardKey("Nearest Hub Tag"),
         //     getClosestTag(Constants.TeamDependentFactors.getHubTagIds())
         // );
-        // SmartDashboard.putNumber(
-        //     dashboardKey("BotPose X"),
-        //     getAdjustedRobotPose().getTranslation().getX()
-        // );
-        // SmartDashboard.putNumber(
-        //     dashboardKey("BotPose Y"),
-        //     getAdjustedRobotPose().getTranslation().getY()
-        // );
-        // SmartDashboard.putNumber(
-        //     dashboardKey("BotPose Yaw"),
-        //     getAdjustedRobotPose().getRotation().getDegrees()
-        // );
+        SmartDashboard.putNumber(
+            dashboardKey("BotPose X"),
+            getAdjustedRobotPose().getTranslation().getX()
+        );
+        SmartDashboard.putNumber(
+            dashboardKey("BotPose Y"),
+            getAdjustedRobotPose().getTranslation().getY()
+        );
+        SmartDashboard.putNumber(
+            dashboardKey("BotPose Yaw"),
+            getAdjustedRobotPose().getRotation().getDegrees()
+        );
     }
 }

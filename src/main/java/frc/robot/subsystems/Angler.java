@@ -162,14 +162,14 @@ public class Angler extends SubsystemBase{
             "Nearest Hub AprilTag Distance",
             trackedTag == null ? -1.0 : trackedTag.distanceMeters
         );
-        SmartDashboard.putNumber(
-            "Nearest Hub AprilTag ID",
-            trackedTag == null ? -1.0 : trackedTag.tagId
-        );
-        SmartDashboard.putString(
-            "Nearest Hub AprilTag Camera",
-            trackedTag == null ? "None" : trackedTag.limelight.getName()
-        );
+        // SmartDashboard.putNumber(
+        //     "Nearest Hub AprilTag ID",
+        //     trackedTag == null ? -1.0 : trackedTag.tagId
+        // );
+        // SmartDashboard.putString(
+        //     "Nearest Hub AprilTag Camera",
+        //     trackedTag == null ? "None" : trackedTag.limelight.getName()
+        // );
     }
 //helllloooooo
 }

@@ -63,7 +63,7 @@ public class IntakeCmd extends Command {
             boolean bPressed = Operator.getBButtonPressed();
             boolean ltpressed = Operator.getLeftTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean rbPressed = Operator.getRightBumperButton();
-            SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed); // Debugging
+            // SmartDashboard.putBoolean("Right Trigger Button Pressed", ltpressed); // Debugging
 
             /*if (rtPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())){
                 if (shoot.FrontLeftRPM() <= -20){

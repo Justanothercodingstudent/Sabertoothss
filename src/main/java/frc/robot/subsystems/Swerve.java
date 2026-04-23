@@ -482,15 +482,15 @@ public class Swerve extends SubsystemBase {
     private void addVisionMeasurementIfAvailable() {
         List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
 
-        SmartDashboard.putBoolean("Vision Measurement Accepted", !visionMeasurements.isEmpty());
-        SmartDashboard.putNumber("Vision Accepted Measurement Count", visionMeasurements.size());
+        // SmartDashboard.putBoolean("Vision Measurement Accepted", !visionMeasurements.isEmpty());
+        // SmartDashboard.putNumber("Vision Accepted Measurement Count", visionMeasurements.size());
 
         if (visionMeasurements.isEmpty()) {
-            SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", true);
+            // SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", true);
             return;
         }
 
-        SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
+        // SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
 
         Vision.CameraPoseEstimate latestMeasurement = null;
         double latestTranslationStdDev = 0.0;
@@ -522,11 +522,11 @@ public class Swerve extends SubsystemBase {
         }
 
         PoseEstimate latestPoseEstimate = latestMeasurement.poseEstimate;
-        SmartDashboard.putString("Vision Selected Camera", latestMeasurement.limelight.getName());
-        SmartDashboard.putNumber("Vision Tag Count", latestPoseEstimate.tagCount);
-        SmartDashboard.putNumber("Vision Avg Tag Dist", latestPoseEstimate.avgTagDist);
-        SmartDashboard.putNumber("Vision Avg Tag Area", latestPoseEstimate.avgTagArea);
-        SmartDashboard.putNumber("Vision Std Dev XY", latestTranslationStdDev);
+        // SmartDashboard.putString("Vision Selected Camera", latestMeasurement.limelight.getName());
+        // SmartDashboard.putNumber("Vision Tag Count", latestPoseEstimate.tagCount);
+        // SmartDashboard.putNumber("Vision Avg Tag Dist", latestPoseEstimate.avgTagDist);
+        // SmartDashboard.putNumber("Vision Avg Tag Area", latestPoseEstimate.avgTagArea);
+        // SmartDashboard.putNumber("Vision Std Dev XY", latestTranslationStdDev);
         SmartDashboard.putNumber("Vision Pose X", latestPoseEstimate.pose.getX());
         SmartDashboard.putNumber("Vision Pose Y", latestPoseEstimate.pose.getY());
         SmartDashboard.putNumber("Vision Pose Heading", latestPoseEstimate.pose.getRotation().getDegrees());
