@@ -299,13 +299,13 @@ public final class Constants {
         public static final double maxSingleTagPoseDeltaMeters = 1.5;
         public static final double maxMultiTagPoseDeltaMeters = 3.0;
         public static final double visionStdDevBase = 0.1;
-        public static final double visionStdDevPerMeter = 0.12;
+        public static final double visionStdDevPerMeter = 0.12; // was .12
         public static final double singleTagStdDevMultiplier = 1.5;
         public static final double lowAreaStdDevMultiplier = 1.25;
         public static final double visionRotationStdDev = 9999999.0;
         public static final int limelightImuSeedMode = Mode();
         public static final int limelightImuEnabledMode = 4;
-        public static final double limelightImuAssistAlpha = 0.01;
+        public static final double limelightImuAssistAlpha = 0.05;
     }
 
     public static final class Intake {

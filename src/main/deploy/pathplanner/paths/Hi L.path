@@ -47,7 +47,7 @@
   "reversed": false,
   "folder": "Autoto Left",
   "idealStartingState": {
-    "velocity": 2.5,
+    "velocity": 1.5,
     "rotation": -36.81
   },
   "useDefaultConstraints": true
