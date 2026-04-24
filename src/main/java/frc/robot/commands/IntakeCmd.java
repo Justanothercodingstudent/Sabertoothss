@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.intake;
 import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.Robot.GameMode;
 
 public class IntakeCmd extends Command {
     private final intake Intake;
@@ -35,7 +37,6 @@ public class IntakeCmd extends Command {
     public class IntakeCycle extends SequentialCommandGroup {
                  public IntakeCycle(intake intake) {
                     addCommands(
-                        new InstantCommand(() -> intake.setExtendSpeed(Constants.Intake.JigSpeed)),
                         new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.JigExtend)),
                         new WaitCommand(0.25),
                         new InstantCommand(() -> intake.setIntakePosition(Constants.Intake.maxExtend)),
@@ -50,13 +51,12 @@ public class IntakeCmd extends Command {
 
      @Override
     public void initialize() {
-        Intake.setExtendSpeed(Constants.Intake.ExtendSpeed);
         activeIntakeCycle = null;
     }
 
      @Override 
     public void execute() {
-        if (DriverStation.isTeleop()) {
+        if (Robot.gameMode == GameMode.TELEOP) {
 
             boolean lbPressed = Operator.getLeftBumperButton();
             boolean yPressed = Operator.getYButtonPressed();
@@ -96,8 +96,7 @@ public class IntakeCmd extends Command {
             }
 
             if (lbPressed && (activeIntakeCycle == null || !activeIntakeCycle.isScheduled())) {
-                activeIntakeCycle = new IntakeCycle(Intake)
-                    .finallyDo(interrupted -> Intake.setExtendSpeed(Constants.Intake.ExtendSpeed));
+                activeIntakeCycle = new IntakeCycle(Intake);
                 CommandScheduler.getInstance().schedule(activeIntakeCycle);
 
                 speed = Constants.Intake.IntakeSpeed;
@@ -105,13 +104,7 @@ public class IntakeCmd extends Command {
             }
 
         }
-
-        
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        Intake.setExtendSpeed(Constants.Intake.ExtendSpeed);
+    
     }
     
 }

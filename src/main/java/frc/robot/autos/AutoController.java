@@ -145,7 +145,7 @@ public class AutoController {
             new WaitCommand(0.1),
             new InstantCommand(() -> Shoot.SpinSpeed(Constants.Spin.SpinSpeed), Shoot),
             new InstantCommand(() -> Shoot.roller(Constants.Spin.Rollerspeed), Shoot),
-            new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
+            // new InstantCommand(() -> Intake.setExtendSpeed(Constants.Intake.JigSpeed), Intake),
             new InstantCommand(() -> Intake.setIntakeSpeed(Constants.Intake.IntakeSpeed), Intake),
             new InstantCommand(() -> Intake.setIntakePosition(Constants.Intake.JigExtend), Intake),
             new WaitCommand(0.25),

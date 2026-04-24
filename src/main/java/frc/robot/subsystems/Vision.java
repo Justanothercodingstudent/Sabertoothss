@@ -52,6 +52,8 @@ public class Vision {
         return limelights.clone();
     }
 
+    
+
     public void pushFieldHeadingToLimelights(Rotation2d fieldHeading) {
         for (Limelight limelight : limelights) {
             limelight.pushRobotOrientation(fieldHeading);

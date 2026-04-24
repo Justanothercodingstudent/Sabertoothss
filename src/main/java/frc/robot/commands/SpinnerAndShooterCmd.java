@@ -8,6 +8,8 @@ import frc.robot.subsystems.SpinnerAndShooter;
 import frc.robot.subsystems.Angler;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
+import frc.robot.Robot;
+import frc.robot.Robot.GameMode;
 import frc.robot.subsystems.intake;
 import frc.robot.subsystems.Vision;
 
@@ -114,7 +116,7 @@ public class SpinnerAndShooterCmd extends Command{
 
      @Override 
     public void execute() {
-        if (DriverStation.isTeleop()) {
+        if (Robot.gameMode == GameMode.TELEOP) {
 
             boolean rtPressed = Operator.getRightTriggerAxis() > Constants.OperatorConstants.TRIGGER_THRESHOLD;
             boolean lbPressed = Operator.getLeftBumperButtonPressed();

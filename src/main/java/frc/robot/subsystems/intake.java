@@ -98,13 +98,13 @@ public class intake extends SubsystemBase {
         intakeOutMotor.setControl(extensionRequest.withPosition(intakePos));
     }
 
-    public void setExtendSpeed(double speed) {
-        extendSpeed = Math.abs(speed);
-        intakeOutMotor.getConfigurator().refresh(extensionOutputConfig);
-        extensionOutputConfig.PeakForwardDutyCycle = extendSpeed;
-        extensionOutputConfig.PeakReverseDutyCycle = -extendSpeed;
-        intakeOutMotor.getConfigurator().apply(extensionOutputConfig);
-    }
+    // public void setExtendSpeed(double speed) {
+    //     extendSpeed = Math.abs(speed);
+    //     intakeOutMotor.getConfigurator().refresh(extensionOutputConfig);
+    //     extensionOutputConfig.PeakForwardDutyCycle = extendSpeed;
+    //     extensionOutputConfig.PeakReverseDutyCycle = -extendSpeed;
+    //     intakeOutMotor.getConfigurator().apply(extensionOutputConfig);
+    // }
 
     private void clampIntakeSetPos() {
         intakePos = Math.max(

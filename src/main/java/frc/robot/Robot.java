@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -12,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.DriverStation;
-
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Limelight;
 
@@ -107,15 +109,17 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    Robot.gameMode = GameMode.DISABLED;
+  }
 
   @Override
   public void disabledPeriodic() {
+    DriverStation.refreshData();
     boolean isRedAlliance =
         DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
             == DriverStation.Alliance.Red;
     Constants.TeamDependentFactors.isRedTeam = isRedAlliance;
-    
   }
   
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -129,11 +133,21 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
+
+    Robot.gameMode = GameMode.AUTONOMOUS;
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {}
+
+    public static GameMode gameMode = GameMode.DISABLED;
+    public static enum GameMode {
+        DISABLED,
+        AUTONOMOUS,
+        TELEOP,
+        TEST
+    };
 
   @Override
   public void teleopInit() {
@@ -144,6 +158,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    Robot.gameMode = GameMode.TELEOP;
   }
 
   /** This function is called periodically during operator control. */
@@ -156,6 +172,8 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    Robot.gameMode = GameMode.TEST;
   }
 
   /** This function is called periodically during test mode. */

@@ -12,7 +12,9 @@ import frc.robot.SwerveModule;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.Robot;
+import frc.robot.Robot.GameMode;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.PoseEstimator;
@@ -408,10 +410,10 @@ public class Swerve extends SubsystemBase {
             }
         }
 
-        validMeasurements.sort(
-            Comparator.comparingDouble((Vision.CameraPoseEstimate estimate) -> estimate.poseEstimate.timestampSeconds)
-                .thenComparingDouble(estimate -> getVisionTranslationStdDev(estimate.poseEstimate))
-        );
+        // validMeasurements.sort(
+        //     Comparator.comparingDouble((Vision.CameraPoseEstimate estimate) -> estimate.poseEstimate.timestampSeconds)
+        //         .thenComparingDouble(estimate -> getVisionTranslationStdDev(estimate.poseEstimate))
+        // );
 
         return validMeasurements;
     }
@@ -426,6 +428,7 @@ public class Swerve extends SubsystemBase {
             cameraEstimate.limelight.getName(),
             -1.0
         );
+        
         if (estimate.timestampSeconds <= lastCameraTimestamp) {
             return false;
         }
@@ -463,24 +466,56 @@ public class Swerve extends SubsystemBase {
         return poseDeltaMeters <= maxPoseDeltaMeters;
     }
 
-    private double getVisionTranslationStdDev(PoseEstimate estimate) {
+    private void getVisionTranslationStdDev(PoseEstimate estimate) {
+                
         double translationStdDev = Constants.LimelightConstants.visionStdDevBase
             + (estimate.avgTagDist * Constants.LimelightConstants.visionStdDevPerMeter
                 / Math.max(estimate.tagCount, 1));
 
-        if (estimate.tagCount == 1) {
-            translationStdDev *= Constants.LimelightConstants.singleTagStdDevMultiplier;
-        }
+        // if (estimate.tagCount == 1) {
+        //     translationStdDev *= Constants.LimelightConstants.singleTagStdDevMultiplier;
+        // }
 
-        if (estimate.avgTagArea < 0.15) {
-            translationStdDev *= Constants.LimelightConstants.lowAreaStdDevMultiplier;
-        }
+        // if (estimate.avgTagArea < 0.15) {
+        //     translationStdDev *= Constants.LimelightConstants.lowAreaStdDevMultiplier;
+        // }
 
-        return Math.max(0.05, Math.min(translationStdDev, 2.0));
+        double xyStds;
+        double radStds;
+                if (estimate.tagCount > 1) {
+                        if (Robot.gameMode == GameMode.TELEOP) {
+                            // Trust the vision even MORE
+                            if (estimate.tagCount > 2) {
+                                xyStds = Math.hypot(0.002, 0.003);
+                    } else {
+                        // We can only see two tags, (still trustable)
+                        xyStds = Math.hypot(0.005, 0.008);
+                    }
+                } else {
+                    xyStds = Math.hypot(0.014, 0.016);
+                }
+                radStds = Units.degreesToRadians(2);
+            }
+            // 1 target with large area and close to estimated roxose
+            else if (estimate.avgTagArea > 0.14) {
+                xyStds = Math.hypot(0.015, 0.033);
+                radStds = Units.degreesToRadians(7);
+            }
+            // conditions don't match to add a vision measurement
+            else {
+                return;
+            }
+            poseEstimator.setVisionMeasurementStdDevs(
+                VecBuilder.fill(xyStds, xyStds, radStds));
     }
 
+    
+
     private void addVisionMeasurementIfAvailable() {
+                
         List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
+
+        
 
         // SmartDashboard.putBoolean("Vision Measurement Accepted", !visionMeasurements.isEmpty());
         // SmartDashboard.putNumber("Vision Accepted Measurement Count", visionMeasurements.size());
@@ -497,15 +532,10 @@ public class Swerve extends SubsystemBase {
 
         for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
             PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
-            double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
+            getVisionTranslationStdDev(visionMeasurement);
             poseEstimator.addVisionMeasurement(
                 visionMeasurement.pose,
-                visionMeasurement.timestampSeconds,
-                VecBuilder.fill(
-                    translationStdDev,
-                    translationStdDev,
-                    Constants.LimelightConstants.visionRotationStdDev
-                )
+                visionMeasurement.timestampSeconds
             );
 
             String cameraName = cameraMeasurement.limelight.getName();
@@ -514,7 +544,6 @@ public class Swerve extends SubsystemBase {
             lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
             lastAcceptedVisionPose = visionMeasurement.pose;
             latestMeasurement = cameraMeasurement;
-            latestTranslationStdDev = translationStdDev;
         }
 
         if (latestMeasurement == null) {
@@ -541,15 +570,10 @@ public class Swerve extends SubsystemBase {
 
         for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
             PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
-            double translationStdDev = getVisionTranslationStdDev(visionMeasurement);
+            getVisionTranslationStdDev(visionMeasurement);
             poseEstimator.addVisionMeasurement(
                 visionMeasurement.pose,
-                visionMeasurement.timestampSeconds,
-                VecBuilder.fill(
-                    translationStdDev,
-                    translationStdDev,
-                    Constants.LimelightConstants.visionRotationStdDev
-                )
+                visionMeasurement.timestampSeconds
             );
 
             String cameraName = cameraMeasurement.limelight.getName();
@@ -558,7 +582,6 @@ public class Swerve extends SubsystemBase {
             lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
             lastAcceptedVisionPose = visionMeasurement.pose;
             latestMeasurement = cameraMeasurement;
-            latestTranslationStdDev = translationStdDev;
         }
 
         if (latestMeasurement == null) {

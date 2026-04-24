@@ -296,8 +296,8 @@ public final class Constants {
         public static final double maxSingleTagAmbiguity = 0.70;
         public static final double maxSingleTagDistanceMeters = 4.0;
         public static final double maxMultiTagDistanceMeters = 7.0;
-        public static final double maxSingleTagPoseDeltaMeters = 1.5;
-        public static final double maxMultiTagPoseDeltaMeters = 3.0;
+        public static final double maxSingleTagPoseDeltaMeters = 999;
+        public static final double maxMultiTagPoseDeltaMeters = 999;
         public static final double visionStdDevBase = 0.1;
         public static final double visionStdDevPerMeter = 0.12; // was .12
         public static final double singleTagStdDevMultiplier = 1.5;
