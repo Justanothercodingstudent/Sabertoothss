@@ -85,6 +85,7 @@ public class Swerve extends SubsystemBase {
 
     public Swerve(Vision vision){
         this.vision = vision == null ? new Vision() : vision;
+        
         gyro = new Pigeon2(Constants.Swerve.pigeonID, Constants.CTRE.CANIVORE_NAME);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(Constants.Swerve.SwerveStartHeading);
@@ -95,13 +96,21 @@ public class Swerve extends SubsystemBase {
             new SwerveModule(2, Constants.Swerve.Mod2.constants),
             new SwerveModule(3, Constants.Swerve.Mod3.constants)
             };
-        
-        swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
+
+        Rotation2d startupHeading = getGyroYaw();
+        Pose2d startupPose = new Pose2d(new Translation2d(), startupHeading);
+
+        swerveOdometry = new SwerveDriveOdometry(
+            Constants.Swerve.swerveKinematics,
+            startupHeading,
+            getModulePositions(),
+            startupPose
+        );
         poseEstimator = new SwerveDrivePoseEstimator(
             Constants.Swerve.swerveKinematics,
-            getGyroYaw(),
+            startupHeading,
             getModulePositions(),
-            new Pose2d()
+            startupPose
         );
     
         SmartDashboard.putData("Field", field);
@@ -110,8 +119,8 @@ public class Swerve extends SubsystemBase {
         configureAutoBuilder();
 
         lastKnownTagHeading = new Rotation2d(); 
-        originalHeading = new Rotation2d();
-        driverForwardHeading = new Rotation2d();
+        originalHeading = startupHeading;
+        driverForwardHeading = startupHeading.rotateBy(Rotation2d.fromDegrees(180));
         lastVisionTimestampSeconds = -1.0;
         lastAcceptedVisionPose = new Pose2d();
         currentLimelightImuMode = -1;
@@ -466,47 +475,30 @@ public class Swerve extends SubsystemBase {
         return poseDeltaMeters <= maxPoseDeltaMeters;
     }
 
-    private void getVisionTranslationStdDev(PoseEstimate estimate) {
-                
-        double translationStdDev = Constants.LimelightConstants.visionStdDevBase
-            + (estimate.avgTagDist * Constants.LimelightConstants.visionStdDevPerMeter
-                / Math.max(estimate.tagCount, 1));
-
-        // if (estimate.tagCount == 1) {
-        //     translationStdDev *= Constants.LimelightConstants.singleTagStdDevMultiplier;
-        // }
-
-        // if (estimate.avgTagArea < 0.15) {
-        //     translationStdDev *= Constants.LimelightConstants.lowAreaStdDevMultiplier;
-        // }
-
+    private boolean configureVisionMeasurementStdDevs(PoseEstimate estimate) {
         double xyStds;
         double radStds;
-                if (estimate.tagCount > 1) {
-                        if (Robot.gameMode == GameMode.TELEOP) {
-                            // Trust the vision even MORE
-                            if (estimate.tagCount > 2) {
-                                xyStds = Math.hypot(0.002, 0.003);
-                    } else {
-                        // We can only see two tags, (still trustable)
-                        xyStds = Math.hypot(0.005, 0.008);
-                    }
+        if (estimate.tagCount > 1) {
+            if (Robot.gameMode == GameMode.TELEOP) {
+                // In teleop, trust multi-tag solves more aggressively.
+                if (estimate.tagCount > 2) {
+                    xyStds = Math.hypot(0.002, 0.003);
                 } else {
-                    xyStds = Math.hypot(0.014, 0.016);
+                    xyStds = Math.hypot(0.005, 0.008);
                 }
-                radStds = Units.degreesToRadians(2);
+            } else {
+                xyStds = Math.hypot(0.014, 0.016);
             }
-            // 1 target with large area and close to estimated roxose
-            else if (estimate.avgTagArea > 0.14) {
-                xyStds = Math.hypot(0.015, 0.033);
-                radStds = Units.degreesToRadians(7);
-            }
-            // conditions don't match to add a vision measurement
-            else {
-                return;
-            }
-            poseEstimator.setVisionMeasurementStdDevs(
-                VecBuilder.fill(xyStds, xyStds, radStds));
+            radStds = Units.degreesToRadians(2);
+        } else if (estimate.avgTagArea > 0.14) {
+            xyStds = Math.hypot(0.015, 0.033);
+            radStds = Units.degreesToRadians(7);
+        } else {
+            return false;
+        }
+
+        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(xyStds, xyStds, radStds));
+        return true;
     }
 
     
@@ -528,21 +520,24 @@ public class Swerve extends SubsystemBase {
         // SmartDashboard.putBoolean("Vision Measurement Invalid - No Valid Estimate", false);
 
         Vision.CameraPoseEstimate latestMeasurement = null;
-        double latestTranslationStdDev = 0.0;
 
         for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
             PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
-            getVisionTranslationStdDev(visionMeasurement);
+            if (!configureVisionMeasurementStdDevs(visionMeasurement)) {
+                continue;
+            }
+
+            Pose2d fieldOrientedVisionPose = visionMeasurement.pose;
             poseEstimator.addVisionMeasurement(
-                visionMeasurement.pose,
+                fieldOrientedVisionPose,
                 visionMeasurement.timestampSeconds
             );
 
             String cameraName = cameraMeasurement.limelight.getName();
             lastVisionTimestampsByCamera.put(cameraName, visionMeasurement.timestampSeconds);
-            lastAcceptedVisionPosesByCamera.put(cameraName, visionMeasurement.pose);
+            lastAcceptedVisionPosesByCamera.put(cameraName, fieldOrientedVisionPose);
             lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
-            lastAcceptedVisionPose = visionMeasurement.pose;
+            lastAcceptedVisionPose = fieldOrientedVisionPose;
             latestMeasurement = cameraMeasurement;
         }
 
@@ -550,15 +545,14 @@ public class Swerve extends SubsystemBase {
             return;
         }
 
-        PoseEstimate latestPoseEstimate = latestMeasurement.poseEstimate;
+        Pose2d latestAcceptedPose = lastAcceptedVisionPose;
         // SmartDashboard.putString("Vision Selected Camera", latestMeasurement.limelight.getName());
-        // SmartDashboard.putNumber("Vision Tag Count", latestPoseEstimate.tagCount);
-        // SmartDashboard.putNumber("Vision Avg Tag Dist", latestPoseEstimate.avgTagDist);
-        // SmartDashboard.putNumber("Vision Avg Tag Area", latestPoseEstimate.avgTagArea);
-        // SmartDashboard.putNumber("Vision Std Dev XY", latestTranslationStdDev);
-        SmartDashboard.putNumber("Vision Pose X", latestPoseEstimate.pose.getX());
-        SmartDashboard.putNumber("Vision Pose Y", latestPoseEstimate.pose.getY());
-        SmartDashboard.putNumber("Vision Pose Heading", latestPoseEstimate.pose.getRotation().getDegrees());
+        // SmartDashboard.putNumber("Vision Tag Count", latestMeasurement.poseEstimate.tagCount);
+        // SmartDashboard.putNumber("Vision Avg Tag Dist", latestMeasurement.poseEstimate.avgTagDist);
+        // SmartDashboard.putNumber("Vision Avg Tag Area", latestMeasurement.poseEstimate.avgTagArea);
+        SmartDashboard.putNumber("Vision Pose X", latestAcceptedPose.getX());
+        SmartDashboard.putNumber("Vision Pose Y", latestAcceptedPose.getY());
+        SmartDashboard.putNumber("Vision Pose Heading", latestAcceptedPose.getRotation().getDegrees());
         
     }
 
@@ -566,21 +560,24 @@ public class Swerve extends SubsystemBase {
         List<Vision.CameraPoseEstimate> visionMeasurements = getMegaTag2VisionMeasurements();
 
         Vision.CameraPoseEstimate latestMeasurement = null;
-        double latestTranslationStdDev = 0.0;
 
         for (Vision.CameraPoseEstimate cameraMeasurement : visionMeasurements) {
             PoseEstimate visionMeasurement = cameraMeasurement.poseEstimate;
-            getVisionTranslationStdDev(visionMeasurement);
+            if (!configureVisionMeasurementStdDevs(visionMeasurement)) {
+                continue;
+            }
+
+            Pose2d fieldOrientedVisionPose = visionMeasurement.pose;
             poseEstimator.addVisionMeasurement(
-                visionMeasurement.pose,
+                fieldOrientedVisionPose,
                 visionMeasurement.timestampSeconds
             );
 
             String cameraName = cameraMeasurement.limelight.getName();
             lastVisionTimestampsByCamera.put(cameraName, visionMeasurement.timestampSeconds);
-            lastAcceptedVisionPosesByCamera.put(cameraName, visionMeasurement.pose);
+            lastAcceptedVisionPosesByCamera.put(cameraName, fieldOrientedVisionPose);
             lastVisionTimestampSeconds = Math.max(lastVisionTimestampSeconds, visionMeasurement.timestampSeconds);
-            lastAcceptedVisionPose = visionMeasurement.pose;
+            lastAcceptedVisionPose = fieldOrientedVisionPose;
             latestMeasurement = cameraMeasurement;
         }
 
@@ -588,8 +585,7 @@ public class Swerve extends SubsystemBase {
             return new Pose2d();
         }
 
-        Pose2d latestPoseEstimate = latestMeasurement.poseEstimate.pose;
-        return latestPoseEstimate;
+        return lastAcceptedVisionPose;
     }
 
     public void updateParallelMotion(boolean parallelModeActive,
